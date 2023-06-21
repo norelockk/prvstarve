@@ -2,6 +2,7 @@ import { game } from "..";
 import { WebSocket } from "ws";
 
 import Client from "../network/Client";
+import { DeleteUnit } from "../network/packets/bin/Units";
 
 export default class ClientManager {
   private clientIdCtr: number = 1;
@@ -40,6 +41,23 @@ export default class ClientManager {
     const client: Client = this.findClientBySocket(c.socket);
 
     if (client) {
+      if (client.entity) {
+        // do not leave entity in game
+        const pck: DeleteUnit = new DeleteUnit(client.entity);
+
+        if (pck) {
+          for (let index: number = 0; index < this.clients.length; index++) {
+            const client: Client = this.clients[index];
+
+            if (client) {
+              client.sendBinary(pck.build());
+            }
+          }
+        }
+
+        game.world.removeEntity(client.entity);
+      }
+
       const cid: number = client.clientId as number;
       const index: number = this.clientIndexMap.get(client.clientId) as number;
 
@@ -56,16 +74,12 @@ export default class ClientManager {
     }
   }
 
-  public getClient(clientId: number): Client {
-    return this.clients[this.clientIndexMap.get(clientId) as number];
-  }
-
   public update(delta: number): void {
     for (let index = 0; index < this.clients.length; index++) {
       const client = this.clients[index];
 
-      if (client && client.entity) {
-        client.entity.update(delta);
+      if (client) {
+        client.update(delta);
       }
     }
   }
@@ -79,12 +93,12 @@ export default class ClientManager {
       if (client && client.entity) {
         output.push({
           i: client.clientId,
-          n: `unnamed#${client.clientId}`,
+          n: client.entity.nickname,
           s: 0,
           a: 0,
           c: 0,
-          b: 1,
-          d: 0,
+          b: 0,
+          d: 1,
           l: client.clientId,
           p: 0
         })

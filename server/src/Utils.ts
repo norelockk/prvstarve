@@ -14,3 +14,12 @@ export function restore_number(num: number): number {
     return 0;
 }
 
+export function sliceToBytes(x: number, size: number = 2): number[] {
+  let array = new Array<number>(size);
+
+  for (let i = 0; i < size; i++) {
+    array[i] = x / Math.pow(256, i);
+  }
+
+  return array;
+};

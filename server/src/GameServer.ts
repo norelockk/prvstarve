@@ -1,10 +1,14 @@
 import { hrtimeMs } from './Utils';
 import { TICK_DELTA, TICK_LENGTH_MS } from '../../shared/const';
 
+import World from './managers/World';
 import Logger from './Logger';
-import Entity from './entities/Entity';
 import ClientManager from './managers/Client';
-import LeaderboardManager from './managers/Leaderboard';
+import { UpdateUnits } from './network/packets/bin/Units';
+import Entity from './entities/Entity';
+import Client from './network/Client';
+import Leaderboard from './network/packets/bin/Leaderboard';
+import Player from './entities/Player';
 
 export default class GameServer {
   private logger: Logger = new Logger('GameServer');
@@ -13,10 +17,8 @@ export default class GameServer {
   private currentTick: number = 0;
   private previousTick: number = hrtimeMs();
 
+  public world: World = new World(this);
   public clients: ClientManager = new ClientManager();
-  private leaderboard: LeaderboardManager = new LeaderboardManager(this);
-
-  public entities: Entity[] = [];
 
   public static construct(): GameServer {
     return new GameServer();
@@ -27,6 +29,7 @@ export default class GameServer {
   private init(): void {
     // inititate the tick calculating
     this.tick();
+
     this.logger.log('debug', 'Game server initialized');
   }
 
@@ -49,12 +52,38 @@ export default class GameServer {
   }
 
   private update(delta: number): void {
-    const updateLeaderboard: boolean = this.currentTick % 35 === 0;
+    // updating leaderboard
+    if (this.currentTick % 35 === 0) {
+      const players: Player[] = this.clients.clients.map(c => c.entity as Player);
+      const ldb: Leaderboard = new Leaderboard(players);
 
-    if (updateLeaderboard) {
-      // console.log('leaderboard', ~~(Math.random() * 100));
+      for (let index = 0; index < this.clients.clients.length; index++) {
+        const client: Client = this.clients.clients[index];
+
+        if (client) client.sendBinary(ldb.build());
+      }
     }
 
+    // updating entities & players
+    this.world.update(delta);
     this.clients.update(delta);
+
+    // rendering the entities
+    this.render();
+  }
+
+  // temporary solution to render
+  private render(): void {
+    if (this.clients.clients.length === 0)
+      return;
+
+    const entities: Entity[] = this.world.entities.array;
+    const pck: UpdateUnits = new UpdateUnits(this, entities);
+
+    for (let index = 0; index < this.clients.clients.length; index++) {
+      const client: Client = this.clients.clients[index];
+
+      if (client) client.sendBinary(pck.build());
+    }
   }
 }

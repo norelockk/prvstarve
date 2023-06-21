@@ -6,6 +6,8 @@ import GameServer from '../GameServer';
 import Logger from '../Logger';
 import { DEBUG_CLIENT } from '../../../shared/const';
 import { HandshakeResponse } from './packets/json/Handshake';
+import NewPlayer from './packets/json/NewPlayer';
+import Chat from './packets/json/Chat';
 
 export default class Client {
   public entity: Player | undefined;
@@ -50,7 +52,7 @@ export default class Client {
   public sendBinary(data: Uint8Array) {
     if (this.socket.readyState !== WebSocket.OPEN) return;
 
-    return this.socket.send(data.buffer);
+    return this.socket.send(data);
   }
 
   private init(): void {
@@ -93,10 +95,58 @@ export default class Client {
     }
   }
 
-  private handlePacket(data: object): void {
+  private handlePacket(data: any): void {
     if (!this.handshaked) return;
 
     !!DEBUG_CLIENT && (console.log('recv pkt', typeof data === 'object' ? JSON.stringify(data) : data));
+
+    const [header, ...body] = data;
+
+    switch (header) {
+      case 0: {
+        if (typeof body[0] !== 'string') return;
+
+        const message: string = body[0].trim();
+        if (message.length === 0) return;
+
+        // send chat message to other clients
+        const pck: Chat = new Chat(this.entity as Player, message);
+
+        if (pck) {
+          for (let index = 0; index < this.gameServer.clients.clients.length; index++) {
+            const client: Client = this.gameServer.clients.clients[index];
+
+            if (client && client !== this) {
+              client.sendJson(pck.build());
+            }
+          }
+
+          this.logger.log('info', `${this.entity?.nickname} [${this.clientId}]:`, message);
+        }
+
+        break;
+      }
+      case 2: {
+        if (this.entity)
+          this.entity.updateDirection(body[0]);
+          
+        break;
+      }
+      case 3: {
+        if (this.entity)
+          this.entity.angle = body[0];
+
+        break;
+      }
+      case 11: {
+        console.log('focus pls');
+        break;
+      }
+      default: {
+
+        break;
+      }
+    }
   }
 
   private handleHandshake(data: any): void {
@@ -125,17 +175,34 @@ export default class Client {
     // ] = data;
 
     let nickname: string = data[0].trim() as string;
-    if (nickname.length === 0)
-      nickname = `unnamed#${this.clientId}`;
+    if (nickname.length === 0) nickname = `unnamed#${this.clientId}`;
 
     this.entity = new Player(this.gameServer, this);
+    this.entity.nickname = nickname;
+    
+    this.gameServer.world.addEntity(this.entity);
+
     if (this.entity instanceof Player) {
       const handshake: HandshakeResponse = new HandshakeResponse(this.entity, this.gameServer.clients.json as Player[]);
 
       if (handshake) {
+        // send to other clients that joind
+        const nextPlayer: NewPlayer = new NewPlayer(this.entity);
+
+        for (const client of this.gameServer.clients.clients) {
+          if (client.socket !== this.socket) {
+            client.sendJson(nextPlayer.build());
+          } 
+        }
+
+        // send handshake
         this.sendJson(handshake.build());
         this.handshaked = true;
       }
     }
+  }
+
+  public update(delta: number): void {
+    // todo: update client stuff
   }
 }

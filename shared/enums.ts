@@ -12,7 +12,8 @@ export enum BinaryPacket {
   SERVER_FULL = 5,
   UPDATE_UNITS = 0,
   GAME_OLD_VERSION = 4,
-  HARD_REFRESH_UNITS = 1
+  HARD_REFRESH_UNITS = 1,
+	LEADERBOARD = 21,
 }
 
 export enum Gamemodes {
