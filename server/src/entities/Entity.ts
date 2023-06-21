@@ -59,7 +59,5 @@ export default class Entity {
       this.position.x = this.position.x + dx * delta;
       this.position.y = this.position.y + dy * delta;
     }
-
-    // console.log('current position: ' + this.position.toString());
   }
 }

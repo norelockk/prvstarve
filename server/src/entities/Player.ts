@@ -1,7 +1,6 @@
 import GameServer from '../GameServer';
 import Entity from './Entity';
 import Client from '../network/Client';
-import { EntityType } from '../../../shared/enums';
 
 export default class Player extends Entity {
   public score: number = 0;
