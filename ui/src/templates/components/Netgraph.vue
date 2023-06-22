@@ -23,8 +23,8 @@ export default Vue.extend({
   data: () => ({
     KEYS_TRANSLATION: {
       frames: 'FPS',
-      networkIn: 'Network in',
-      networkOut: 'Network out'
+      networkIn: 'Network receive',
+      networkOut: 'Network sent'
     } as {
       [key: string]: any
     }
@@ -50,10 +50,7 @@ export default Vue.extend({
 </script>
 
 <template>
-  <table
-    class='netgraph'
-    v-show='!!N_showing'
-  >
+  <table class='netgraph' v-if='N_showing'>
     <tr v-for='(index, key) of N_data'>
       <td v-text='N_translateKey(key)'></td>
       <td v-text='N_translateValue(key)'></td>

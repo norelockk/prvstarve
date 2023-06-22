@@ -5,7 +5,7 @@ interface UiState {
 }
 
 const state: UiState = {
-  show: true
+  show: false
 };
 
 const getters: GetterTree<UiState, {}> = {

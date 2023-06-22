@@ -25,8 +25,6 @@ const getters: GetterTree<NetgraphState, {}> = {
 
 const mutations: MutationTree<NetgraphState> = {
   setData: (state, payload) => {
-    console.log('data payload', payload);
-
     if (!state.show) return;
 
     for (const [ k, v ] of Object.entries(payload)) {

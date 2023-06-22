@@ -18,6 +18,8 @@
     "@vue/cli-plugin-typescript": "~4.5.17",
     "@vue/cli-plugin-vuex": "~4.5.17",
     "@vue/cli-service": "~4.5.17",
+    "git-describe": "^4.1.1",
+    "git-revision-webpack-plugin": "^5.0.0",
     "html-webpack-inline-source-plugin": "^0.0.10",
     "typescript": "~4.1.5",
     "vue-template-compiler": "^2.6.11"
