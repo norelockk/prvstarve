@@ -25,7 +25,6 @@ import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
 export default Vue.extend({
-  name: 'Watermark',
   computed: {
     ...mapGetters({
       showing: 'ui/showing',
