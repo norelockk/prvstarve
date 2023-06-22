@@ -7,13 +7,14 @@ const handleUiKeyUp = (event: KeyboardEvent) => {
       switchConsoleVisibility();
       break;
     }
+    default: break;
   }
 };
 
 export const initUiHandles = (): void => {
-  window.addEventListener('keyup', handleUiKeyUp);
+  document.addEventListener('keyup', handleUiKeyUp);
 };
 
 export const destroyUiHandles = (): void => {
-  window.removeEventListener('keyup', handleUiKeyUp);
+  document.removeEventListener('keyup', handleUiKeyUp);
 };
