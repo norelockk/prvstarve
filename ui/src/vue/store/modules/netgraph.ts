@@ -32,6 +32,16 @@ const mutations: MutationTree<NetgraphState> = {
         if (state.data[k] !== v) state.data[k] = v;
       }
     }
+  },
+  switchVisibility: (state) => {
+    state.show = !state.show;
+
+    if (!state.show) {
+      // clear netgraph data
+      for (const [ k, v ] of Object.entries(state.data)) {
+        state.data[k] = 0;
+      }
+    }
   }
 };
 

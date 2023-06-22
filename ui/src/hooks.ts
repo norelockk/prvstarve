@@ -1,4 +1,5 @@
 import { updateFPS, updateNetworkBW as updateNetwork } from "./uiCalls";
+import { store } from "./vue";
 
 // network vars
 let net_sent: number = 0;
@@ -74,10 +75,17 @@ export const initNetworkHooks = (): void => {
   };
 };
 
-export const initGameHooks = () => {
+const updateImportantThings = (): void => {
+  // lolipop console update console state
+  if ('LOLIPOP_CONSOLE' in window) {
+    window['LOLIPOP_CONSOLE']['state'] = store.getters['console/showing'];
+  }
+};
+
+export const initGameHooks = (): void => {
   const calculateFPS = (): void => {
-    const currentTime = performance.now();
-    const deltaTime = currentTime - game_lastTime;
+    const currentTime: number = performance.now();
+    const deltaTime: number = currentTime - game_lastTime;
     
     game_frameCount++;
     
@@ -89,6 +97,7 @@ export const initGameHooks = () => {
       updateFPS(game_fps);
     }
     
+    updateImportantThings();
     requestAnimationFrame(calculateFPS);
   }
 

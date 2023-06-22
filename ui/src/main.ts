@@ -1,5 +1,6 @@
 import env from './env';
-import { Entrypoint } from './vue';
+import { pushConsoleMessage } from './uiCalls';
+import { Entrypoint, store } from './vue';
 
 declare global {
   interface Window {
@@ -7,6 +8,10 @@ declare global {
   }
 }
 
-window['LOLIPOP'] = env;
-
 Entrypoint.construct();
+
+window['LOLIPOP'] = env;
+window['LOLIPOP_CONSOLE'] = {
+  call: pushConsoleMessage,
+  state: store.getters['console/showing']
+};

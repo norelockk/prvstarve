@@ -1,10 +1,10 @@
 import { GetterTree, MutationTree, ActionTree } from 'vuex';
 
-type ConsoleMessageLevel = 'debug' | 'info' | 'warn' | 'error';
+export type ConsoleMessageLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface ConsoleMessage {
   level: ConsoleMessageLevel;
-  message: string;
+  message: any;
 }
 
 interface ConsoleState {
@@ -13,16 +13,8 @@ interface ConsoleState {
 }
 
 const state: ConsoleState = {
-  show: true,
-  messages: [
-    {
-      level: 'debug',
-      message: 'test'
-    },{
-      level: 'debug',
-      message: 'test'
-    },
-  ]
+  show: false,
+  messages: []
 };
 
 const getters: GetterTree<ConsoleState, {}> = {
@@ -31,7 +23,25 @@ const getters: GetterTree<ConsoleState, {}> = {
 };
 
 const mutations: MutationTree<ConsoleState> = {
-  
+  pushMessage(state, payload: ConsoleMessage) {
+    if (payload.message.length === 1)
+      payload.message = payload.message[0];
+    else {
+      const data: string = JSON.stringify(payload.message.splice(1, 1));
+      payload.message = payload.message[0] + ': ' + data;
+    }
+    
+    state.messages.push(payload);
+  },
+  switchVisibility(state) {
+    state.show = !state.show;
+
+    if (state.show) {
+      const input: HTMLElement = document.getElementById('c_input') ?? document.querySelector('#c_input') as HTMLElement;
+
+      if (input) input.focus();
+    }
+  }
 };
 
 const actions: ActionTree<ConsoleState, {}> = {

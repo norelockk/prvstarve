@@ -76,31 +76,73 @@
 }
 </style>
 
-<script lang="ts">
+<script lang='ts'>
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
+import { EXECUTE_CONSOLE_CVAR } from '@/consoleCVars';
+import { pushConsoleMessage } from '@/uiCalls';
+
+const levelColors: {
+  [key: string]: string
+} = {
+  info: '#0ea2c7',
+  warn: '#de6910',
+  debug: '#0b87e6',
+  error: '#e31025'
+};
 
 export default Vue.extend({
+  data: () => ({
+    C_input: ''
+  }),
+  methods: {
+    C_parseLevelColor(level: string) {
+      if (level in levelColors) {
+        const color: string = levelColors[level];
+
+        return { color };
+      }
+
+      return { color: '#ffffff' };
+    },
+    async C_executeCommand() {
+      // Transpile input to lowercase and remove unecessary more than 1 whitespace
+      const input: string = this.C_input.toLowerCase().trim();
+
+      if (input.length > 0) {
+        // Extract the arguments from input
+        const [commandName, ...args]: any[] = input.split(/ +/);
+
+        // Execute command
+        const command = await EXECUTE_CONSOLE_CVAR(commandName, ...args);
+        if (!command)
+          pushConsoleMessage('error', 'Unknown command');
+
+        // Clear input
+        this.C_input = '';
+      }
+    }
+  },
   computed: {
     ...mapGetters({
       showing: 'console/showing',
       messages: 'console/messages'
     })
   }
-})
+});
 </script>
 
 <template>
-  <div class='console' v-if='showing'>
-    <p>
-      <span v-for="(m, index) in messages" :key="index">
-        <span v-text='`[${m.level.toUpperCase()}] `'></span>
+  <div class='console' v-show='showing'>
+    <p id='c_content'>
+      <span v-for='(m, index) in messages' :key='index'>
+        <span :style="[C_parseLevelColor(m.level)]" v-text='`[${m.level.toUpperCase()}] `'></span>
         <span v-text='m.message'></span>
         <br />
       </span>
     </p>
 
-    <input type='text' />
+    <input id='c_input' type='text' v-model='C_input' v-on:keyup.enter='C_executeCommand' maxlength='500' />
     <div class='mark'>></div>
   </div>
 </template>

@@ -11,6 +11,7 @@ import Router from './router';
 
 import AppEntry from '@/templates/App.vue';
 import { initGameHooks, initNetworkHooks } from '@/hooks';
+import { destroyUiHandles, initUiHandles } from '@/uiHandles';
 
 const router = Router.construct();
 
@@ -31,8 +32,14 @@ export class Entrypoint extends Vue {
     });
 
     // initialize hooks
+    initUiHandles();
     initGameHooks();
     initNetworkHooks();
+
+    // on destroy
+    window.onbeforeunload = () => {
+      destroyUiHandles();
+    };
 
     // load ASAP as can
     this.load();
