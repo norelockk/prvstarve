@@ -9,6 +9,7 @@ declare global {
 }
 
 window['Framework'] = Entrypoint;
+
 window['LOLIPOP_DATA'] = env;
 window['LOLIPOP_CONSOLE'] = {
   call: pushConsoleMessage,
