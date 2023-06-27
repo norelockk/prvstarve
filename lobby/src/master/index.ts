@@ -32,7 +32,7 @@ export default class Master {
       const server = this.servers[index];
 
       if (server) {
-        const elapsed = current - server.updated >= 399909000;
+        const elapsed = current - server.updated >= 30000;
 
         if (elapsed) {
           this.logger.log('info', 'Server has been removed due to no state update', JSON.stringify(server.json));

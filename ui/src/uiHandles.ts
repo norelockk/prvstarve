@@ -1,6 +1,6 @@
 import { switchConsoleVisibility } from "./uiCalls";
 
-const handleUiKeyUp = (event: KeyboardEvent) => {
+const handleUikeyup = (event: KeyboardEvent) => {
   switch (event.keyCode) {
     case 119:
     case 192: {
@@ -12,9 +12,9 @@ const handleUiKeyUp = (event: KeyboardEvent) => {
 };
 
 export const initUiHandles = (): void => {
-  document.addEventListener('keyup', handleUiKeyUp);
+  document.addEventListener('keyup', handleUikeyup);
 };
 
 export const destroyUiHandles = (): void => {
-  document.removeEventListener('keyup', handleUiKeyUp);
+  document.removeEventListener('keyup', handleUikeyup);
 };

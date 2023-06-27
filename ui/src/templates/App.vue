@@ -6,6 +6,15 @@
   </div>
 </template>
 
+<style scoped>
+#new_ui {
+  width: 100vw;
+  height: 100vh;
+  display: inline-block;
+  z-index: 9999999;
+}
+</style>
+
 <script lang='ts'>
 import Vue from 'vue';
 

@@ -1,4 +1,5 @@
 import { GetterTree, MutationTree, ActionTree } from 'vuex';
+import Lolipop from './lolipop';
 
 export type ConsoleMessageLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -9,24 +10,35 @@ interface ConsoleMessage {
 
 interface ConsoleState {
   show: boolean;
+  history: string[],
   messages: ConsoleMessage[];
 }
 
 const state: ConsoleState = {
   show: false,
-  messages: []
+  history: [],
+  messages: [
+    {
+      level: 'debug',
+      message: `\nWelcome to ${Lolipop.state.PROJECT_NAME}\nVersion: ${Lolipop.state.PROJECT_VERSION.join('.') + '-' + Lolipop.state.PROJECT_VERSION_CHANNEL + ' (' + Lolipop.state.PROJECT_ENVIRONMENT + '-' + Lolipop.state.PROJECT_VERSION_HASH + ')'}`
+    }
+  ],
 };
 
 const getters: GetterTree<ConsoleState, {}> = {
   showing: state => state.show,
+  history: state => state.history,
   messages: state => state.messages,
 };
 
 const mutations: MutationTree<ConsoleState> = {
   pushMessage(state, payload: ConsoleMessage) {
-    if (payload.message.length === 1)
-      payload.message = payload.message[0];
-    else {
+    if (payload.message.length === 1) {
+      if (typeof payload.message[0] === 'string')
+        payload.message = payload.message[0];
+      else
+        payload.message = JSON.stringify(payload.message[0]);
+    } else {
       const data: string = JSON.stringify(payload.message.splice(1, 1));
       payload.message = payload.message[0] + ': ' + data;
     }
@@ -35,13 +47,15 @@ const mutations: MutationTree<ConsoleState> = {
   },
   switchVisibility(state) {
     state.show = !state.show;
+  },
+  pushCommandToHistory(state, command) {
+    if (typeof command !== 'string') return;
 
-    if (state.show) {
-      const input: HTMLElement = document.getElementById('c_input') ?? document.querySelector('#c_input') as HTMLElement;
-
-      if (input) input.focus();
-    }
-  }
+    state.history.push(command);
+  },
+  clear() {
+    if (state.messages.length > 0) state.messages = [];
+  },
 };
 
 const actions: ActionTree<ConsoleState, {}> = {

@@ -80,7 +80,7 @@
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
 import { EXECUTE_CONSOLE_CVAR } from '@/consoleCVars';
-import { pushConsoleMessage } from '@/uiCalls';
+import { pushConsoleMessage, pushCommandToHistory } from '@/uiCalls';
 
 const levelColors: {
   [key: string]: string
@@ -93,9 +93,48 @@ const levelColors: {
 
 export default Vue.extend({
   data: () => ({
-    C_input: ''
+    C_input: '',
+    C_historyIndex: 0,
   }),
+  watch: {
+    showing(n) {
+      const __this = this;
+      const input: HTMLInputElement = __this.$refs.C_input as HTMLInputElement;
+
+      if (n && !!input) {
+        __this.$nextTick(() => input.focus());
+      }
+    },
+    messages(n) {
+      const __this = this;
+      const content: HTMLElement = __this.$refs.C_content as HTMLElement;
+
+      if (n.length && content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }
+  },
   methods: {
+    // native fixes
+    __fixNativeInput(e: KeyboardEvent) {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        this.__fixNativeDelete();
+        return e.preventDefault();
+      }
+    },
+    __fixNativeDelete() {
+      const __this = this;
+
+      if (__this.C_input.length > 0) __this.C_input = __this.C_input.substring(0, __this.C_input.length - 1);
+    },
+    C_style() {
+      const __this = this;
+
+      return {
+        display: __this.showing ? 'inline-block' : 'none',
+        zIndex: 9999999
+      }
+    },
     C_parseLevelColor(level: string) {
       if (level in levelColors) {
         const color: string = levelColors[level];
@@ -106,8 +145,10 @@ export default Vue.extend({
       return { color: '#ffffff' };
     },
     async C_executeCommand() {
+      const __this = this;
+
       // Transpile input to lowercase and remove unecessary more than 1 whitespace
-      const input: string = this.C_input.toLowerCase().trim();
+      const input: string = __this.C_input.toLowerCase().trim();
 
       if (input.length > 0) {
         // Extract the arguments from input
@@ -117,32 +158,40 @@ export default Vue.extend({
         const command = await EXECUTE_CONSOLE_CVAR(commandName, ...args);
         if (!command)
           pushConsoleMessage('error', 'Unknown command');
+        else {
+          // Push command to history
+          pushCommandToHistory(`${commandName}${args.length > 0 ? ' ' + args.join(' ') : ''}`);
+        }
 
         // Clear input
-        this.C_input = '';
+        __this.C_input = '';
       }
-    }
+    },
+    // todo
+    // C_setInputHistory(event: KeyboardEvent) {      
+    // }
   },
   computed: {
     ...mapGetters({
       showing: 'console/showing',
-      messages: 'console/messages'
+      messages: 'console/messages',
+      cmdHistory: 'console/history'
     })
   }
 });
 </script>
 
 <template>
-  <div class='console' v-show='showing'>
-    <p id='c_content'>
+  <div class='console' :style='[C_style()]'>
+    <p ref='C_content'>
       <span v-for='(m, index) in messages' :key='index'>
-        <span :style="[C_parseLevelColor(m.level)]" v-text='`[${m.level.toUpperCase()}] `'></span>
+        <span :style='[C_parseLevelColor(m.level)]' v-text='`[${m.level.toUpperCase()}] `'></span>
         <span v-text='m.message'></span>
         <br />
       </span>
     </p>
 
-    <input id='c_input' type='text' v-model='C_input' v-on:keyup.enter='C_executeCommand' maxlength='500' />
+    <input ref='C_input' type='text' spellcheck='false' v-model='C_input' @keydown='__fixNativeInput($event)' v-on:keyup.enter='C_executeCommand' maxlength='500' />
     <div class='mark'>></div>
   </div>
 </template>

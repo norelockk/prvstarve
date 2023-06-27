@@ -1,19 +1,14 @@
-import { pushConsoleMessage, switchNetgraphVisibility } from "./uiCalls";
+import { pushConsoleMessage, switchNetgraphVisibility, clearConsole } from "./uiCalls";
 import { store } from "./vue";
 
 interface ConsoleCVar {
   name: string;
+  description?: string;
   args?: any[];
   callback: Function;
 }
 
 const AVAILABLE_CONSOLE_CVARS: ConsoleCVar[] = [
-  {
-    name: 'test',
-    callback: async (...commandArgs: any[]) => {
-      pushConsoleMessage('debug', 'this is a test command')
-    }
-  },
   {
     name: 'netgraph',
     callback: async (...commandArgs: any[]) => {
@@ -21,7 +16,39 @@ const AVAILABLE_CONSOLE_CVARS: ConsoleCVar[] = [
 
       const state: string = store.getters['netgraph/showing'] ? 'enabled' : 'disabled';
       pushConsoleMessage('info', `Netgraph has been ${state}`);
-    }
+    },
+    description: 'Shows the netgraph',
+  },
+  {
+    name: 'clear',
+    callback: async (...commandArgs: any[]) => {
+      return clearConsole();
+    },
+    description: 'Clears the console',
+  },
+  // {
+  //   name: 'test',
+  //   callback: async(...commandArgs: any[]) => {
+  //     for (let index = 0; index < 999; index++) {
+  //       setTimeout(() => pushConsoleMessage('debug', 'test ' + index), index * 100);
+  //     }
+  //   }
+  // }
+  {
+    name: 'help',
+    callback: async (...commandArgs: any[]) => {
+      pushConsoleMessage('info', '===============================================================');
+      pushConsoleMessage('info', `List of available commands (${AVAILABLE_CONSOLE_CVARS.length}):`);
+
+      for (let index = 0; index < AVAILABLE_CONSOLE_CVARS.length; index++) {
+        const command = AVAILABLE_CONSOLE_CVARS[index];
+
+        if (command) pushConsoleMessage('info', `${command.name}${typeof command.description === 'string' && command.description.length > 0 ? ' - ' + command.description : ''}`)
+      }
+
+      pushConsoleMessage('info', '===============================================================');
+    },
+    description: 'This shown command'
   }
 ];
 

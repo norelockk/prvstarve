@@ -1,16 +1,18 @@
 import { hrtimeMs } from './Utils';
 import { TICK_DELTA, TICK_LENGTH_MS } from '../../shared/const';
+import { UpdateUnits } from './network/packets/bin/Units';
 
 import World from './managers/World';
 import Logger from './Logger';
-import ClientManager from './managers/Client';
-import { UpdateUnits } from './network/packets/bin/Units';
 import Entity from './entities/Entity';
 import Client from './network/Client';
-import Leaderboard from './network/packets/bin/Leaderboard';
 import Player from './entities/Player';
+import Leaderboard from './network/packets/bin/Leaderboard';
+import LobbyManager from './managers/Lobby';
+import ClientManager from './managers/Client';
 
 export default class GameServer {
+  private lobby: LobbyManager = new LobbyManager(this);
   private logger: Logger = new Logger('GameServer');
 
   private delta: number = TICK_DELTA;

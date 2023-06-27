@@ -9,3 +9,8 @@ export function humanizeNetworkBandwidth(bandwidth: number): string {
 
   return `${bandwidth.toFixed(2)} ${units[index]}`;
 }
+
+export function isTextSelected(input: HTMLInputElement): boolean {
+  // @ts-ignore
+  return document.getSelection().toString() === input.value;
+}

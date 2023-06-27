@@ -1,4 +1,10 @@
-export const hrtimeMs = () => {
+import axios from 'axios';
+
+export const getIp = async (): Promise<string> => {
+  return (await axios.get('https://api.ipify.org'))?.data as string;
+};
+
+export const hrtimeMs = (): number => {
   const time = process.hrtime();
   return time[0] * 1000 + time[1] / 1000000;
 };
