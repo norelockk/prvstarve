@@ -27,3 +27,46 @@ export const sliceToBytes = (x: number, size: number = 2): number[] => {
 
   return array;
 };
+
+export const collision = (p1x: number, p1y: number, r1: number, p2x: number, p2y: number, r2: number): boolean => {
+  const totalRadius: number = r1 + r2;
+  const x: number = p1x - p2x;
+  const y: number = p1y - p2y;
+
+  return totalRadius > Math.sqrt((x * x) + (y * y));
+};
+
+export class Timer {
+  public active: boolean = false;
+  public elapsed: number = 0;
+  public duration: number = 0;
+
+  start(): void {
+    this.active = true;
+  }
+
+  stop(): void {
+    this.active = false;
+  }
+
+  reset(): void {
+    this.elapsed = 0;
+  }
+
+  setDuration(duration: number): void {
+    this.stop();
+    this.duration = duration;
+    this.reset();
+  }
+
+  update(delta: number): void {
+    if (this.active) {
+      this.elapsed += delta;
+
+      if (this.elapsed >= this.duration) {
+        this.stop();
+        this.reset();
+      }
+    }
+  }
+}

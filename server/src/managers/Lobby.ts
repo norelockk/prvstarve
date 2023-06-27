@@ -84,5 +84,7 @@ export default class LobbyManager extends WebSocket {
     const secret: string = process.env.LOBBY_SOCKET_SECRET as string;
 
     this.send(JSON.stringify([0, secret]));
+
+    this._logger.log('info', 'Lobby connection open, verifying');
   }
 }

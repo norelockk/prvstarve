@@ -12,7 +12,7 @@ export default class Entity {
   public extra: number = 0;
   public type: number = EntityType.PLAYERS;
   public info: number = 7;
-  
+
   // private properties
   private gameServer: GameServer;
 
