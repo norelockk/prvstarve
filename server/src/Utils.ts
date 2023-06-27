@@ -37,11 +37,13 @@ export const collision = (p1x: number, p1y: number, r1: number, p2x: number, p2y
 };
 
 export class Timer {
+  public loop: boolean = false;
   public active: boolean = false;
   public elapsed: number = 0;
   public duration: number = 0;
 
-  start(): void {
+  start(loop: boolean = false): void {
+    this.loop = loop;
     this.active = true;
   }
 
@@ -64,7 +66,9 @@ export class Timer {
       this.elapsed += delta;
 
       if (this.elapsed >= this.duration) {
-        this.stop();
+        if (!this.loop)
+          this.stop();
+
         this.reset();
       }
     }
