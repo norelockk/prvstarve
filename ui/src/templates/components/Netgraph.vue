@@ -2,7 +2,7 @@
 .netgraph {
   font-weight: 500;
   color: #fff;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 1);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 1);
   font-size: 12px;
   position: absolute;
   bottom: 25px;
@@ -23,7 +23,9 @@ export default Vue.extend({
     KEYS_TRANSLATION: {
       frames: 'FPS',
       networkIn: 'Network receive',
-      networkOut: 'Network sent'
+      networkOut: 'Network sent',
+      playerPosX: 'Player position X',
+      playerPosY: 'Player position Y'
     } as {
       [key: string]: any
     }

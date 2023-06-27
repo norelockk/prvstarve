@@ -1,7 +1,7 @@
-import { CURRENT_GAMEMODE, MAX_GAME_ENTITIES, MAX_GAME_PLAYERS } from "../../../../../shared/const";
+import { CURRENT_GAMEMODE, MAX_GAME_ENTITIES, MAX_GAME_PLAYERS } from "../../../../shared/const";
 import Player from "../../../entities/Player";
 import JSONPacket from "../JSONPacket";
-import { JsonPacket } from "../../../../../shared/enums";
+import { JsonPacket } from "../../../../shared/enums";
 
 export class HandshakeResponse implements JSONPacket {
   private player: Player;

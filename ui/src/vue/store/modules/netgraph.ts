@@ -14,7 +14,9 @@ const state: NetgraphState = {
   data: {
     frames: 0,
     networkIn: 0,
-    networkOut: 0
+    networkOut: 0,
+    playerPosX: 0,
+    playerPosY: 0
   }
 };
 

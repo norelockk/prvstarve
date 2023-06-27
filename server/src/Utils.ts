@@ -1,15 +1,14 @@
 import axios from 'axios';
 
-export const getIp = async (): Promise<string> => {
-  return (await axios.get('https://api.ipify.org'))?.data as string;
-};
+export const getIp = async (): Promise<string> => (await axios.get('https://api.ipify.org'))?.data as string;
 
 export const hrtimeMs = (): number => {
   const time = process.hrtime();
+
   return time[0] * 1000 + time[1] / 1000000;
 };
 
-export function restore_number(num: number): number {
+export const restore_number = (num: number): number => {
   if (num < 10000)
     return num;
   else if (num >= 10000 && num < 1000000)
@@ -18,14 +17,13 @@ export function restore_number(num: number): number {
     return num / 1000 + 20000;
   else
     return 0;
-}
+};
 
-export function sliceToBytes(x: number, size: number = 2): number[] {
+export const sliceToBytes = (x: number, size: number = 2): number[] => {
   let array = new Array<number>(size);
 
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < size; i++)
     array[i] = x / Math.pow(256, i);
-  }
 
   return array;
 };

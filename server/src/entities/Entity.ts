@@ -5,13 +5,13 @@ import { Direction, EntityState, EntityType } from '../../shared/enums';
 export default class Entity {
   // data
   public id: number = -1;
-  public position: Vector2 = new Vector2(~~(Math.random() * 1500), ~~(Math.random() * 1500));
+  public position: Vector2 = new Vector2(100, 100);
   public action: number = EntityState.IDLE;
   public speed: number = 200;
   public angle: number = 0;
   public extra: number = 0;
   public type: number = EntityType.PLAYERS;
-  public info: number = 0;
+  public info: number = 7;
   
   // private properties
   private gameServer: GameServer;

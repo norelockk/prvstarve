@@ -8,9 +8,8 @@ declare global {
   }
 }
 
-Entrypoint.construct();
-
-window['LOLIPOP'] = env;
+window['Framework'] = Entrypoint;
+window['LOLIPOP_DATA'] = env;
 window['LOLIPOP_CONSOLE'] = {
   call: pushConsoleMessage,
   state: store.getters['console/showing']

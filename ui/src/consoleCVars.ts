@@ -22,18 +22,10 @@ const AVAILABLE_CONSOLE_CVARS: ConsoleCVar[] = [
   {
     name: 'clear',
     callback: async (...commandArgs: any[]) => {
-      return clearConsole();
+      clearConsole();
     },
     description: 'Clears the console',
   },
-  // {
-  //   name: 'test',
-  //   callback: async(...commandArgs: any[]) => {
-  //     for (let index = 0; index < 999; index++) {
-  //       setTimeout(() => pushConsoleMessage('debug', 'test ' + index), index * 100);
-  //     }
-  //   }
-  // }
   {
     name: 'help',
     callback: async (...commandArgs: any[]) => {

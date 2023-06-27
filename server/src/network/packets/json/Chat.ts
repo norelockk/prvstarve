@@ -1,6 +1,6 @@
 import JsonPacket from "../JSONPacket";
 import Player from "../../../entities/Player";
-import { JsonPacket as JsPacket } from "../../../../../shared/enums";
+import { JsonPacket as JsPacket } from "../../../../shared/enums";
 
 export default class Chat implements JsonPacket {
   private player: Player;

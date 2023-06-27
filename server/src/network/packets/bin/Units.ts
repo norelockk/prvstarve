@@ -1,7 +1,7 @@
 import GameServer from "../../../GameServer";
 import BinaryPacket from "../BinaryPacket";
-import { BinaryWriter } from "../../../../../shared/libs/binary";
-import { BinaryPacket as BinPacket } from "../../../../../shared/enums";
+import { BinaryWriter } from "../../../../shared/libs/binary";
+import { BinaryPacket as BinPacket } from "../../../../shared/enums";
 import Entity from "../../../entities/Entity";
 import Player from "../../../entities/Player";
 

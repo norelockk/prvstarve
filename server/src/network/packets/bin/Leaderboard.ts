@@ -1,6 +1,6 @@
 import BinaryPacket from "../BinaryPacket";
-import { BinaryWriter } from "../../../../../shared/libs/binary";
-import { BinaryPacket as BinPacket } from "../../../../../shared/enums";
+import { BinaryWriter } from "../../../../shared/libs/binary";
+import { BinaryPacket as BinPacket } from "../../../../shared/enums";
 import Player from "../../../entities/Player";
 
 export default class Leaderboard implements BinaryPacket {

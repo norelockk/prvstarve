@@ -1,4 +1,5 @@
-import { updateFPS, updateNetworkBW as updateNetwork } from "./uiCalls";
+// @ts-nocheck
+import { updateFPS, updateNetworkBW as updateNetwork, updatePlayerPos } from "./uiCalls";
 import { store } from "./vue";
 
 // network vars
@@ -18,7 +19,7 @@ const updateNetworkBandwidth = (cleanAfter: boolean = false) => {
     net_sent = 0;
     net_received = 0;
   }
-}
+};
 
 export const initNetworkHooks = (): void => {
   const LoliSocket = new Proxy(window.WebSocket, {
@@ -75,20 +76,13 @@ export const initNetworkHooks = (): void => {
   };
 };
 
-const updateImportantThings = (): void => {
-  // lolipop console update console state
-  if ('LOLIPOP_CONSOLE' in window) {
-    window['LOLIPOP_CONSOLE']['state'] = store.getters['console/showing'];
-  }
-};
-
 export const initGameHooks = (): void => {
   const calculateFPS = (): void => {
     const currentTime: number = performance.now();
     const deltaTime: number = currentTime - game_lastTime;
-    
+
     game_frameCount++;
-    
+
     if (deltaTime >= 1000) {
       game_fps = game_frameCount;
       game_lastTime = currentTime;
@@ -96,10 +90,34 @@ export const initGameHooks = (): void => {
 
       updateFPS(game_fps);
     }
-    
-    updateImportantThings();
-    requestAnimationFrame(calculateFPS);
+  };
+
+  const updateImportantThings = (): void => {
+    // lolipop console update console state
+    window['LOLIPOP_CONSOLE']['state'] = store.getters['console/showing'];
+  };
+
+  const updateGameInfo = (): void => {
+    if (world.units && world.units.length > 0) {
+      const players: any[] = world.units[ITEMS.PLAYERS];
+
+      for (let index = 0; index < players.length; index++) {
+        const player: any = players[index];
+
+        if (player && player.pid === user.id) {
+          updatePlayerPos(~~player.x, ~~player.y);
+        }
+      }
+    }
   }
 
-  requestAnimationFrame(calculateFPS);
+  const loop = (): void => {
+    calculateFPS();
+    updateGameInfo();
+    updateImportantThings();
+    
+    requestAnimationFrame(loop);
+  };
+
+  requestAnimationFrame(loop);
 };
