@@ -58,6 +58,11 @@ export default class Entity {
 
       this.position.x = this.position.x + dx * delta;
       this.position.y = this.position.y + dy * delta;
+
+      // FIX #1 - map border crash
+      // FIX info: Thanks to our lord Xmre! <3
+      this.position.x = Math.min(Math.max(this.position.x, 0), (154) * 100 - 1);
+      this.position.y = Math.min(Math.max(this.position.y, 0), (154) * 100 - 1);
     }
   }
 }
