@@ -1,5 +1,5 @@
 import { hrtimeMs } from './Utils';
-import { TICK_DELTA, TICK_LENGTH_MS } from '../../shared/const';
+import { TICK_DELTA, TICK_LENGTH_MS } from '../shared/const';
 import { UpdateUnits } from './network/packets/bin/Units';
 
 import World from './managers/World';

@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 import GameServer from '../GameServer';
 import Logger from '../Logger';
 import { getIp } from '../Utils';
-import { MAX_GAME_PLAYERS } from '../../../shared/const';
+import { MAX_GAME_PLAYERS } from '../../shared/const';
 
 export default class LobbyManager extends WebSocket {
   private _logger: Logger = new Logger(LobbyManager.name);

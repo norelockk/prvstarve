@@ -4,7 +4,7 @@ import msgpack from 'msgpack-lite';
 import Player from '../entities/Player';
 import GameServer from '../GameServer';
 import Logger from '../Logger';
-import { DEBUG_CLIENT } from '../../../shared/const';
+import { DEBUG_CLIENT } from '../../shared/const';
 import { HandshakeResponse } from './packets/json/Handshake';
 import NewPlayer from './packets/json/NewPlayer';
 import Chat from './packets/json/Chat';

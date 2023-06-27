@@ -1,5 +1,5 @@
 import GameServer from "../GameServer";
-import PoolManager from "../../../shared/libs/pool";
+import PoolManager from "../../shared/libs/pool";
 import Entity from "../entities/Entity";
 
 export default class World {

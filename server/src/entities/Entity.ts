@@ -1,6 +1,6 @@
 import GameServer from '../GameServer';
-import { Vector2 } from '../../../shared/libs/vector';
-import { Direction, EntityState, EntityType } from '../../../shared/enums';
+import { Vector2 } from '../../shared/libs/vector';
+import { Direction, EntityState, EntityType } from '../../shared/enums';
 
 export default class Entity {
   // data
