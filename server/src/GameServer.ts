@@ -10,6 +10,7 @@ import Player from './entities/Player';
 import Leaderboard from './network/packets/bin/Leaderboard';
 import LobbyManager from './managers/Lobby';
 import ClientManager from './managers/Client';
+import { EntityState } from '../shared/enums';
 
 export default class GameServer {
   private lobby: LobbyManager = new LobbyManager(this);
@@ -85,7 +86,14 @@ export default class GameServer {
     for (let index = 0; index < this.clients.clients.length; index++) {
       const client: Client = this.clients.clients[index];
 
-      if (client) client.sendBinary(pck.build());
+      if (client) {
+        client.sendBinary(pck.build());
+
+        if (client.entity) {
+          client.entity.action = EntityState.NONE;
+          
+        }
+      }
     }
   }
 }

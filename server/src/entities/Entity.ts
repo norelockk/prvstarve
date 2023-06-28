@@ -6,7 +6,7 @@ export default class Entity {
   // data
   public id: number = -1;
   public position: Vector2 = new Vector2(100, 100);
-  public action: number = EntityState.IDLE;
+  public action: number = EntityState.NONE;
   public speed: number = 200;
   public angle: number = 0;
   public extra: number = 0;

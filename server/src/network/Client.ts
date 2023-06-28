@@ -138,6 +138,18 @@ export default class Client {
 
         break;
       }
+      case 4: {
+        if (this.entity)
+          this.entity.attack();
+        
+        break;
+      }
+      case 14: {
+        if (this.entity)
+          this.entity.stopAttack();
+
+        break;
+      }
       case 11: {
         console.log('focus pls');
         break;

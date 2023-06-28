@@ -1,6 +1,8 @@
 import GameServer from "../GameServer";
 import PoolManager from "../../shared/libs/pool";
 import Entity from "../entities/Entity";
+import { collision } from "../Utils";
+import { EntityState } from "../../shared/enums";
 
 export default class World {
   private gameServer: GameServer;
@@ -11,7 +13,7 @@ export default class World {
   }
 
   update(delta: number): void {
-    for (let entity of this.entities.array) {
+    for (const entity of this.entities.array) {
       entity.update(delta);
     }
   }
