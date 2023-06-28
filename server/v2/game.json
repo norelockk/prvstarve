@@ -4,6 +4,7 @@
   },
   "SERVER": {
     "NAME": "Sandbox",
+    "PORT": 8888,
     "TICKS": 10,
     "MAX_PLAYERS": 100
   }

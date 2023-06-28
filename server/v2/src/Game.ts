@@ -1,19 +1,13 @@
 import ConfigReader from "./ConfigReader";
 import Logger from "./Logger";
 import { hrtimeMs } from "./Utils";
-import { LogLevel } from "./types";
-
-// Load game config
-const config: ConfigReader = new ConfigReader("./game.json");
-
-// Calculate tick rate
-const TICK_RATE: number = config.get("SERVER")?.TICKS as number;
-const TICK_LENGTH_MS: number = 1000 / TICK_RATE;
-const TICK_DELTA: number = TICK_LENGTH_MS / 1000;
 
 export default class Game {
   // Logging system
   private logger: Logger = new Logger(Game.name);
+
+  // Configuration
+  private config: ConfigReader;
 
   // Ticks system
   /**
@@ -21,7 +15,28 @@ export default class Game {
    * @type {number}
    * @memberof Game
    */
-  private DELTA: number = TICK_DELTA;
+  private DELTA: number = 0;
+
+  /**
+   * @private TICK_RATE
+   * @type {number}
+   * @memberof Game
+   */
+  private TICK_RATE: number = 0;
+
+  /**
+   * @private TICK_DELTA
+   * @type {number}
+   * @memberof Game
+   */
+  private TICK_DELTA: number = 0;
+
+  /**
+   * @private TICK_LENGTH_MS
+   * @type {number}
+   * @memberof Game
+   */
+  private TICK_LENGTH_MS: number = 0;
 
   /**
    * @public CURRENT_TICK
@@ -45,11 +60,19 @@ export default class Game {
    * @memberof Game
    * @description Creating new game instance faster
    */
-  public static construct(): Game {
-    return new Game();
+  public static construct(config: ConfigReader): Game {
+    return new Game(config);
   }
 
-  constructor() {
+  constructor(config: ConfigReader) {
+    // Load config into class
+    this.config = config;
+
+    // Set proper tick rate
+    this.TICK_RATE = this.config.get('SERVER')?.TICKS ?? 10;
+    this.TICK_LENGTH_MS = 1000 / this.TICK_RATE;
+    this.TICK_DELTA = this.TICK_LENGTH_MS / 1000;
+
     // Start ticking
     this._tick();
 
@@ -64,7 +87,7 @@ export default class Game {
   private _tick(): void {
     const now: number = hrtimeMs();
 
-    if (this.PREVIOUS_TICK + TICK_LENGTH_MS <= now) {
+    if (this.PREVIOUS_TICK + this.TICK_LENGTH_MS <= now) {
       this.DELTA = (now - this.PREVIOUS_TICK) / 1000;
 
       this.PREVIOUS_TICK = now;
@@ -73,19 +96,18 @@ export default class Game {
       this.update(this.DELTA);
     }
 
-    if (hrtimeMs() - this.PREVIOUS_TICK < TICK_LENGTH_MS - 16) {
+    if (hrtimeMs() - this.PREVIOUS_TICK < this.TICK_LENGTH_MS - 16)
       setTimeout(() => this._tick());
-    } else {
+    else
       setImmediate(() => this._tick());
-    }
   }
 
   /**
    * @function update
-   * @description Updates the game server
-   * @param {number} DELTA
+   * @description Updates the game server state based on the current tick value
+   * @param {number} delta
    */
-  private update(DELTA: number): void {
+  private update(delta: number): void {
 
   }
 }
