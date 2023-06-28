@@ -13,7 +13,7 @@ export class BinaryWriter {
   buffer = new Uint8Array(this._buffer);
   ptr = 0;
 
-  bytes() {
+  get bytes() {
     return new Uint8Array(this._buffer, 0, this.ptr).slice();
   }
 
@@ -22,7 +22,7 @@ export class BinaryWriter {
     return this;
   }
 
-  size() {
+  get size() {
     return this.ptr;
   }
 
@@ -98,7 +98,7 @@ export class BinaryReader {
     this.rU8 = new Uint8Array(ab);
   }
 
-  hasMoreData(): boolean {
+  get hasMoreData(): boolean {
     return this.rPtr < this.rU8.byteLength;
   }
 
