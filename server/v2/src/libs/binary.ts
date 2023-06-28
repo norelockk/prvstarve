@@ -87,7 +87,6 @@ export class BinaryWriter {
   }
 }
 
-
 // READING PACKETS
 export class BinaryReader {
   rU8!: Uint8Array;

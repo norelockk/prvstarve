@@ -1,0 +1,10 @@
+{
+  "CLIENT": {
+    "REQUIRED_VERSION": [2, 0, 0]
+  },
+  "SERVER": {
+    "NAME": "Sandbox",
+    "TICKS": 10,
+    "MAX_PLAYERS": 100
+  }
+}
