@@ -13,7 +13,7 @@ import ClientManager from './managers/Client';
 import { EntityState } from '../shared/enums';
 
 export default class GameServer {
-  private lobby: LobbyManager = new LobbyManager(this);
+  // private lobby: LobbyManager = new LobbyManager(this);
   private logger: Logger = new Logger('GameServer');
 
   private delta: number = TICK_DELTA;
@@ -86,13 +86,14 @@ export default class GameServer {
     for (let index = 0; index < this.clients.clients.length; index++) {
       const client: Client = this.clients.clients[index];
 
-      if (client) {
-        client.sendBinary(pck.build());
+      client.sendBinary(pck.build());
+    }
 
-        if (client.entity) {
-          client.entity.action = EntityState.NONE;
-          
-        }
+    for(let i = 0; i < this.clients.clients.length; i++) {
+      const nonPossibleScriptToMake: Client = this.clients.clients[i];
+
+      if(nonPossibleScriptToMake && nonPossibleScriptToMake.entity) {
+        nonPossibleScriptToMake.entity.createActionUpdate();
       }
     }
   }

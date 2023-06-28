@@ -24,7 +24,9 @@ export default class Player extends Entity {
 
     this.nickname = `unnamed#${this.client.clientId}`;
   }
-
+  public createActionUpdate () {
+    this.action = 0;
+  }
   public update(delta: number): void {
     super.update(delta);
 

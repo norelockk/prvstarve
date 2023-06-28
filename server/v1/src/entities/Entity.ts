@@ -23,6 +23,7 @@ export default class Entity {
     this.gameServer = gameServer;
   }
 
+  
   public updateAction(newAction: EntityState): void {
     if (!(this.action & newAction)) {
       this.action -= this.action;
