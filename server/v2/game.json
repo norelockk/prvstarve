@@ -3,9 +3,16 @@
     "REQUIRED_VERSION": [2, 0, 0]
   },
   "SERVER": {
-    "NAME": "Sandbox",
+    "NAME": "Development Server",
     "PORT": 8888,
     "TICKS": 10,
-    "MAX_PLAYERS": 100
+    "MAX_PLAYERS": 100,
+    "GAMEMODE": "LEGACY"
+  },
+  "GAMEPLAY": {
+    "MAP": {
+      "WIDTH": 154,
+      "HEIGHT": 154
+    }
   }
 }

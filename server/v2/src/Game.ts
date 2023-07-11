@@ -1,65 +1,32 @@
+/**
+ * @license private
+ * @date 4 July 2023
+ * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
+ */
+
 import ConfigReader from "./ConfigReader";
 import Logger from "./Logger";
+import WorldHandler from "./handlers/WorldHandler";
 import { hrtimeMs } from "./Utils";
+import { network } from ".";
 
 export default class Game {
   // Logging system
   private logger: Logger = new Logger(Game.name);
 
   // Configuration
-  private config: ConfigReader;
+  public config: ConfigReader;
+
+  // World & clients
+  public world: WorldHandler;
 
   // Ticks system
-  /**
-   * @private DELTA
-   * @type {number}
-   * @memberof Game
-   */
   private DELTA: number = 0;
-
-  /**
-   * @private TICK_RATE
-   * @type {number}
-   * @memberof Game
-   */
   private TICK_RATE: number = 0;
-
-  /**
-   * @private TICK_DELTA
-   * @type {number}
-   * @memberof Game
-   */
-  private TICK_DELTA: number = 0;
-
-  /**
-   * @private TICK_LENGTH_MS
-   * @type {number}
-   * @memberof Game
-   */
   private TICK_LENGTH_MS: number = 0;
-
-  /**
-   * @public CURRENT_TICK
-   * @type {number}
-   * @memberof Game
-   * @description Current ticks
-   */
   public CURRENT_TICK: number = 0;
-
-  /**
-   * @private PREVIOUS_TICK
-   * @type {number}
-   * @memberof Game
-   */
   private PREVIOUS_TICK: number = hrtimeMs();
 
-  // Static methods
-  /**
-   * @static construct
-   * @type {Game}
-   * @memberof Game
-   * @description Creating new game instance faster
-   */
   public static construct(config: ConfigReader): Game {
     return new Game(config);
   }
@@ -68,10 +35,19 @@ export default class Game {
     // Load config into class
     this.config = config;
 
+    // Setup world
+    this.world = new WorldHandler(this);
+  }
+
+  /**
+   * @function initialize
+   * @description Initializes the game instance
+   */
+  public initialize(): void {
     // Set proper tick rate
     this.TICK_RATE = this.config.get('SERVER')?.TICKS ?? 10;
     this.TICK_LENGTH_MS = 1000 / this.TICK_RATE;
-    this.TICK_DELTA = this.TICK_LENGTH_MS / 1000;
+    // this.TICK_DELTA = this.TICK_LENGTH_MS / 1000;
 
     // Start ticking
     this._tick();
@@ -108,6 +84,7 @@ export default class Game {
    * @param {number} delta
    */
   private update(delta: number): void {
-
+    network.update(delta, this.CURRENT_TICK);
+    this.world.update(delta);
   }
 }

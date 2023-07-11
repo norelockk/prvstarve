@@ -14,7 +14,7 @@ export default class Player extends Entity {
   public attacking: boolean = false;
 
   private attackElapsed: number = 0;
-  private attackDuration: number = 0.10;
+  private attackDuration: number = 0.13;
 
   constructor(gameServer: GameServer, client: Client) {
     super(gameServer);

@@ -1,3 +1,9 @@
+/**
+ * @license private
+ * @date 4 July 2023
+ * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
+ */
+
 import fs from 'fs';
 
 export default class ConfigReader {

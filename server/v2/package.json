@@ -16,7 +16,11 @@
     "uWebSockets.js": "uNetworking/uWebSockets.js#v20.27.0"
   },
   "dependencies": {
+    "@types/msgpack-lite": "^0.1.8",
+    "@types/ws": "^8.5.5",
+    "axios": "^1.4.0",
     "dotenv": "^16.3.1",
-    "msgpack-lite": "^0.1.26"
+    "msgpack-lite": "^0.1.26",
+    "ws": "^8.13.0"
   }
 }

@@ -1,3 +1,9 @@
+/**
+ * @license private
+ * @date 4 July 2023
+ * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
+ */
+
 import Game from "./Game";
 import NetworkServer from "./networking";
 import ConfigReader from "./ConfigReader";
@@ -6,7 +12,8 @@ import ConfigReader from "./ConfigReader";
 const config: ConfigReader = new ConfigReader('./game.json');
 
 // Game class
-const game: Game = Game.construct(config);
+export const game: Game = Game.construct(config);
+game.initialize();
 
 // Socket handling class
-const network: NetworkServer = NetworkServer.construct(config, game);
+export const network: NetworkServer = NetworkServer.construct(game);

@@ -13,7 +13,7 @@ import ClientManager from './managers/Client';
 import { EntityState } from '../shared/enums';
 
 export default class GameServer {
-  // private lobby: LobbyManager = new LobbyManager(this);
+  private lobby: LobbyManager = new LobbyManager(this);
   private logger: Logger = new Logger('GameServer');
 
   private delta: number = TICK_DELTA;

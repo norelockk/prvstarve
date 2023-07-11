@@ -1,3 +1,9 @@
+/**
+ * @license private
+ * @date 4 July 2023
+ * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
+ */
+
 const _F32_ = new Float32Array(1);
 const _U8_ = new Uint8Array(_F32_.buffer);
 

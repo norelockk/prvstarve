@@ -1,3 +1,9 @@
+/**
+ * @license private
+ * @date 4 July 2023
+ * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
+ */
+
 import { inspect } from 'util';
 import { createWriteStream, WriteStream, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
@@ -9,9 +15,8 @@ export default class Logger {
 
   constructor(private readonly moduleName: string) {
     const logsDir = resolve(__dirname, '../logs');
-    if (!existsSync(logsDir)) {
-      mkdirSync(logsDir);
-    }
+    if (!existsSync(logsDir)) mkdirSync(logsDir);
+    
     const logPath = resolve(logsDir, `${this.moduleName}.log`);
     this.consoleStream = process.stdout as any;
     this.fileStream = createWriteStream(logPath, { flags: 'a' });
@@ -25,7 +30,7 @@ export default class Logger {
       const [, filePath, lineNumber, columnNumber] = callerFrame.match(/at\s.+?\s\((.+):(\d+):(\d+)\)/) || [];
       if (filePath && lineNumber && columnNumber) {
         const formattedData = data ? inspect(data, { colors: true, depth: 3 }) : '';
-        const logMessage = `${new Date().toISOString()} [${level.toUpperCase()}] ${message} ${formattedData}`;
+        const logMessage = `${new Date().toISOString()} [${level.toUpperCase()}] [${this.moduleName}] ${message} ${formattedData}`;
         this.consoleStream.write(`${logMessage}\n`);
         this.fileStream.write(`${logMessage}\n`);
       } else {

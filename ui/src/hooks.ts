@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { updateFPS, updateNetworkBW as updateNetwork, updatePlayerPos } from "./uiCalls";
 import { store } from "./vue";
+import { xorEncrypt } from "./utils";
 
 // network vars
 let net_sent: number = 0;
@@ -71,6 +72,15 @@ export const initNetworkHooks = (): void => {
         net_sent += ui8.length;
       }
     }
+
+    // let encrypted;
+    // if ('msgpack' in window) {
+    //   try {
+    //     encrypted = msgpack.encode(xorEncrypt(data));
+    //   } catch (e) {
+    //     throw null;
+    //   }
+    // } else encrypted = xorEncrypt(data);
 
     return wsSend.apply(this, [data]);
   };
