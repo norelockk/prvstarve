@@ -26,8 +26,26 @@
   const _ppD = "P";
   const _uD = "_";
 
+  const fR = 'r';
+  const fS = 's';
+  const fW = 'w';
+  const fM = 'm';
+  const fA = 'a';
+  const fV = 'v';
+  const fI = 'i';
+  const fT = 't';
+  const fH = 'h';
+  const fC = 'c';
+  const fG = 'g';
+  const fE = 'e';
+  const fD = 'd';
+  const fO = 'o';
+  
+  const emitFullWord = fE + fM + fI + fT;
   const encodeFullWord = _eC + _nC + _cC + _oC + _dC + _eeC;
   const msgpackFullWord = _mA + _sA + _gA + _pA + _aA + _cA + _kA;
+  const restarveFullWord = fR + fE + fS + fT + fA + fR + fV + fE;
+  const watchdogFullWord = fW + fA + fT + fC + fH + fD + fO + fG;
   const lolipopDataFullWord = _lD + _oD + _llD + _iD + _pD + _ooD + _ppD + _uD + _dD + _aD + _tD + _aAD;
 
   //----------------------------------------------------------------
@@ -160,9 +178,26 @@
       for (const [ key, value ] of Object.entries(CHECKS)) {
         if (key in window[lolipopDataFullWord])  {
           const original = window[lolipopDataFullWord][key];
-          const vaild = !!(typeof original === typeof value && original === value);  
+          console.log('original', original);
+          console.log('supposed', CHECKS[key]);
 
-          if (!vaild) throw 'framework verification error';
+          const vaild = typeof original === typeof value && original === value;  
+
+          // If the original data isn't vaild
+          // report to watchdog and let'em cook what he wants
+          if (!vaild) {
+            if (restarveFullWord in window) {
+              const report = {
+                vp: vaild,
+                sz: '',
+                ld: window[lolipopDataFullWord],
+              };
+
+              window[restarveFullWord][emitFullWord](watchdogFullWord, report);
+            }
+            
+            throw 'framework verification error';
+          }
         }
       }
     }

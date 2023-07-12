@@ -10,8 +10,8 @@ import Store from './store';
 import Router from './router';
 
 import AppEntry from '@/templates/App.vue';
-import { initGameHooks, initNetworkHooks } from '@/hooks';
 import { destroyUiHandles, initUiHandles } from '@/uiHandles';
+import { setupEmitter } from '@/uiCalls';
 
 const router = Router.construct();
 
@@ -31,15 +31,11 @@ export class Entrypoint extends Vue {
       render: c => c(AppEntry)
     });
 
-    // initialize hooks
+    setupEmitter();
     initUiHandles();
-    initGameHooks();
-    initNetworkHooks();
 
     // on destroy
-    window.onbeforeunload = () => {
-      destroyUiHandles();
-    };
+    window.onbeforeunload = () => destroyUiHandles();
 
     // load ASAP as can
     this.load();

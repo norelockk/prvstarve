@@ -26,3 +26,43 @@ export function shuffleArray<T>(array: T[]): T[] {
 
   return shuffled;
 }
+
+export type EventListener<T> = (data: T) => void;
+
+export class EventEmitter<T> {
+  private listeners: { [eventName: string]: Set<EventListener<T>> } = {};
+
+  public on(eventName: string, listener: EventListener<T>): void {
+    if (!this.listeners[eventName]) {
+      this.listeners[eventName] = new Set();
+    }
+    this.listeners[eventName].add(listener);
+  }
+
+  public off(eventName: string, listener: EventListener<T>): void {
+    const eventListeners = this.listeners[eventName];
+    if (eventListeners) {
+      eventListeners.delete(listener);
+      if (eventListeners.size === 0) {
+        delete this.listeners[eventName];
+      }
+    }
+  }
+
+  public emit(eventName: string, data: T): void {
+    const eventListeners = this.listeners[eventName];
+    if (eventListeners) {
+      eventListeners.forEach((listener) => {
+        listener(data);
+      });
+    }
+  }
+
+  public removeAllListeners(eventName?: string): void {
+    if (eventName) {
+      delete this.listeners[eventName];
+    } else {
+      this.listeners = {};
+    }
+  }
+}

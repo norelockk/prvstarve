@@ -80,7 +80,7 @@
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
 import { EXECUTE_CONSOLE_CVAR } from '@/consoleCVars';
-import { pushConsoleMessage, pushCommandToHistory } from '@/uiCalls';
+import { pushConsoleMessage } from '@/uiCalls';
 
 const levelColors: {
   [key: string]: string
@@ -160,7 +160,7 @@ export default Vue.extend({
           pushConsoleMessage('error', 'Unknown command');
         else {
           // Push command to history
-          pushCommandToHistory(`${commandName}${args.length > 0 ? ' ' + args.join(' ') : ''}`);
+          // pushCommandToHistory(`${commandName}${args.length > 0 ? ' ' + args.join(' ') : ''}`);
         }
 
         // Clear input
