@@ -73,15 +73,6 @@ export const initNetworkHooks = (): void => {
       }
     }
 
-    // let encrypted;
-    // if ('msgpack' in window) {
-    //   try {
-    //     encrypted = msgpack.encode(xorEncrypt(data));
-    //   } catch (e) {
-    //     throw null;
-    //   }
-    // } else encrypted = xorEncrypt(data);
-
     return wsSend.apply(this, [data]);
   };
 };
