@@ -6,6 +6,8 @@
  * @copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
+import Matter from "matter-js";
+
 import Pool from "../libs/pool";
 import Game from "../components/game/Game";
 import Entity from "../components/Entity";
@@ -34,15 +36,18 @@ export default class World implements GameMap {
 
   // Map data
   public seed: number = 0;
-  public islands: number = 6;
   public tiles: any[] = [];
+  public islands: number = 6;
 
-  // Map things
+  // Map world
   public bounds: Bounds = new Bounds(new Vector2(0, 0), new Vector2(0, 0));
   public biomes: GameBiome[] = [];
   public objects: GameObject[] = [];
   public spawnBiomes: GameBiome[] = [];
   public fallbackBiome: GameBiome = new GameBiome(WorldBiomes.SEA);
+
+  // Map engine
+  private engine!: Matter.Engine;
 
   constructor(private readonly game: Game) {
     this.game = game;
@@ -52,6 +57,13 @@ export default class World implements GameMap {
   }
 
   private initialize(): void {
+    // Initialize world engine
+    this.engine = Matter.Engine.create();
+
+    // Set to engine no any gravities
+    this.engine.gravity.x = 0;
+    this.engine.gravity.y = 0;
+
     // Load world bounds
     const bW: number = this.game.config.get('GAMEPLAY')?.MAP?.WIDTH * 100;
     const bH: number = this.game.config.get('GAMEPLAY')?.MAP?.HEIGHT * 100;
@@ -69,6 +81,9 @@ export default class World implements GameMap {
     for (const TILE of MAP_TILES) {
       // Parse tile data
       const [ TILE_TYPE, ...TILE_DATA ] = TILE;
+
+      // Can tile be pushed so it can be shown on game
+      let canPush: boolean = false;
 
       switch (TILE_TYPE) {
         // Parsing biome
@@ -97,6 +112,8 @@ export default class World implements GameMap {
           if (biome && biome instanceof GameBiome) {
             this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied (start: ${bounds.min}, end: ${bounds.max})`);
             this.biomes.push(biome);
+
+            canPush = true;
           }
 
           break;
@@ -114,6 +131,8 @@ export default class World implements GameMap {
           if (object && object instanceof GameObject) {
             this.logger.log('debug', `Object ${OBJECT_NAME} has been applied`);
             this.objects.push(object);
+
+            canPush = true;
           }
 
           break;
@@ -126,7 +145,7 @@ export default class World implements GameMap {
         }
       }
 
-      this.tiles.push(TILE);
+      if (canPush) this.tiles.push(TILE);
     }
 
     // Set fallback biome

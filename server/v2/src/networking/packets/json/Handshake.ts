@@ -162,7 +162,7 @@ export class HandshakeResponse {
       this.game.world.bounds.max.x, // Map width
       this.game.world.bounds.max.y, // Map height
       this.game.world.islands, // Map islands
-      this.game.world.seed !== 0 ? this.game.world.tiles : [], // Custom map
+      this.game.world.seed === 0 ? this.game.world.tiles : 0, // Custom map
       "", // Welcome message (TODO: not implemented yet)
       0, // Custom crafting receipes (TODO: not implemented yet)
       0, // Desert tempest (TODO: not implemented yet)

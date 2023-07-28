@@ -6,26 +6,26 @@
 
 import ConfigReader from "../../helpers/ConfigReader";
 import Logger from "../../helpers/Logger";
-import WorldHandler from "../../handlers/World";
+import World from "../../handlers/World";
 import { hrtimeMs } from "../../Utils";
 import { network } from "../..";
 
 export default class Game {
   // Logging system
-  private logger: Logger = new Logger(Game.name);
+  private readonly logger: Logger = new Logger(Game.name);
+
+  // World
+  public world!: World;
 
   // Configuration
-  public config: ConfigReader;
-
-  // World & clients
-  public world: WorldHandler;
+  public config!: ConfigReader;
 
   // Ticks system
   private DELTA: number = 0;
   private TICK_RATE: number = 0;
   private TICK_LENGTH_MS: number = 0;
-  public CURRENT_TICK: number = 0;
   private PREVIOUS_TICK: number = hrtimeMs();
+  public CURRENT_TICK: number = 0;
 
   public static construct(config: ConfigReader): Game {
     return new Game(config);
@@ -36,7 +36,7 @@ export default class Game {
     this.config = config;
 
     // Setup world
-    this.world = new WorldHandler(this);
+    this.world = new World(this);
   }
 
   /**
