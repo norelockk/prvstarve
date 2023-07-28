@@ -36,7 +36,7 @@ export default class World implements GameMap {
 
   // Map related
   public seed: number = 0;
-  public bounds: Bounds;
+  public bounds: Bounds = new Bounds(new Vector2(0, 0), new Vector2(0, 0));
   public spawnBiomes: GameBiome[] = [];
   public fallbackBiome: GameBiome = new GameBiome(WorldBiomes.SEA);
 
@@ -46,16 +46,23 @@ export default class World implements GameMap {
   constructor(game: Game) {
     this.game = game;
 
-    // Load bounds
-    const bW: number = this.game.config.get('GAMEPLAY')?.MAP?.WIDTH * 100;
-    const bH: number = this.game.config.get('GAMEPLAY')?.MAP?.HEIGHT * 100;
-    this.bounds = new Bounds( new Vector2(0, 0), new Vector2(bW, bH) );
-
-    // Initialize parsing
+    // Initialize loading map tiles
     this.initialize();
   }
 
   private initialize(): void {
+    // Load world bounds
+    const bW: number = this.game.config.get('GAMEPLAY')?.MAP?.WIDTH * 100;
+    const bH: number = this.game.config.get('GAMEPLAY')?.MAP?.HEIGHT * 100;
+
+    this.bounds = new Bounds(
+      new Vector2(0, 0),
+      new Vector2(bW, bH)
+    );
+
+    this.logger.log('debug', `Bounds has been applied (start: ${this.bounds.min}, end: ${this.bounds.max})`);
+
+    // Load world tiles
     const MAP_TILES = this.game.config.get('GAMEPLAY')?.MAP?.TILES;
 
     for (const TILE of MAP_TILES) {
@@ -87,7 +94,7 @@ export default class World implements GameMap {
   
           // Push biome
           if (biome && biome instanceof GameBiome) {
-            this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied`);
+            this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied (start: ${bounds.min}, end: ${bounds.max})`);
             this.biomes.push(biome);
           }
 
@@ -99,7 +106,7 @@ export default class World implements GameMap {
           let object: GameObject | boolean = false;
 
           // Parse map tile data
-          const [ _, OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y ] = TILE;
+          const [ OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y ] = TILE_DATA;
 
 
           // Push object

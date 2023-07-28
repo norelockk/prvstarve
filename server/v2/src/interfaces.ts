@@ -47,12 +47,6 @@ export interface Players {
   l: number; // player level
 }
 
-export interface MapObject {
-  radius: number;
-  object: ObjectType,
-  objectName: string,
-}
-
 export interface GameMap {
   bounds: Bounds;
   biomes: GameBiome[];
