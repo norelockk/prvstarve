@@ -51,7 +51,6 @@
   width: 100vw;
   height: 100vh;
   display: inline-block;
-  z-index: 9999999;
   overflow: hidden;
   color: #eaeaea;
   user-select: none;

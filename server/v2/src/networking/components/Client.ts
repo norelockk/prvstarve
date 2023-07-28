@@ -7,15 +7,16 @@
 import uws from 'uWebSockets.js';
 import msgpack from 'msgpack-lite';
 
-import Game from '../../components/Game';
+import Game from '../../components/game/Game';
 import Logger from "../../helpers/Logger";
+import NewPlayer from '../packets/json/NewPlayer';
+
 import { Player } from '../../entities/Player';
 import { network } from '../..';
 import { xorDecrypt } from '../../Utils';
 import { RegisteredJSONHandler } from '../../types';
 import { Handshake, HandshakeResponse } from '../packets/json/Handshake';
 import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack } from './handlers/Base';
-import NewPlayer from '../packets/json/NewPlayer';
 
 export default class NetworkClient {
   // Logger

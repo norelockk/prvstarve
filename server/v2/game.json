@@ -11,8 +11,7 @@
     "NAME": "Development Server",
     "PORT": 8888,
     "TICKS": 10,
-    "MAX_PLAYERS": 100,
-    "GAMEMODE": "LEGACY"
+    "MAX_PLAYERS": 100
   },
   "GAMEPLAY": {
     "MAP": {

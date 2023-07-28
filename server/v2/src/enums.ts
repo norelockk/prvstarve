@@ -37,6 +37,13 @@ export enum WorldBiomes {
 	DESERT = 10
 }
 
+export enum ObjectType {
+	TREE,
+	GOLD,
+	STONE,
+	DIAMOND
+}
+
 export enum EntityState {
   WEB = 256,
   HURT = 2,

@@ -1,6 +1,6 @@
 import { BinaryWriter } from "../../../libs/binary";
 import { ServerPacket } from "../../../enums";
-import Game from "../../../components/Game";
+import Game from "../../../components/game/Game";
 
 export default class TimeUpdate {
   private buffer: BinaryWriter = new BinaryWriter;

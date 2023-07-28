@@ -4,7 +4,7 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from "./components/Game";
+import Game from "./components/game/Game";
 import NetworkServer from "./networking";
 import ConfigReader from "./helpers/ConfigReader";
 

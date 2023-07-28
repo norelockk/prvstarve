@@ -4,7 +4,7 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from '../components/Game';
+import Game from '../components/game/Game';
 import Entity from '../components/Entity';
 import NetworkClient from '../networking/components/Client';
 import { EntityState, ItemType, RemoveType } from '../enums';

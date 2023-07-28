@@ -4,11 +4,11 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import ConfigReader from "../helpers/ConfigReader";
-import Logger from "../helpers/Logger";
-import WorldHandler from "../handlers/World";
-import { hrtimeMs } from "../Utils";
-import { network } from "..";
+import ConfigReader from "../../helpers/ConfigReader";
+import Logger from "../../helpers/Logger";
+import WorldHandler from "../../handlers/World";
+import { hrtimeMs } from "../../Utils";
+import { network } from "../..";
 
 export default class Game {
   // Logging system

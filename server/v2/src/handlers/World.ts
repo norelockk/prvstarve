@@ -1,90 +1,129 @@
 /**
  * @class ClientHandler
- * @description Handles the management of game world in a server application.
+ * @description Handles the management of game world in a server
  * @license private
  * @date 4 July 2023
  * @copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
 import Pool from "../libs/pool";
+import Game from "../components/game/Game";
 import Entity from "../components/Entity";
-import Game from "../components/Game";
-import { Player } from "../entities/Player";
-import { DeleteUnits } from "../networking/packets/bin/Units";
+import Bounds from "../components/col/Bounds";
+import Logger from "../helpers/Logger";
+import Vector2 from "../libs/vector";
+import GameBiome from "../components/game/GameBiome";
 import TimeUpdate from "../networking/packets/bin/Time";
-import GameObject from "../components/GameObject";
-import { EntityType, WorldBiomes } from "../enums";
+import GameObject from "../components/game/GameObject";
 
-export default class WorldHandler {
-  private game: Game;
+import { Player } from "../entities/Player";
+import { GameMap } from "../interfaces";
+import { DeleteUnits } from "../networking/packets/bin/Units";
+import { WorldBiomes } from "../enums";
 
-  private daytime: number = 40 * 60 * 1000;
+export default class World implements GameMap {
+  private readonly game: Game;
+  private readonly logger: Logger = new Logger(World.name);
 
+  // World time
   public time: number = 0;
   public night: boolean = false;
-  public biomes: any[] = [];
-  public objects: GameObject[] = [];
+
+  private readonly daytime: number = 40 * 60 * 1000;
+
+  // Entity
   public entities: Pool<Entity> = new Pool;
+
+  // Map related
+  public seed: number = 0;
+  public bounds: Bounds;
+  public spawnBiomes: GameBiome[] = [];
+  public fallbackBiome: GameBiome = new GameBiome(WorldBiomes.SEA);
+
+  public biomes: GameBiome[] = [];
+  public objects: GameObject[] = [];
 
   constructor(game: Game) {
     this.game = game;
 
-    // Parse game objects
-    this.loadObjects();
+    // Load bounds
+    const bW: number = this.game.config.get('GAMEPLAY')?.MAP?.WIDTH * 100;
+    const bH: number = this.game.config.get('GAMEPLAY')?.MAP?.HEIGHT * 100;
+    this.bounds = new Bounds( new Vector2(0, 0), new Vector2(bW, bH) );
+
+    // Initialize parsing
+    this.initialize();
   }
 
-  private loadObjects(): void {
-    const objects: any[] = this.game.config.get('GAMEPLAY')?.MAP?.TILES;
-    const oLength: number = objects.length;
+  private initialize(): void {
+    const MAP_TILES = this.game.config.get('GAMEPLAY')?.MAP?.TILES;
 
-    for (let index = 0; index < oLength; index++) {
-      const parsed = objects[index];
+    for (const TILE of MAP_TILES) {
+      // Parse tile data
+      const [ TILE_TYPE, ...TILE_DATA ] = TILE;
 
-      // Biome placement
-      if (parsed[0] === 0) {
-        let BIOME_ID = WorldBiomes.FOREST;
+      switch (TILE_TYPE) {
+        // Parsing biome
+        case 0: {
+          let biome: GameBiome | boolean = false;
+        
+          // Parse biome tile data
+          const [ BIOME_TYPE, MIN_W, MIN_H, MAX_W, MAX_H ] = TILE_DATA;
 
-        switch (parsed[1]) {
-          case "FOREST": {
-            BIOME_ID = WorldBiomes.FOREST;
-            break;
+          // Setup biome bounds
+          const bounds: Bounds = new Bounds(
+            new Vector2(MIN_W * 100, MIN_H * 100),
+            new Vector2(MAX_W * 100, MAX_H * 100)
+          );
+  
+          // Parse biome type
+          switch (BIOME_TYPE) {
+            case "FOREST": {
+              biome = new GameBiome(WorldBiomes.FOREST, bounds);
+              break;
+            }
+            default: return this.logger.log('warn', 'Unknown biome type', BIOME_TYPE);
           }
-          case "WINTER": {
-            BIOME_ID = WorldBiomes.WINTER;
-            break;
+  
+          // Push biome
+          if (biome && biome instanceof GameBiome) {
+            this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied`);
+            this.biomes.push(biome);
           }
-          case "DESERT": {
-            BIOME_ID = WorldBiomes.DESERT;
-            break;
-          }
-          case "DRAGON": {
-            BIOME_ID = WorldBiomes.DRAGON;
-            break;
-          }
-          case "LAVA": {
-            BIOME_ID = WorldBiomes.LAVA;
-            break;
-          }
+
+          break;
         }
 
-        this.biomes.push(BIOME_ID);
-        continue;
-      } else {
-        const [ _, object, a, x, y, b ] = parsed;
+        // Parsing map tile (object)
+        case 1: {
+          let object: GameObject | boolean = false;
 
-        const ob: GameObject | boolean = GameObject.create(object, x, y);
-        if (ob && ob instanceof GameObject) {
-          const gar: Entity = new Entity(this.game);
-          gar.type = EntityType.GARLAND;
-          gar.position.x = ob.position.x;
-          gar.position.y = ob.position.y;
+          // Parse map tile data
+          const [ _, OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y ] = TILE;
 
-          this.addEntity(gar);
 
-          this.objects.push(ob);
+          // Push object
+          if (object && object instanceof GameObject) {
+            this.logger.log('debug', `Object ${OBJECT_NAME} has been applied`);
+            this.objects.push(object);
+          }
+
+          break;
+        }
+
+        // Unknown world tile report
+        default: {
+          this.logger.log('warn', `Unknown world tile`, TILE);
+          break;
         }
       }
     }
+
+    // Set fallback biome
+    this.fallbackBiome = this.biomes.find(b => b.biomeType === WorldBiomes.SEA)!;
+
+    // Set biomes where we can spawn
+    this.spawnBiomes = this.biomes.filter(b => b.biomeType === WorldBiomes.FOREST);
   }
 
   private updateWorldTime(): void {

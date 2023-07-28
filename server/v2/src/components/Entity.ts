@@ -4,10 +4,10 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from './Game';
+import Game from './game/Game';
 import Vector2 from '../libs/vector';
 import { Direction, EntityState, EntityType } from '../enums';
-import Circle from './col/Circle';
+// import Circle from './col/Circle';
 
 export default class Entity {
   public id: number = -1;
@@ -25,7 +25,7 @@ export default class Entity {
 
   private velocity: Vector2 = new Vector2(0, 0);
   private direction: number | null = null;
-  private collider: Circle = new Circle(0, 0, 50);
+  // private collider: Circle = new Circle(0, 0, 40);
 
   private maxX: number = 0;
   private maxY: number = 0;
@@ -68,25 +68,25 @@ export default class Entity {
       this.position.x += dx;
       this.position.y += dy;
 
-      for (const object of this.game.world.objects) {
-        if (this.collider.isCollidingWith(object.collider)) {
-          const ox: number = this.position.x - object.collider.x;
-          const oy: number = this.position.y - object.collider.y;
-          const dist: number = Math.sqrt(ox ** 2 + oy ** 2);
-          const overlap: number = this.collider.radius + object.collider.radius - dist;
-  
-          if (overlap > 0) {
-            const angle: number = Math.atan2(oy, ox);
-
-            this.position.x += overlap * Math.cos(angle);
-            this.position.y += overlap * Math.sin(angle);
-          }
-        }
-      }
+      // for (const object of this.game.world.objects) {
+      //   if (this.collider.isCollidingWith(object.collider)) {
+      //     const ox: number = this.position.x - object.collider.x;
+      //     const oy: number = this.position.y - object.collider.y;
+      //     const dist: number = Math.sqrt(ox ** 2 + oy ** 2);
+      //     const overlap: number = this.collider.radius + object.collider.radius - dist;
+      //     // this.speed *= 5;
+      //     console.log('col detected', object);
+      //     if (overlap > 0) {
+      //       const angle: number = Math.atan2(oy, ox);
+      //       this.position.x += overlap * Math.cos(angle);
+      //       this.position.y += overlap * Math.sin(angle);
+      //     }
+      //   }
+      // }
+      // this.collider.update(this.position.x, this.position.y);
 
       this.position.x = Math.min(Math.max(this.position.x, 0), this.maxX);
       this.position.y = Math.min(Math.max(this.position.y, 0), this.maxY);
-      this.collider.update(this.position.x, this.position.y);
 
       this.state |= EntityState.WALK;
       this.action = true;

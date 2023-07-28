@@ -8,7 +8,7 @@
 
 import uws from 'uWebSockets.js';
 
-import Game from '../components/Game';
+import Game from '../components/game/Game';
 import Logger from '../helpers/Logger';
 import NetworkClient from '../networking/components/Client';
 import { EntityState } from '../enums';

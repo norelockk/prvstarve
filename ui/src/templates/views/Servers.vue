@@ -552,7 +552,7 @@
 import Vue from 'vue';
 import sortBy from 'sort-by';
 
-import { Modal } from '@/interfaces';
+import { Server } from '@/interfaces';
 
 export default Vue.extend({
   data: () => ({
@@ -568,31 +568,33 @@ export default Vue.extend({
       SEARCH_INPUT: ''
     },
     SERVERS: [
-      {
-        n: 'Test server',
-        cp: 200,
-        mp: 200,
-        l: 25,
-        m: 'Forest (Legacy)',
-        w: 'restarve.pro',
-        u: 'xxxxx-xxxxxxxx-xxxx-xxxxx',
-        lc: false,
-      },
-      {
-        n: 'Test x server',
-        cp: 4500,
-        mp: 200,
-        l: 25,
-        m: 'Forest (Legacy)',
-        w: 'restarve.pro',
-        u: 'xxxxx-xxxxxxxx-xxxx-xxxxx',
-        lc: false,
-      },
-    ],
+      // {
+      //   n: 'Test server',
+      //   cp: 200,
+      //   mp: 200,
+      //   l: 25,
+      //   m: 'Forest (Legacy)',
+      //   w: 'restarve.pro',
+      //   u: 'xxxxx-xxxxxxxx-xxxx-xxxxx',
+      //   lc: false,
+      // },
+      // {
+      //   n: 'Test x server',
+      //   cp: 4500,
+      //   mp: 200,
+      //   l: 25,
+      //   m: 'Forest (Legacy)',
+      //   w: 'restarve.pro',
+      //   u: 'xxxxx-xxxxxxxx-xxxx-xxxxx',
+      //   lc: false,
+      // },
+    ] as Server[],
   }),
   computed: {
     SERVERS_FILTERED() {
-      // Filtering
+      let TOTAL_PLAYERS: number = 0;
+      let TOTAL_SERVERS: number = 0;
+
       const filtered = this.SERVERS.filter(server => {
         let s;
 
@@ -605,17 +607,17 @@ export default Vue.extend({
         return s;
       });
 
-      // Count total servers
-      this.COUNT.SERVERS = filtered.length;
-
-      // Count total players
-      let TOTAL_PLAYERS: number = 0;
-      for (let index = 0; index < this.COUNT.SERVERS; index++) {
+      for (let index = 0; index < filtered.length; index++) {
         const server = filtered[index];
 
-        TOTAL_PLAYERS += server.cp;
-      };
+        if (server) {
+          TOTAL_PLAYERS += server.cp;
+          TOTAL_SERVERS += 1;
+        }
+      }
+
       this.COUNT.PLAYERS = TOTAL_PLAYERS;
+      this.COUNT.SERVERS = TOTAL_SERVERS;
 
       return filtered;
     },
@@ -630,10 +632,8 @@ export default Vue.extend({
         this.ORDERS[index] = "-";
       }
     },
-    S_selectServer(data: any) {
-      const modal: Modal = {
-        identifier: 'SERVER_SELECTION',
-        title: data.n,
+    S_selectServer(data: Server) {
+      return this.$store.dispatch('modals/create', {
         defs: [
           {
             title: 'Players online',
@@ -646,13 +646,13 @@ export default Vue.extend({
           {
             title: 'Website',
             text: data.w
-          },
+          }
         ],
+        title: data.n,
         serverId: data.u,
+        identifier: 'SERVER_SELECTION',
         description: 'You are joining to..'
-      };
-
-      this.$store.dispatch('modals/create', modal);
+      });
     }
   }
 })

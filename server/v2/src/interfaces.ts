@@ -4,8 +4,13 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
+import GameBiome from "./components/game/GameBiome";
+import GameObject from "./components/game/GameObject";
+import Bounds from "./components/col/Bounds";
+import Game from "./components/game/Game";
+
 import { PlayerSkin } from "./entities/Player";
-import { Versioning } from "./networking/packets/json/Handshake";
+import { ObjectType } from "./enums";
 
 export interface T_GENERIC {
   id: number;
@@ -29,6 +34,7 @@ export interface PlayerHandshakeInput {
   skin: PlayerSkin
 }
 
+// for json thing
 export interface Players {
   i: number; // player id
   n: string; // player nickname
@@ -39,4 +45,19 @@ export interface Players {
   d: number; // player dead box
   g: number; // player bag
   l: number; // player level
+}
+
+export interface MapObject {
+  radius: number;
+  object: ObjectType,
+  objectName: string,
+}
+
+export interface GameMap {
+  bounds: Bounds;
+  biomes: GameBiome[];
+  spawnBiomes: GameBiome[];
+  fallbackBiome: GameBiome;
+  objects: GameObject[];
+  seed: number;
 }

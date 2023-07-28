@@ -4,7 +4,7 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from "../../../components/Game";
+import Game from "../../../components/game/Game";
 import { Players } from "../../../interfaces";
 import { Player, PlayerSkin } from "../../../entities/Player";
 import { ClientPacket, Gamemodes } from "../../../enums";

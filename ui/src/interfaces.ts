@@ -34,3 +34,14 @@ export interface Modal {
   identifier: string;
   description?: string;
 }
+
+export interface Server {
+  n: string;
+  m: string;
+  w: string;
+  u: string;
+  l: number;
+  cp: number;
+  mp: number;
+  lc: boolean;
+}
