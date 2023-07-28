@@ -7,14 +7,14 @@
 import { inspect } from 'util';
 import { createWriteStream, WriteStream, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import { LogLevel } from './types';
+import { LogLevel } from '../types';
 
 export default class Logger {
   private consoleStream: WriteStream;
   private fileStream: WriteStream;
 
   constructor(private readonly moduleName: string) {
-    const logsDir = resolve(__dirname, '../logs');
+    const logsDir = resolve(__dirname, '../../logs');
     if (!existsSync(logsDir)) mkdirSync(logsDir);
     
     const logPath = resolve(logsDir, `${this.moduleName}.log`);

@@ -23,7 +23,7 @@ export const hrtimeMs = (): number => {
  * @returns {string}
  */
 export const getPublicIPAddress = async (): Promise<string> => {
-  const { data } = await axios.get('https://api.ipify.org/');
+  const { data } = await axios.get('http://api.ipify.org/');
   if (!data)
     throw new Error('Could not get public IP address')
 
@@ -40,40 +40,6 @@ export const isStringEmpty = (str: string): boolean => {
   str = str.trim();
 
   return str === '' || str.length === 0;
-};
-
-/**
- * @function collision
- * @description Check if two entities are colliding
- * @memberOf Utils
- * @returns {boolean}
- */
-export const collision = (p1x: number, p1y: number, r1: number, p2x: number, p2y: number, r2: number): boolean => {
-  const totalRadius: number = r1 + r2;
-  const x: number = p1x - p2x;
-  const y: number = p1y - p2y;
-
-  return totalRadius > Math.sqrt((x * x) + (y * y));
-};
-
-export const collisionAngle = (
-  p1x: number,
-  p1y: number,
-  r1: number,
-  a1: number,
-  p2x: number,
-  p2y: number,
-  r2: number,
-  a2: number
-): boolean => {
-  const totalRadius: number = r1 + r2;
-  const angleDifference: number = Math.abs(a1 - a2) % 360;
-  const distance: number = Math.sqrt(
-    Math.pow(p1x - p2x, 2) + Math.pow(p1y - p2y, 2)
-  );
-
-  // Check if the distance and angle difference are within the collision range
-  return distance <= totalRadius && angleDifference <= 180;
 };
 
 // Packet decryption stuff

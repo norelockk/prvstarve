@@ -1,10 +1,12 @@
 import { BinaryWriter } from "../../../libs/binary";
-import Entity from "../../../entities";
+import Entity from "../../../components/Entity";
 import { EntityState, ServerPacket } from "../../../enums";
-import { Player } from "../../../entities/components/Player";
+import { Player } from "../../../entities/Player";
 
 export class UpdateUnits {
   private buffer: BinaryWriter = new BinaryWriter();
+
+  private readonly header: ServerPacket = ServerPacket.UPDATE_UNITS;
 
   constructor(private entities: Entity[]) {
     this.entities = entities;
@@ -12,7 +14,7 @@ export class UpdateUnits {
 
   get build(): Uint8Array {
     this.buffer.reset();
-    this.buffer.writeU16(ServerPacket.UPDATE_UNITS);
+    this.buffer.writeU16(this.header);
 
     const entityLength: number = this.entities.length;
 
@@ -42,13 +44,15 @@ export class UpdateUnits {
 export class DeleteUnits {
   private buffer: BinaryWriter = new BinaryWriter();
 
+  private readonly header: ServerPacket = ServerPacket.UPDATE_UNITS;
+
   constructor(private entities: Entity | Entity[]) {
     this.entities = entities;
   }
 
   get build(): Uint8Array {
     this.buffer.reset();
-    this.buffer.writeU16(ServerPacket.UPDATE_UNITS);
+    this.buffer.writeU16(this.header);
 
     if (Array.isArray(this.entities)) {
       const entityLength: number = this.entities.length;

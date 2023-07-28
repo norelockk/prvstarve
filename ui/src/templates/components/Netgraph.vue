@@ -24,8 +24,8 @@ export default Vue.extend({
       frames: 'FPS',
       networkIn: 'Network receive',
       networkOut: 'Network sent',
-      playerPosX: 'Player position X',
-      playerPosY: 'Player position Y'
+      voiceIn: 'Voice receive',
+      voiceOut: 'Voice sent'
     } as {
       [key: string]: any
     }
@@ -41,7 +41,7 @@ export default Vue.extend({
       return `${this.KEYS_TRANSLATION[key]}:`;
     },
     N_translateValue(key: any) {
-      if (key.startsWith('network'))
+      if (key.startsWith('network') || key.startsWith('voice'))
         return humanizeNetworkBandwidth(this.N_data[key]);
 
       return this.N_data[key];

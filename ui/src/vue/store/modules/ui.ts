@@ -13,7 +13,9 @@ const getters: GetterTree<UiState, {}> = {
 };
 
 const mutations: MutationTree<UiState> = {
-  
+  show(state) {
+    state.show = !state.show
+  }
 };
 
 const actions: ActionTree<UiState, {}> = {

@@ -28,6 +28,15 @@ export enum Gamemodes {
   EXPERIMENTAL
 }
 
+export enum WorldBiomes {
+	FOREST,
+	WINTER,
+	LAVA,
+	DRAGON,
+	SEA,
+	DESERT = 10
+}
+
 export enum EntityState {
   WEB = 256,
   HURT = 2,

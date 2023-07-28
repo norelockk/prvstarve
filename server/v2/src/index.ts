@@ -4,9 +4,9 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from "./Game";
+import Game from "./components/Game";
 import NetworkServer from "./networking";
-import ConfigReader from "./ConfigReader";
+import ConfigReader from "./helpers/ConfigReader";
 
 // Configuration
 const config: ConfigReader = new ConfigReader('./game.json');

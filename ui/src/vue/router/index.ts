@@ -23,7 +23,8 @@ const middleware: RouteMiddleware = middlewareContext.keys().reduce((acc: RouteM
 export default class Router extends VueRouter {
   private static options: RouterOptions = {
     mode: 'hash',
-    routes
+    routes,
+    linkExactActiveClass: 'active',
   };
 
   public static construct() {

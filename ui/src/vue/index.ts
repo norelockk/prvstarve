@@ -1,6 +1,8 @@
-import '@/assets/css/index.css';
-
 import Vue from 'vue';
+import VueTippy, { TippyComponent } from 'vue-tippy';
+
+Vue.use(VueTippy);
+Vue.component('tippy', TippyComponent);
 
 Vue.config.async = true;
 Vue.config.devtools = process.env.NODE_ENV === 'development';

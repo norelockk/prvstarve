@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { updateFPS, updateNetworkBW as updateNetwork, updatePlayerPos } from "./uiCalls";
 import { store } from "./vue";
-import { xorEncrypt } from "./utils";
 
 // network vars
 let net_sent: number = 0;

@@ -7,16 +7,15 @@
 import uws from 'uWebSockets.js';
 import msgpack from 'msgpack-lite';
 
-import Game from '../../Game';
-import Logger from "../../Logger";
-import { RegisteredJSONHandler } from '../../types';
-import { Player } from '../../entities/components/Player';
-import { Handshake, HandshakeResponse } from '../packets/Handshake';
-import { handleDirection, handleAngle, handleAttack, handleStopAttack } from '../handlers/Movement';
+import Game from '../../components/Game';
+import Logger from "../../helpers/Logger";
+import { Player } from '../../entities/Player';
 import { network } from '../..';
 import { xorDecrypt } from '../../Utils';
-import NewPlayer from '../packets/NewPlayer';
-import handleChat from '../handlers/Chat';
+import { RegisteredJSONHandler } from '../../types';
+import { Handshake, HandshakeResponse } from '../packets/json/Handshake';
+import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack } from './handlers/Base';
+import NewPlayer from '../packets/json/NewPlayer';
 
 export default class NetworkClient {
   // Logger
@@ -85,7 +84,6 @@ export default class NetworkClient {
    */
   public handleMessage(message: ArrayBuffer): void {
     const buffer: Buffer = Buffer.from(message);
-    const r = buffer.toString();
 
     let json: any[] = [];
 
@@ -101,10 +99,8 @@ export default class NetworkClient {
         const [header, ...data] = json;
 
         // If header is a string and data contains 16 length array that's a handshake
-        if (typeof header === 'string' && data.length === 16) {
+        if (typeof header === 'string') {
           if (!this.handshaked) {
-            this.handshaked = true;
-
             // Build an handshake data
             const handshakeData: Handshake = Handshake.fromJSON(json);
 
@@ -122,6 +118,7 @@ export default class NetworkClient {
 
               // Send to other clients to register new player
               const len: number = network.clients.array.length;
+              const packet: NewPlayer = new NewPlayer(player);
 
               for (let index = 0; index < len; index++) {
                 const client = network.clients.array[index];
@@ -129,13 +126,18 @@ export default class NetworkClient {
                 if (client.socket === this.socket)
                   continue;
 
-                client.socket.send(JSON.stringify(new NewPlayer(player).build));
+                client.socket.send(JSON.stringify(packet.build));
               }
 
               // Send an response to the client
-              const response: HandshakeResponse = new HandshakeResponse(this.game, player, this.game.world.entities.array as Player[]);
+              const response: HandshakeResponse = new HandshakeResponse(this.game, player, handshakeData, this.game.world.entities.array as Player[]);
               this.socket.send(JSON.stringify(response.build));
+
+              // Send current leaderboard
+              this.entity.sendLeaderboard();
             }
+              
+            this.handshaked = true;
           }
         } else {
           this.handleJSONCommunication(json);

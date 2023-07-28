@@ -1,10 +1,12 @@
 import { BinaryWriter } from "../../../libs/binary";
-import { Player } from "../../../entities/components/Player";
+import { Player } from "../../../entities/Player";
 import { ServerPacket } from "../../../enums";
 
 export default class Leaderboard {
   private buffer: BinaryWriter = new BinaryWriter;
-
+  
+  private readonly header: ServerPacket = ServerPacket.LEADERBOARD;
+  
   constructor(private players: Player[]) {
     this.players = players;
 
@@ -14,10 +16,11 @@ export default class Leaderboard {
 
   get build(): Uint8Array {
     this.buffer.reset();
-    this.buffer.writeU16(ServerPacket.LEADERBOARD);
+    this.buffer.writeU16(this.header);
     this.buffer.writeU16(0);
 
-    for (let index = 0; index < 11; index++) {
+    const len: number = this.players.length;
+    for (let index = 0; index < len; index++) {
       const player: Player = this.players[index];
 
       if (player) {

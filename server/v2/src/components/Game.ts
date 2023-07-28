@@ -4,11 +4,11 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import ConfigReader from "./ConfigReader";
-import Logger from "./Logger";
-import WorldHandler from "./handlers/WorldHandler";
-import { hrtimeMs } from "./Utils";
-import { network } from ".";
+import ConfigReader from "../helpers/ConfigReader";
+import Logger from "../helpers/Logger";
+import WorldHandler from "../handlers/World";
+import { hrtimeMs } from "../Utils";
+import { network } from "..";
 
 export default class Game {
   // Logging system
@@ -47,7 +47,6 @@ export default class Game {
     // Set proper tick rate
     this.TICK_RATE = this.config.get('SERVER')?.TICKS ?? 10;
     this.TICK_LENGTH_MS = 1000 / this.TICK_RATE;
-    // this.TICK_DELTA = this.TICK_LENGTH_MS / 1000;
 
     // Start ticking
     this._tick();
@@ -84,7 +83,10 @@ export default class Game {
    * @param {number} delta
    */
   private update(delta: number): void {
-    network.update(delta, this.CURRENT_TICK);
+    // Update world
     this.world.update(delta);
+
+    // Send updates to network
+    if (network) network.update();
   }
 }

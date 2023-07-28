@@ -6,5 +6,6 @@ export default {
 
   // Lolipop UI environment properties
   LOLIPOP_ENV: process.env.NODE_ENV,
-  LOLIPOP_BUILD_HASH: process.env.LOLIPOP_UI_GIT_HASH
+  LOLIPOP_LOBBY_URL: `${location.protocol}//localhost:9000`,
+  LOLIPOP_BUILD_HASH: process.env.LOLIPOP_UI_GIT_HASH,
 }

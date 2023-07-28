@@ -4,13 +4,15 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from '../../Game';
-import Entity from '..';
-import NetworkClient from '../../networking/components/Client';
-import { EntityState, ItemType, RemoveType } from '../../enums';
-import { PlayerHandshakeInput } from '../../interfaces';
-import { collisionAngle, isStringEmpty } from '../../Utils';
-import { Item, ItemStack } from '../../components/Item';
+import Game from '../components/Game';
+import Entity from '../components/Entity';
+import NetworkClient from '../networking/components/Client';
+import { EntityState, ItemType, RemoveType } from '../enums';
+import { PlayerHandshakeInput } from '../interfaces';
+import { isStringEmpty } from '../Utils';
+import { Item, ItemStack } from '../components/Item';
+import { UpdateUnits } from '../networking/packets/bin/Units';
+import Leaderboard from '../networking/packets/bin/Leaderboard';
 
 export class PlayerSkin {
   public bag: number;
@@ -207,36 +209,10 @@ export class Player extends Entity {
   private processAttack(angle: number): void {
     this.state |= EntityState.ATTACK;
 
-    // const tan: number = Math.tan(angle);
-    // const tani: number = Math.pow(Math.pow(tan, 2) + 1, 0.5);
-    // const tanu: number = this.position.y - this.position.x * tan;
-    // for (const target of this.game.world.entities.array) {
-    //   if (target instanceof Player) {
-    //     if (target === this)
-    //       continue;
-    //     const d: number = Math.abs(tan * target.position.x - target.position.y + tanu) / tani;
-    //     const d2: number = Math.pow(Math.pow(target.position.x - this.position.x, 2) + Math.pow(target.position.y - this.position.y, 2), 0.5);
-    //     if (d < 60 && (d2 < (60 * 10))) {
-    //       target.state |= EntityState.HURT;
-    //     }
-    //   } else {
-    //     console.log('something each other has been hitten tf.');
-    //   }
-    // }
-
     for (const target of this.game.world.entities.array) {
       if (target instanceof Player) {
         if (target === this) continue;
 
-        const collide: boolean = collisionAngle(
-          target.position.x, target.position.y, 50, target.angle,
-          this.position.x, this.position.y, 50, this.angle
-        );
-
-        if (collide) {
-          target.state |= EntityState.HURT;
-          
-        }
       }
     }
   }
@@ -284,5 +260,19 @@ export class Player extends Entity {
     this.resetAttacking();
 
     this.state &= ~EntityState.ATTACK;
+  }
+
+  public sendUnits(): void {
+    const units: Entity[] = this.game.world.entities.array;
+    const packet: UpdateUnits = new UpdateUnits(units);
+
+    this.client.socket.send(packet.build, true);
+  }
+
+  public sendLeaderboard(): void {
+    const otherPlayers: Player[] = this.game.world.entities.array.filter(p => p && p instanceof Player) as Player[];
+    const packet: Leaderboard = new Leaderboard(otherPlayers);
+
+    this.client.socket.send(packet.build, true);
   }
 }

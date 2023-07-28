@@ -10,13 +10,11 @@ interface NetgraphState {
 }
 
 const state: NetgraphState = {
-  show: true,
+  show: false,
   data: {
     frames: 0,
-    networkIn: 0,
     networkOut: 0,
-    playerPosX: 0,
-    playerPosY: 0
+    networkIn: 0,
   }
 };
 

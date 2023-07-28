@@ -47,6 +47,9 @@ const mutations: MutationTree<ConsoleState> = {
   },
   switchVisibility(state) {
     state.show = !state.show;
+
+    if ('state' in window['LOLIPOP_CONSOLE'])
+      window['LOLIPOP_CONSOLE']['state'] = state.show;
   },
   pushCommandToHistory(state, command) {
     if (typeof command !== 'string') return;

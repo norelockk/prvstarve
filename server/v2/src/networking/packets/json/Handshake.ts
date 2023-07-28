@@ -4,17 +4,42 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import { Player, PlayerSkin } from "../../entities/components/Player";
-import { ClientPacket, Gamemodes } from "../../enums";
-import Game from "../../Game";
+import Game from "../../../components/Game";
+import { Players } from "../../../interfaces";
+import { Player, PlayerSkin } from "../../../entities/Player";
+import { ClientPacket, Gamemodes } from "../../../enums";
+import Version from "../bin/Version";
+
+export class Versioning {
+  public environment: string = 'production';
+  public buildHash: string = '';
+  public channel: string = 'public';
+  public array: number[] = [2, 0, 0];
+
+  constructor(data: any[]) {
+    this.environment = data[0];
+    this.buildHash = data[1];
+    this.channel = data[3];
+    this.array = data[2];
+  }
+
+  build(): any[] {
+    return [
+      this.environment,
+      this.buildHash,
+      this.channel,
+      this.array
+    ]
+  }
+}
 
 export class Handshake {
   public skin: PlayerSkin;
-  public nickname: string;
-  public screenWidth: number;
-  public clientToken: string;
-  public screenHeight: number;
-  public clientVersion: number;
+  public nickname: string = '';
+  public screenWidth: number = 200;
+  public clientToken: string = '';
+  public screenHeight: number = 200;
+  public clientVersion: any[];
 
   constructor(
     skin: PlayerSkin,
@@ -22,7 +47,7 @@ export class Handshake {
     clientToken: string,
     screenWidth: number,
     screenHeight: number,
-    clientVersion: number
+    clientVersion: any[]
   ) {
     this.skin = skin;
     this.nickname = nickname;
@@ -50,7 +75,6 @@ export class Handshake {
       null,
       null,
       null,
-      null
     ]
   }
 
@@ -62,38 +86,41 @@ export class Handshake {
   }
 }
 
-interface Players {
-  i: number; // player id
-  n: string; // player nickname
-  s: number; // player skin
-  a: number; // player accessory
-  c: number; // player loot box
-  b: number; // player book
-  d: number; // player dead box
-  g: number; // player bag
-  l: number; // player level
-}
-
 export class HandshakeResponse {
   public game: Game;
   public time: number = 0;
   public player: Player;
-  public players: Player[];
-  public maxPlayers: number;
-  public mapWidth: number;
-  public mapHeight: number;
+  public players: Player[] = [];
+  public maxPlayers: number = 100;
+  public mapTiles: any[] = [];
+  public mapWidth: number = 0;
+  public mapHeight: number = 0;
+  public mapIslands: number = 6;
 
   constructor(
       game: Game,
       player: Player,
+      private handshake: Handshake,
       players: Player[],
   ) {
     this.game = game;
+    this.handshake = handshake;
     this.player = player;
+
+    // Check player version before doing anything
+    if (this.player && this.player instanceof Player) {
+      const check: Versioning = new Versioning(handshake.clientVersion);
+
+      console.log(check);
+    }
+
     this.players = players;
-    this.maxPlayers = this.game.config.get("SERVER")?.MAX_PLAYERS;
+
+    this.mapTiles = this.game.config.get("GAMEPLAY")?.MAP?.TILES;
     this.mapWidth = this.game.config.get("GAMEPLAY")?.MAP?.WIDTH;
     this.mapHeight = this.game.config.get("GAMEPLAY")?.MAP?.HEIGHT;
+    this.mapIslands = this.game.config.get("GAMEPLAY")?.MAP?.ISLANDS;
+    this.maxPlayers = this.game.config.get("SERVER")?.MAX_PLAYERS;
   }
 
   get build(): object {
@@ -122,7 +149,7 @@ export class HandshakeResponse {
 
     return [
       ClientPacket.GAME_HANDSHAKE, // Packet header - 0
-      Gamemodes.LEGACY, // Gamemode (TODO: make this gathering from game config) - 1
+      Gamemodes.COMMUNITY, // Gamemode (TODO: make this gathering from game config) - 1
       this.game.world.night ? 1 : 0, // Night - 2
       this.player.position.x, // Player position X, - 3
       players, // Player list - 4
@@ -140,11 +167,11 @@ export class HandshakeResponse {
       0, // Quest born timestamp? (TODO: not implemented yet)
       0, // Quests to be restored? (TODO: not implemented yet)
       0, // UNDEFINED IN CODE - DO NOT TOUCH IT
-      24540, // Map seed generation (TODO: not implemented yet)
+      36, // Map seed generation (TODO: not implemented yet)
       this.mapWidth, // Map width
       this.mapHeight, // Map height
-      6, // Map islands (TODO: not implemented yet)
-      0, // Custom map (TODO: not implemented yet)
+      this.mapIslands, // Map islands
+      this.mapTiles, // Custom map
       "", // Welcome message (TODO: not implemented yet)
       0, // Custom crafting receipes (TODO: not implemented yet)
       0, // Desert tempest (TODO: not implemented yet)

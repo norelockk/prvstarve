@@ -7,16 +7,15 @@
  */
 
 import uws, { DEDICATED_COMPRESSOR_64KB } from 'uWebSockets.js';
-import ConfigReader from '../ConfigReader';
-import Game from '../Game';
-import Logger from '../Logger';
+import ConfigReader from '../helpers/ConfigReader';
+import Game from '../components/Game';
+import Logger from '../helpers/Logger';
 import { getPublicIPAddress, isStringEmpty } from '../Utils';
-import ClientHandler from '../handlers/ClientHandler';
-import Entity from '../entities';
-import { Player } from '../entities/components/Player';
-import { UpdateUnits } from './packets/bin/Units';
+import ClientHandler from '../handlers/Client';
+import NetworkClient from './components/Client';
+import Entity from '../components/Entity';
+import { Player } from '../entities/Player';
 import { EntityState } from '../enums';
-import Leaderboard from './packets/bin/Leaderboard';
 
 export default class NetworkServer {
   private host: string = '';
@@ -107,7 +106,7 @@ export default class NetworkServer {
   private async recognize(): Promise<boolean> {
     this.host = await getPublicIPAddress();
 
-    if (!!isStringEmpty(this.host))
+    if (isStringEmpty(this.host))
       return false;
 
     return true;
@@ -131,43 +130,34 @@ export default class NetworkServer {
     }
   }
 
-  /**
-   * @function update
-   * @description Handles the server update, also synchronize some actions.
-   */
-  public update(delta: number, ticks: number): void {
-    // Entities
-    const length: number = this.game.world.entities.array.length;
-    const entities: Entity[] = this.game.world.entities.array;
+  public update(): void {
+    const clients: NetworkClient[] = this.clients.array;
+    const length: number = clients.length;
+
+    // States
+    const sendLB: boolean = this.game.CURRENT_TICK % 15 === 0;
 
     if (length > 0) {
-      for (const entity of entities) {
-        if (entity instanceof Player) {
-          const update: UpdateUnits = new UpdateUnits(entities);
+      for (const client of clients) {
+        if (client.entity) {
+          // Send units
+          client.entity.sendUnits();
 
-          entity.client.socket.send(update.build, true);
+          // Send leaderboard
+          if (sendLB) client.entity.sendLeaderboard();
         }
-      }
-
-      // Unfortunately, this game is not much optimized for multiplayer stuff.
-      // This is why we need to synchronize some actions.
-      for (let index = 0; index < length; index++) {
-        const entity = entities[index];
-        
-        entity.action = false;
-        entity.state = entity instanceof Player ? EntityState.IDLE : EntityState.NONE;
       }
     }
 
-    // Update states
-    const canUpdateLeaderboard: boolean = !!~~(ticks % 25 === 0);
+    // Update units states
+    const units: Entity[] = this.game.world.entities.array;
+    const uLength: number = units.length;
+    
+    for (let index = 0; index < uLength; index++) {
+      const entity = units[index];
 
-    // Leaderboard
-    if (canUpdateLeaderboard) {
-      const players: Player[] = entities.filter(entity => entity instanceof Player) as Player[];
-      const leaderboard: Leaderboard = new Leaderboard(players);
-
-      for (const player of players) player.client.socket.send(leaderboard.build, true);
+      entity.action = false;
+      entity.state = entity instanceof Player ? EntityState.IDLE : EntityState.NONE;
     }
   }
 }

@@ -8,8 +8,8 @@
 
 import uws from 'uWebSockets.js';
 
-import Game from '../Game';
-import Logger from '../Logger';
+import Game from '../components/Game';
+import Logger from '../helpers/Logger';
 import NetworkClient from '../networking/components/Client';
 import { EntityState } from '../enums';
 
