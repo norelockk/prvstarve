@@ -4,6 +4,8 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
+import Matter from 'matter-js';
+
 import Game from '../components/game/Game';
 import Entity from '../components/Entity';
 import NetworkClient from '../networking/components/Client';
@@ -183,13 +185,15 @@ export class PlayerInventory {
 export class Player extends Entity {
   // Player data
   public score: number = 0;
+  public kills: number = 0;
   public nickname: string = '';
   public skin: PlayerSkin = new PlayerSkin();
   
   // Player inventory
   public inventory: PlayerInventory = new PlayerInventory(this);
 
-  // Player settings
+  // Player attack
+  private attackBox!: Matter.Body;
   private attackElapsed: number = 0;
   private attackDuration: number = 0.20 * 0.11;
 
@@ -200,6 +204,9 @@ export class Player extends Entity {
   // Entities own by this player
   public ownedEntities: Entity[] = [];
 
+  // Entities that is visible to player
+  public visibleEntities: Entity[] = [];
+
   // Player states update
   private resetAttacking(): void {
     this.attacking = false;
@@ -209,12 +216,17 @@ export class Player extends Entity {
   private processAttack(angle: number): void {
     this.state |= EntityState.ATTACK;
 
-    for (const target of this.game.world.entities.array) {
-      if (target instanceof Player) {
-        if (target === this) continue;
+    // for (const target of this.game.world.entities.array) {
+    //   if (target instanceof Player) {
+    //     if (target === this) continue;
+    //   }
+    // }
 
-      }
-    }
+    this.attackBox = Matter.Bodies.rectangle(this.position.x, this.position.y, 60, 50, {
+      label: "attackBox",
+      angle: this.angle,
+      isSensor: true,
+    });
   }
 
   constructor(game: Game, public client: NetworkClient, data: PlayerHandshakeInput) {

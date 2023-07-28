@@ -47,6 +47,11 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.4.tgz#0b92dcc0cc1c81f6f306a381f28e31b1a56536e9"
   integrity sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==
 
+"@types/matter-js@^0.18.5":
+  version "0.18.5"
+  resolved "https://registry.yarnpkg.com/@types/matter-js/-/matter-js-0.18.5.tgz#61eec5ffdd0b45e7ef3e5b3a2db48bebea31d50b"
+  integrity sha512-CV8m/FUmjmFNFcI7fUnsKcCLeqbf0kzWdKOTLGrpfKwWwrF6ggLaQlHNsg8267TkkiUAPoXY/7q6H9qwmR5TZg==
+
 "@types/msgpack-lite@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@types/msgpack-lite/-/msgpack-lite-0.1.8.tgz#032f19609e6353b65f2898d135e1f61e3aa8b102"

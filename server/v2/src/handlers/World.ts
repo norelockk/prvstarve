@@ -22,28 +22,29 @@ import { DeleteUnits } from "../networking/packets/bin/Units";
 import { WorldBiomes } from "../enums";
 
 export default class World implements GameMap {
-  private readonly game: Game;
   private readonly logger: Logger = new Logger(World.name);
 
   // World time
   public time: number = 0;
   public night: boolean = false;
-
   private readonly daytime: number = 40 * 60 * 1000;
 
   // Entity
   public entities: Pool<Entity> = new Pool;
 
-  // Map related
+  // Map data
   public seed: number = 0;
+  public islands: number = 6;
+  public tiles: any[] = [];
+
+  // Map things
   public bounds: Bounds = new Bounds(new Vector2(0, 0), new Vector2(0, 0));
+  public biomes: GameBiome[] = [];
+  public objects: GameObject[] = [];
   public spawnBiomes: GameBiome[] = [];
   public fallbackBiome: GameBiome = new GameBiome(WorldBiomes.SEA);
 
-  public biomes: GameBiome[] = [];
-  public objects: GameObject[] = [];
-
-  constructor(game: Game) {
+  constructor(private readonly game: Game) {
     this.game = game;
 
     // Initialize loading map tiles
@@ -124,6 +125,8 @@ export default class World implements GameMap {
           break;
         }
       }
+
+      this.tiles.push(TILE);
     }
 
     // Set fallback biome

@@ -11,7 +11,7 @@ import { Direction, EntityState, EntityType } from '../enums';
 export default class Entity {
   public id: number = -1;
   public type: EntityType = EntityType.PLAYERS;
-  public info: number = 7;
+  public info: number = 0;
   public speed: number = 200;
   public angle: number = 0;
   public extra: number = 0;
@@ -19,7 +19,6 @@ export default class Entity {
   public state: EntityState = EntityState.NONE;
 
   public action: boolean = true;
-
   public position: Vector2 = new Vector2(0, 0);
 
   private velocity: Vector2 = new Vector2(0, 0);
@@ -27,6 +26,14 @@ export default class Entity {
 
   constructor(public game: Game) {
     this.game = game;
+
+    switch (this.type) {
+      case EntityType.PLAYERS: {
+        this.info = 7;
+        break;
+      }
+      default: break;
+    }
   }
 
   public updateDirection(direction: number): void {

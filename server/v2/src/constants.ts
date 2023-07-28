@@ -1,4 +1,4 @@
-import { ObjectType, WorldBiomes } from "./enums";
+import { WorldBiomes } from "./enums";
 
 // export const MAP_OBJECTS: MapObject[] = [
 //   {

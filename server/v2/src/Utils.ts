@@ -5,6 +5,18 @@
  */
 
 import axios from 'axios';
+import { Vector } from 'matter-js';
+import Vector2 from './libs/vector';
+
+declare global {
+  interface Number {
+    clamp: (min: number, max: number) => number;
+  }
+}
+
+Number.prototype.clamp = function (min: number, max: number): number {
+  return Math.min(Math.max(this as number, min), max);
+};
 
 /**
  * @function hrtimeMs
@@ -101,3 +113,13 @@ function getDefaultOffsets(length: number, numOffsets: number): number[] {
   }
   return offsets;
 }
+
+export const angleToRadians = (angle: number): number => angle * Math.PI / 128;
+export const angleBetweenPoints = (v1: Vector | Vector2, v2: Vector | Vector2): number => Math.atan2(v1.x - v2.x, v1.y - v2.y) * 128 / Math.PI;
+
+export const translateVector = (vector: Vector | Vector2, radians: number, range: number = 120): Vector => {
+  const x: number = vector.x + range * Math.cos(radians);
+  const y: number = vector.y + range * Math.sin(radians);
+  
+  return { x, y };
+};

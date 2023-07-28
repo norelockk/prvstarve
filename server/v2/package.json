@@ -16,6 +16,7 @@
     "uWebSockets.js": "uNetworking/uWebSockets.js#v20.27.0"
   },
   "dependencies": {
+    "@types/matter-js": "^0.18.5",
     "@types/msgpack-lite": "^0.1.8",
     "@types/ws": "^8.5.5",
     "axios": "^1.4.0",

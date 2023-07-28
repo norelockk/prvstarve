@@ -92,10 +92,6 @@ export class HandshakeResponse {
   public player: Player;
   public players: Player[] = [];
   public maxPlayers: number = 100;
-  public mapTiles: any[] = [];
-  public mapWidth: number = 0;
-  public mapHeight: number = 0;
-  public mapIslands: number = 6;
 
   constructor(
       game: Game,
@@ -115,11 +111,6 @@ export class HandshakeResponse {
     }
 
     this.players = players;
-
-    this.mapTiles = this.game.config.get("GAMEPLAY")?.MAP?.TILES;
-    this.mapWidth = this.game.config.get("GAMEPLAY")?.MAP?.WIDTH;
-    this.mapHeight = this.game.config.get("GAMEPLAY")?.MAP?.HEIGHT;
-    this.mapIslands = this.game.config.get("GAMEPLAY")?.MAP?.ISLANDS;
     this.maxPlayers = this.game.config.get("SERVER")?.MAX_PLAYERS;
   }
 
@@ -153,7 +144,7 @@ export class HandshakeResponse {
       this.game.world.night ? 1 : 0, // Night - 2
       this.player.position.x, // Player position X, - 3
       players, // Player list - 4
-      0, // Day time - 5
+      0, // Day time (TODO) - 5
       this.player.ghost ? 1 : 0, // Ghost mode (TODO: not implemented yet)
       1000, // Max entities in world (TODO: not implemented yet)
       [], // Totem that player in with player list (TODO: not implemented yet)
@@ -167,11 +158,11 @@ export class HandshakeResponse {
       0, // Quest born timestamp? (TODO: not implemented yet)
       0, // Quests to be restored? (TODO: not implemented yet)
       0, // UNDEFINED IN CODE - DO NOT TOUCH IT
-      36, // Map seed generation (TODO: not implemented yet)
-      this.mapWidth, // Map width
-      this.mapHeight, // Map height
-      this.mapIslands, // Map islands
-      this.mapTiles, // Custom map
+      this.game.world.seed, // Map seed generation (for default generated maps)
+      this.game.world.bounds.max.x, // Map width
+      this.game.world.bounds.max.y, // Map height
+      this.game.world.islands, // Map islands
+      this.game.world.seed !== 0 ? this.game.world.tiles : [], // Custom map
       "", // Welcome message (TODO: not implemented yet)
       0, // Custom crafting receipes (TODO: not implemented yet)
       0, // Desert tempest (TODO: not implemented yet)
