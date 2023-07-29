@@ -4,11 +4,10 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
+import { convertBoolToNumber } from "../../../Utils";
 import Game from "../../../components/game/Game";
-import { Players } from "../../../interfaces";
 import { Player, PlayerSkin } from "../../../entities/Player";
 import { ClientPacket, Gamemodes } from "../../../enums";
-import Version from "../bin/Version";
 
 export class Versioning {
   public environment: string = 'production';
@@ -87,80 +86,63 @@ export class Handshake {
 }
 
 export class HandshakeResponse {
-  public game: Game;
-  public time: number = 0;
-  public player: Player;
-  public players: Player[] = [];
+  private readonly header: ClientPacket = ClientPacket.GAME_HANDSHAKE;
+  private playersJSON: object[] = [];
+
   public maxPlayers: number = 100;
 
   constructor(
-      game: Game,
-      player: Player,
-      private handshake: Handshake,
-      players: Player[],
+    private handshake: Handshake,
+    private players: Player[],
+    private player: Player,
+    private game: Game,
   ) {
-    this.game = game;
     this.handshake = handshake;
+    this.players = players;
     this.player = player;
+    this.game = game;
 
     // Check player version before doing anything
     if (this.player && this.player instanceof Player) {
-      const check: Versioning = new Versioning(handshake.clientVersion);
+      const check: Versioning = new Versioning(this.handshake.clientVersion);
 
       console.log(check);
     }
 
-    this.players = players;
+    const length: number = this.players.length;
+    for (let index = 0; index < length; index++) {
+      const player: Player = this.players[index];
+
+      if (player) this.playersJSON.push(player.json);
+    }
+
     this.maxPlayers = this.game.config.get("SERVER")?.MAX_PLAYERS;
   }
 
   get build(): object {
-    const players: Players[] = [];
-    const playersLen: number = this.players.length;
-
-    for (let i = 0; i < playersLen; i++) {
-      const player: Player = this.players[i];
-
-      if (player && player instanceof Player) {
-        const data: Players = {
-          i: player.client.id,
-          n: player.nickname,
-          s: player.skin.skin,
-          a: player.skin.accessory,
-          c: player.skin.lootBox,
-          b: player.skin.book,
-          d: player.skin.deadBox,
-          g: player.skin.bag,
-          l: player.client.id
-        };
-
-        players.push(data);
-      }
-    }
-
     return [
-      ClientPacket.GAME_HANDSHAKE, // Packet header - 0
+      this.header, // Packet header - 0
       Gamemodes.COMMUNITY, // Gamemode (TODO: make this gathering from game config) - 1
-      this.game.world.night ? 1 : 0, // Night - 2
+      0, // Days survived by player (TODO) - 2
       this.player.position.x, // Player position X, - 3
-      players, // Player list - 4
-      0, // Day time (TODO) - 5
-      this.player.ghost ? 1 : 0, // Ghost mode (TODO: not implemented yet)
-      1000, // Max entities in world (TODO: not implemented yet)
-      [], // Totem that player in with player list (TODO: not implemented yet)
-      this.player.client.id, // Player ID
-      this.player.position.y, // Player position Y,
-      this.maxPlayers, // Max players in server
-      "", // Player generated token ID (TODO: not implemented yet)
-      0, // Shop value? (TODO: not implemented yet)
-      this.player.inventory.items, // Player inventory
-      this.game.world.time, // World time
+      this.playersJSON, // Player list - 4
+      convertBoolToNumber(this.game.world.night), // Day time - 5
+      convertBoolToNumber(this.player.ghost), // Player ghost mode - 6
+      1000, // Max entities in world - 7
+      [], // Totem that player in with player list (TODO: not implemented yet) - 8
+      this.player.client.id, // Player ID - 9
+      this.player.position.y, // Player position Y - 10,
+      this.maxPlayers, // Max players in server - 11
+      "", // Player generated token ID (TODO: not implemented yet) - 12
+      0, // Shop value? (TODO: not implemented yet) - 13
+      this.player.inventory.items, // Player inventory - 14
+      this.game.world.time / 2, // World time - 15
       0, // Quest born timestamp? (TODO: not implemented yet)
       0, // Quests to be restored? (TODO: not implemented yet)
       0, // UNDEFINED IN CODE - DO NOT TOUCH IT
-      this.game.world.seed, // Map seed generation (for default generated maps)
-      this.game.world.bounds.max.x, // Map width
-      this.game.world.bounds.max.y, // Map height
+      this.game.world.seed, // Map seed (for generation maps)
+      this.game.world.bounds.max.x / 100, // Map width
+      this.game.world.bounds.max.y / 100, // Map height
       this.game.world.islands, // Map islands
       this.game.world.seed === 0 ? this.game.world.tiles : 0, // Custom map
       "", // Welcome message (TODO: not implemented yet)

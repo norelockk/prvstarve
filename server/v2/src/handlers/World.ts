@@ -8,19 +8,17 @@
 
 import Matter from "matter-js";
 
-import Pool from "../libs/pool";
 import Game from "../components/game/Game";
-import Entity from "../components/Entity";
 import Bounds from "../components/col/Bounds";
 import Logger from "../helpers/Logger";
 import Vector2 from "../libs/vector";
 import GameBiome from "../components/game/GameBiome";
-import TimeUpdate from "../networking/packets/bin/Time";
 import GameObject from "../components/game/GameObject";
+import TimeUpdate from "../networking/packets/bin/Time";
 
 import { Player } from "../entities/Player";
 import { GameMap } from "../interfaces";
-import { DeleteUnits } from "../networking/packets/bin/Units";
+import { DAY_TIME } from "../constants";
 import { WorldBiomes } from "../enums";
 
 export default class World implements GameMap {
@@ -29,10 +27,6 @@ export default class World implements GameMap {
   // World time
   public time: number = 0;
   public night: boolean = false;
-  private readonly daytime: number = 40 * 60 * 1000;
-
-  // Entity
-  public entities: Pool<Entity> = new Pool;
 
   // Map data
   public seed: number = 0;
@@ -80,7 +74,7 @@ export default class World implements GameMap {
 
     for (const TILE of MAP_TILES) {
       // Parse tile data
-      const [ TILE_TYPE, ...TILE_DATA ] = TILE;
+      const [TILE_TYPE, ...TILE_DATA] = TILE;
 
       // Can tile be pushed so it can be shown on game
       let canPush: boolean = false;
@@ -89,16 +83,16 @@ export default class World implements GameMap {
         // Parsing biome
         case 0: {
           let biome: GameBiome | boolean = false;
-        
+
           // Parse biome tile data
-          const [ BIOME_TYPE, MIN_W, MIN_H, MAX_W, MAX_H ] = TILE_DATA;
+          const [BIOME_TYPE, START_X, START_Y, MAX_W, MAX_H] = TILE_DATA;
 
           // Setup biome bounds
           const bounds: Bounds = new Bounds(
-            new Vector2(MIN_W * 100, MIN_H * 100),
+            new Vector2(START_X * 100, START_Y * 100),
             new Vector2(MAX_W * 100, MAX_H * 100)
           );
-  
+
           // Parse biome type
           switch (BIOME_TYPE) {
             case "FOREST": {
@@ -107,7 +101,7 @@ export default class World implements GameMap {
             }
             default: return this.logger.log('warn', 'Unknown biome type', BIOME_TYPE);
           }
-  
+
           // Push biome
           if (biome && biome instanceof GameBiome) {
             this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied (start: ${bounds.min}, end: ${bounds.max})`);
@@ -124,8 +118,7 @@ export default class World implements GameMap {
           let object: GameObject | boolean = false;
 
           // Parse map tile data
-          const [ OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y ] = TILE_DATA;
-
+          const [OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y] = TILE_DATA;
 
           // Push object
           if (object && object instanceof GameObject) {
@@ -155,49 +148,22 @@ export default class World implements GameMap {
     this.spawnBiomes = this.biomes.filter(b => b.biomeType === WorldBiomes.FOREST);
   }
 
-  private updateWorldTime(): void {
-    if (this.game.CURRENT_TICK % 3 === 0) {
-      this.time += 10;
+  update(delta: number): void {
+    // Update world time
+    if (this.game.CURRENT_TICK % 45 === 0) {
+      this.time += ~~(DAY_TIME / 50);
+      if (this.time >= DAY_TIME * 2) this.time = 0;
 
-      if (this.time > this.daytime * 2) {
-        this.time = 0;
-      }
-
-      const isNight: boolean = (this.time / this.daytime * 100) > 100;
-      // console.log('isNight: ' + isNight, this.time, this.time/this.daytime * 100);
-
-      if (this.night !== isNight) {
-        this.night = isNight;
+      const night: boolean = this.time / DAY_TIME >= 1;
+      if (this.night !== night) {
+        const packet: TimeUpdate = new TimeUpdate(night);
+        const players: Player[] = this.game.entities.pool.array.filter(e => e instanceof Player) as Player[];
         
-        const packet: TimeUpdate = new TimeUpdate(this.game);
-        const players: Player[] = this.entities.array.filter(e => e instanceof Player) as Player[];
+        for (const player of players)
+          player.client.socket.send(packet.build, true);
 
-        for (const player of players) player.client.socket.send(packet.build, true);
+        this.night = night;
       }
     }
-  }
-
-  update(delta: number): void {
-    const entities: Entity[] = this.entities.array;
-    
-    // Update entities
-    for (const entity of entities) entity.update(delta);
-    
-    // Update world time
-    this.updateWorldTime();
-  }
-
-  addEntity(entity: Entity): void {
-    this.entities.insert(entity);
-  }
-
-  removeEntity(entity: Entity): void {
-    const del: DeleteUnits = new DeleteUnits(entity);
-    const players: Player[] = this.entities.array.filter(e => e instanceof Player && e !== entity) as Player[];
-
-    for (const player of players)
-      player.client.socket.send(del.build, true);
-
-    this.entities.remove(entity);
   }
 }

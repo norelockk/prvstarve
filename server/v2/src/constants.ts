@@ -28,7 +28,10 @@ import { WorldBiomes } from "./enums";
 //   }
 // ];
 
-export const SpeedMultipliers = {
+export const TICK_RATE: number = 10;
+export const DAY_TIME: number = 8 * 60 * 1000;
+
+export const SPEED_MULTIPILERS = {
   [WorldBiomes.SEA]: -70,
   [WorldBiomes.LAVA]: -20,
   [WorldBiomes.FOREST]: 0,

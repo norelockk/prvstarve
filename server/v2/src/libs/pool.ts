@@ -10,7 +10,7 @@ export default class Pool<T extends T_GENERIC> {
   array: T[] = [];
   map: Map<number, number> = new Map;
   unused_ids: number[] = [];
-  id_cursor: number = 1000;
+  id_cursor: number = 100;
 
   insert(obj: T) {
     if (obj.id != -1) throw "Object already exists";

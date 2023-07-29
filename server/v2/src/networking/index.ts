@@ -7,15 +7,17 @@
  */
 
 import uws, { DEDICATED_COMPRESSOR_64KB } from 'uWebSockets.js';
+
 import ConfigReader from '../helpers/ConfigReader';
 import Game from '../components/game/Game';
 import Logger from '../helpers/Logger';
-import { getPublicIPAddress, isStringEmpty } from '../Utils';
 import ClientHandler from '../handlers/Client';
 import NetworkClient from './components/Client';
 import Entity from '../components/Entity';
+
 import { Player } from '../entities/Player';
 import { EntityState } from '../enums';
+import { getPublicIPAddress, isStringEmpty } from '../Utils';
 
 export default class NetworkServer {
   private host: string = '';
@@ -135,7 +137,7 @@ export default class NetworkServer {
     const length: number = clients.length;
 
     // States
-    const sendLB: boolean = this.game.CURRENT_TICK % 15 === 0;
+    const sendLB: boolean = this.game.CURRENT_TICK % 30 === 0;
 
     if (length > 0) {
       for (const client of clients) {
@@ -150,7 +152,7 @@ export default class NetworkServer {
     }
 
     // Update units states
-    const units: Entity[] = this.game.world.entities.array;
+    const units: Entity[] = this.game.entities.pool.array;
     const uLength: number = units.length;
     
     for (let index = 0; index < uLength; index++) {

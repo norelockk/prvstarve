@@ -17,6 +17,7 @@ import { xorDecrypt } from '../../Utils';
 import { RegisteredJSONHandler } from '../../types';
 import { Handshake, HandshakeResponse } from '../packets/json/Handshake';
 import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack } from './handlers/Base';
+import GameBiome from '../../components/game/GameBiome';
 
 export default class NetworkClient {
   // Logger
@@ -113,8 +114,22 @@ export default class NetworkClient {
             });
 
             if (player) {
+              let biome: GameBiome | boolean = false;
+
+              // Select random biome
+              if (this.game.world.spawnBiomes.length > 1)
+                biome = this.game.world.spawnBiomes[~~(Math.random() * this.game.world.spawnBiomes.length) - 1];
+              else
+                biome = this.game.world.spawnBiomes[0];
+              
+              // Spawn player in random place
+              if (biome) {
+                player.position.x = ~~(Math.random() * biome.bounds.max.x + biome.bounds.min.x);
+                player.position.y = ~~(Math.random() * biome.bounds.max.y + biome.bounds.min.y);
+              }
+
               // Insert player to world
-              this.game.world.addEntity(player);
+              this.game.entities.addEntity(player);
               this.entity = player;
 
               // Send to other clients to register new player
@@ -131,8 +146,13 @@ export default class NetworkClient {
               }
 
               // Send an response to the client
-              const response: HandshakeResponse = new HandshakeResponse(this.game, player, handshakeData, this.game.world.entities.array as Player[]);
-              this.socket.send(JSON.stringify(response.build));
+              const response: HandshakeResponse = new HandshakeResponse(
+                handshakeData,
+                this.game.entities.pool.array.filter(e => e instanceof Player) as Player[], 
+                player,
+                this.game
+              );
+              if (response) this.socket.send(JSON.stringify(response.build));
 
               // Send current leaderboard
               this.entity.sendLeaderboard();

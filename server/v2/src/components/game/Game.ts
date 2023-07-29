@@ -5,10 +5,14 @@
  */
 
 import ConfigReader from "../../helpers/ConfigReader";
+import Entities from "../../handlers/Entity";
 import Logger from "../../helpers/Logger";
 import World from "../../handlers/World";
+
 import { hrtimeMs } from "../../Utils";
 import { network } from "../..";
+import { TICK_RATE } from "../../constants";
+import Entity from "../../handlers/Entity";
 
 export default class Game {
   // Logging system
@@ -16,15 +20,16 @@ export default class Game {
 
   // World
   public world!: World;
+  public entities!: Entities;
 
   // Configuration
   public config!: ConfigReader;
 
   // Ticks system
   private DELTA: number = 0;
-  private TICK_RATE: number = 0;
   private TICK_LENGTH_MS: number = 0;
   private PREVIOUS_TICK: number = hrtimeMs();
+
   public CURRENT_TICK: number = 0;
 
   public static construct(config: ConfigReader): Game {
@@ -37,6 +42,9 @@ export default class Game {
 
     // Setup world
     this.world = new World(this);
+
+    // Setup entity manager
+    this.entities = new Entity(this);
   }
 
   /**
@@ -45,8 +53,7 @@ export default class Game {
    */
   public initialize(): void {
     // Set proper tick rate
-    this.TICK_RATE = this.config.get('SERVER')?.TICKS ?? 10;
-    this.TICK_LENGTH_MS = 1000 / this.TICK_RATE;
+    this.TICK_LENGTH_MS = 1000 / TICK_RATE;
 
     // Start ticking
     this._tick();
@@ -85,6 +92,9 @@ export default class Game {
   private update(delta: number): void {
     // Update world
     this.world.update(delta);
+
+    // Update entities
+    this.entities.update(delta);
 
     // Send updates to network
     if (network) network.update();

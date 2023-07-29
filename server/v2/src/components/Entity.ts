@@ -71,7 +71,7 @@ export default class Entity {
       this.action = true;
     }
 
-    this.position.x = Math.min(Math.max(this.position.x, this.game.world.bounds.min.x), this.game.world.bounds.max.x);
-    this.position.y = Math.min(Math.max(this.position.y, this.game.world.bounds.min.y), this.game.world.bounds.max.y);
+    this.position.x = Math.min(Math.max(this.position.x, this.game.world.bounds.min.x), this.game.world.bounds.max.x - 1);
+    this.position.y = Math.min(Math.max(this.position.y, this.game.world.bounds.min.y), this.game.world.bounds.max.y - 1);
   }
 }

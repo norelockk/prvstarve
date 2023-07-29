@@ -1,20 +1,19 @@
 import { BinaryWriter } from "../../../libs/binary";
 import { ServerPacket } from "../../../enums";
-import Game from "../../../components/game/Game";
+import { convertBoolToNumber } from "../../../Utils";
 
 export default class TimeUpdate {
-  private buffer: BinaryWriter = new BinaryWriter;
-  
+  private readonly buffer: BinaryWriter = new BinaryWriter;
   private readonly header: ServerPacket = ServerPacket.UPDATE_TIME;
 
-  constructor(private game: Game) {
-    this.game = game;
+  constructor(private state: boolean = false) {
+    this.state = state;
   }
 
   get build(): Uint8Array {
     this.buffer.reset();
     this.buffer.writeU8(this.header);
-    this.buffer.writeU8(this.game.world.night ? 1 : 0);
+    this.buffer.writeU8(convertBoolToNumber(this.state));
 
     return this.buffer.bytes;
   }

@@ -10,7 +10,7 @@ import Game from '../components/game/Game';
 import Entity from '../components/Entity';
 import NetworkClient from '../networking/components/Client';
 import { EntityState, ItemType, RemoveType } from '../enums';
-import { PlayerHandshakeInput } from '../interfaces';
+import { PlayerHandshakeInput, Players } from '../interfaces';
 import { isStringEmpty } from '../Utils';
 import { Item, ItemStack } from '../components/Item';
 import { UpdateUnits } from '../networking/packets/bin/Units';
@@ -250,6 +250,20 @@ export class Player extends Entity {
     this.nickname = nickname;
   }
 
+  get json(): Players {
+    return {
+      i: this.client.id,
+      n: this.nickname,
+      s: this.skin.skin,
+      a: this.skin.accessory,
+      c: this.skin.lootBox,
+      b: this.skin.book,
+      d: this.skin.deadBox,
+      g: this.skin.bag,
+      l: this.client.id
+    } as Players;
+  }
+
   public update(delta: number): void {
     super.update(delta);
 
@@ -275,14 +289,14 @@ export class Player extends Entity {
   }
 
   public sendUnits(): void {
-    const units: Entity[] = this.game.world.entities.array;
+    const units: Entity[] = this.game.entities.pool.array;
     const packet: UpdateUnits = new UpdateUnits(units);
 
     this.client.socket.send(packet.build, true);
   }
 
   public sendLeaderboard(): void {
-    const otherPlayers: Player[] = this.game.world.entities.array.filter(p => p && p instanceof Player) as Player[];
+    const otherPlayers: Player[] = this.game.entities.pool.array.filter(p => p && p instanceof Player) as Player[];
     const packet: Leaderboard = new Leaderboard(otherPlayers);
 
     this.client.socket.send(packet.build, true);
