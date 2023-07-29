@@ -117,15 +117,17 @@ export default class NetworkClient {
               let biome: GameBiome | boolean = false;
 
               // Select random biome
-              if (this.game.world.spawnBiomes.length > 1)
-                biome = this.game.world.spawnBiomes[~~(Math.random() * this.game.world.spawnBiomes.length) - 1];
-              else
+              if (this.game.world.spawnBiomes.length > 1) {
+                const selectedBiome: number = ~~(Math.random() * this.game.world.spawnBiomes.length) - 1;
+
+                biome = this.game.world.spawnBiomes[selectedBiome];
+              } else
                 biome = this.game.world.spawnBiomes[0];
               
               // Spawn player in random place
               if (biome) {
-                player.position.x = ~~(Math.random() * biome.bounds.max.x + biome.bounds.min.x);
-                player.position.y = ~~(Math.random() * biome.bounds.max.y + biome.bounds.min.y);
+                player.position.x = Math.min(Math.max(~~(Math.random() * biome.bounds.max.x), biome.bounds.max.x / 2), biome.bounds.max.x - 1);
+                player.position.y = Math.min(Math.max(~~(Math.random() * biome.bounds.max.x), biome.bounds.max.y / 2), biome.bounds.max.y - 1);
               }
 
               // Insert player to world
