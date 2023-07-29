@@ -10,21 +10,17 @@ import msgpack from 'msgpack-lite';
 import Game from '../../components/game/Game';
 import Logger from "../../helpers/Logger";
 import NewPlayer from '../packets/json/NewPlayer';
+import GameBiome from '../../components/game/GameBiome';
 
 import { Player } from '../../entities/Player';
-import { network } from '../..';
 import { xorDecrypt } from '../../Utils';
 import { RegisteredJSONHandler } from '../../types';
 import { Handshake, HandshakeResponse } from '../packets/json/Handshake';
 import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack } from './handlers/Base';
-import GameBiome from '../../components/game/GameBiome';
 
 export default class NetworkClient {
   // Logger
   private logger: Logger = new Logger(NetworkClient.name);
-
-  // Game
-  private game: Game;
 
   // Player entity
   public entity?: Player;
@@ -39,17 +35,15 @@ export default class NetworkClient {
     [14, handleStopAttack]
   ];
 
-  // Public properties
-  public id: number = 0;
-  public socket: uws.WebSocket<any>;
-  public handshaked: boolean = false;
-
-  // Static constructor so it can be instantiated
-  public static create(id: number, game: Game, socket: uws.WebSocket<any>): NetworkClient {
-    return new NetworkClient(id, game, socket);
+  private registerHandler(registeredHandler: RegisteredJSONHandler): void {
+    if (registeredHandler.handlerType === "JSON" && !this.JSONHandlers.has(registeredHandler.header))
+      this.JSONHandlers.set(registeredHandler.header, registeredHandler.handler);
   }
 
-  constructor(id: number, game: Game, socket: uws.WebSocket<any>) {
+  // Public properties
+  public handshaked: boolean = false;
+
+  constructor(public game: Game, public id: number = -1, public socket: uws.WebSocket<any>) {
     this.id = id;
     this.game = game;
     this.socket = socket;
@@ -95,8 +89,6 @@ export default class NetworkClient {
       this.logger.log('error', 'message parse fail', error);
     } finally {
       if (Array.isArray(json)) {
-        // this.logger.log('debug', 'message received', JSON.stringify(json));
-
         // Splitting the message into header and data
         const [header, ...data] = json;
 
@@ -121,8 +113,7 @@ export default class NetworkClient {
                 const selectedBiome: number = ~~(Math.random() * this.game.world.spawnBiomes.length) - 1;
 
                 biome = this.game.world.spawnBiomes[selectedBiome];
-              } else
-                biome = this.game.world.spawnBiomes[0];
+              } else biome = this.game.world.spawnBiomes[0];
               
               // Spawn player in random place
               if (biome) {
@@ -131,15 +122,15 @@ export default class NetworkClient {
               }
 
               // Insert player to world
-              this.game.entities.addEntity(player);
               this.entity = player;
+              this.game.entities.addEntity(this.entity);
 
               // Send to other clients to register new player
-              const len: number = network.clients.array.length;
-              const packet: NewPlayer = new NewPlayer(player);
+              const len: number = this.game.network.clients.array.length;
+              const packet: NewPlayer = new NewPlayer(this.entity);
 
               for (let index = 0; index < len; index++) {
-                const client = network.clients.array[index];
+                const client = this.game.network.clients.array[index];
 
                 if (client.socket === this.socket)
                   continue;
@@ -163,14 +154,11 @@ export default class NetworkClient {
             this.handshaked = true;
           }
         } else {
+          this.logger.log('debug', 'message received', JSON.stringify(json));
+          
           this.handleJSONCommunication(json);
         }
       }
     }
-  }
-
-  public registerHandler(registeredHandler: RegisteredJSONHandler): void {
-    if (registeredHandler.handlerType === "JSON" && !this.JSONHandlers.has(registeredHandler.header))
-      this.JSONHandlers.set(registeredHandler.header, registeredHandler.handler);
   }
 }

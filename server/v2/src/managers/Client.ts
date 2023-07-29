@@ -1,25 +1,15 @@
-/**
- * @class ClientHandler
- * @description Handles the management of network clients in a server application.
- * @license private
- * @date 4 July 2023
- * @copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
- */
-
 import uws from 'uWebSockets.js';
 
 import Game from '../components/game/Game';
 import Logger from '../helpers/Logger';
 import NetworkClient from '../networking/components/Client';
+
 import { EntityState } from '../enums';
 
-export default class ClientHandler {
+export default class Client {
   // Logger
-  private logger: Logger = new Logger(ClientHandler.name);
-
-  // Game
-  private game: Game;
-
+  private readonly logger: Logger = new Logger(Client.name);
+  
   // ID pool
   private idCtr: number = 1;
   private idPool: number[] = [];
@@ -32,7 +22,7 @@ export default class ClientHandler {
    * @constructor ClientHandler
    * @description Creates a new client handler.
    */
-  constructor(game: Game) {
+  constructor(private game: Game) {
     this.game = game;
   }
 
@@ -83,7 +73,7 @@ export default class ClientHandler {
     if (!client) {
       const id: number = this.createId();
       
-      client = NetworkClient.create(id, this.game, socket);
+      client = new NetworkClient(this.game, id, socket);
 
       this.idIndexMap.set(id, this.array.length);
       this.array.push(client);
@@ -106,7 +96,7 @@ export default class ClientHandler {
       if (_client.entity) {
         _client.entity.state |= EntityState.DELETE;
 
-        this.game.world.removeEntity(_client.entity);
+        this.game.entities.removeEntity(_client.entity);
       }
 
       const cid: number = client.id;

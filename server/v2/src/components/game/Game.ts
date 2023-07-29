@@ -4,62 +4,66 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
+import NetworkServer from "../../networking";
 import ConfigReader from "../../helpers/ConfigReader";
-import Entities from "../../handlers/Entity";
+import Entities from "../../managers/Entity";
 import Logger from "../../helpers/Logger";
-import World from "../../handlers/World";
+import World from "../../managers/World";
 
 import { hrtimeMs } from "../../Utils";
-import { network } from "../..";
 import { TICK_RATE } from "../../constants";
-import Entity from "../../handlers/Entity";
 
 export default class Game {
   // Logging system
   private readonly logger: Logger = new Logger(Game.name);
 
-  // World
+  // Managers
   public world!: World;
+  public network!: NetworkServer;
   public entities!: Entities;
 
-  // Configuration
-  public config!: ConfigReader;
+  // Properties
+  public initialized: boolean = false;
 
   // Ticks system
   private DELTA: number = 0;
   private TICK_LENGTH_MS: number = 0;
   private PREVIOUS_TICK: number = hrtimeMs();
-
   public CURRENT_TICK: number = 0;
 
-  public static construct(config: ConfigReader): Game {
-    return new Game(config);
-  }
-
-  constructor(config: ConfigReader) {
+  constructor(public config: ConfigReader) {
     // Load config into class
     this.config = config;
 
-    // Setup world
+    // Setup world, network and entities
     this.world = new World(this);
+    this.network = new NetworkServer(this);
+    this.entities = new Entities(this);
 
-    // Setup entity manager
-    this.entities = new Entity(this);
+    // Initialize whole game
+    this.initialize();
   }
 
   /**
    * @function initialize
    * @description Initializes the game instance
    */
-  public initialize(): void {
-    // Set proper tick rate
-    this.TICK_LENGTH_MS = 1000 / TICK_RATE;
+  private initialize(): void {
+    if (!this.initialized) {
+      // Initialize world
 
-    // Start ticking
-    this._tick();
+      // Set proper tick rate
+      this.TICK_LENGTH_MS = 1000 / TICK_RATE;
 
-    // Informs the game that it is ready
-    this.logger.log('info', "Game ready");
+      // Start ticking
+      this._tick();
+
+      // Informs the game that it is ready
+      this.logger.log('info', "Game ready");
+
+      // Set up to be initialized
+      this.initialized = true;
+    }
   }
 
   /**
@@ -97,6 +101,6 @@ export default class Game {
     this.entities.update(delta);
 
     // Send updates to network
-    if (network) network.update();
+    this.network.update();
   }
 }

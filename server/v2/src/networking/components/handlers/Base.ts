@@ -1,5 +1,5 @@
 import NetworkClient from '../Client';
-import { network } from '../../..';
+
 import { Player } from '../../../entities/Player';
 import { ClientPacket } from '../../../enums';
 
@@ -25,7 +25,7 @@ export const handleStopAttack = (client: NetworkClient, data: any[]): void => {
 
 export const handleChat = (client: NetworkClient, data: any[]): void => {
   if (client && client.entity instanceof Player) {
-    for (const player of network.clients.array) {
+    for (const player of client.game.network.clients.array) {
       if (player.id === client.id)
         continue;
 

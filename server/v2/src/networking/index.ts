@@ -11,7 +11,7 @@ import uws, { DEDICATED_COMPRESSOR_64KB } from 'uWebSockets.js';
 import ConfigReader from '../helpers/ConfigReader';
 import Game from '../components/game/Game';
 import Logger from '../helpers/Logger';
-import ClientHandler from '../handlers/Client';
+import ClientHandler from '../managers/Client';
 import NetworkClient from './components/Client';
 import Entity from '../components/Entity';
 
