@@ -88,11 +88,51 @@
 }
 
 .message .content .progress {
-  margin-bottom: 35px;
-  width: 200px;
-  height: 3px;
-  background: rgba(255, 255, 255, .2);
+  margin-bottom: 40px !important;
+  width: 15em;
+  height: 5px;
+  background: hsla(0, 0%, 100%, .2);
+  border-radius: 100px;
+  overflow: hidden;
   position: relative;
+  margin: 1em 0;
+}
+
+@-webkit-keyframes loading-prefill {
+  0% {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+  }
+
+  to {
+    -webkit-transform: translateX(200%);
+    transform: translateX(200%);
+  }
+}
+
+@keyframes loading-prefill {
+  0% {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+  }
+
+  to {
+    -webkit-transform: translateX(200%);
+    transform: translateX(200%);
+  }
+}
+
+.message .content .progress:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: hsla(0, 0%, 100%, .1);
+  border-radius: 100%;
+  -webkit-animation: loading-prefill 1s ease infinite;
+  animation: loading-prefill 1s ease infinite;
 }
 
 .message .content .progress .fill {
@@ -100,10 +140,9 @@
   top: 0;
   left: 0;
   height: 100%;
-  width: 5%;
-  background: #6fade3;
-  box-shadow: 0px 3px 20px 0.12px #6fade3;
-  transition: width .5s;
+  transition: all 0.4s;
+  background: #cecece;
+  border-radius: 100px;
 }
 
 .message .content .progress .fill.no-transition {
@@ -129,9 +168,7 @@
 </style>
 
 <template>
-  <div
-    class="message"
-  >
+  <div class="message">
     <div class="content">
       <h1 v-if="!__isStrEmpty($props.title)" v-text="$props.title"></h1>
       <div class="progress" v-if="$props.progress.show">
@@ -195,12 +232,6 @@ export default Vue.extend({
     },
   },
   computed: {
-    // M_classList() {
-    //   const __this = this;
-    //   return {
-    //     active: __this.$props.showing
-    //   }
-    // },
     M_progressStyle() {
       const __this = this;
 

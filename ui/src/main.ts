@@ -15,10 +15,14 @@ declare global {
 export const emitter: EventEmitter<any> = new EventEmitter();
 
 window['restarve'] = emitter;
+window['LOLIPOP_UI'] = {
+  state: store.getters['ui/showing']
+};
 window['LOLIPOP_DATA'] = env;
 window['LOLIPOP_CONSOLE'] = {
   call: pushConsoleMessage,
   state: store.getters['console/showing']
 };
+window['LOLIPOP_SELECTED_SERVER'] = {};
 
 new Entrypoint;

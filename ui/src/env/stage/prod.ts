@@ -6,6 +6,6 @@ export default {
 
   // Lolipop UI environment properties
   LOLIPOP_ENV: process.env.NODE_ENV,
-  LOLIPOP_LOBBY_URL: `${location.protocol}//lobby.restarve.pro`,
+  LOLIPOP_LOBBY_URL: `${location.protocol === 'file:' || location.protocol === 'game:' ? 'http:' : 'https:'}//lobby.restarve.pro`,
   LOLIPOP_BUILD_HASH: process.env.LOLIPOP_UI_GIT_HASH,
 }

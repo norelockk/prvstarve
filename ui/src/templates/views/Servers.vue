@@ -516,6 +516,14 @@
           <input v-model="FILTERS.HIDE_LOCKED" name="locked" type="checkbox" />
           <label for="locked" v-text="'Hide locked servers'"></label>
         </div>
+        <a class="update">
+          <i
+            class="ic-clockwise"
+            :class="UPDATE.UPDATING ? 'spin' : ''"
+            @click="S_update"
+          ></i>
+          <span v-text="'Refresh'"></span>
+        </a>
       </div>
       
       <div class="serverlist">
@@ -552,6 +560,8 @@
 import Vue from 'vue';
 import sortBy from 'sort-by';
 
+import env from '@/env';
+import { get } from '@/utils';
 import { Server } from '@/interfaces';
 
 export default Vue.extend({
@@ -560,6 +570,10 @@ export default Vue.extend({
       SERVERS: 0,
       PLAYERS: 0
     },
+    UPDATE: {
+      UPDATING: false,
+      LAST_UPDATED: 0,
+    },
     ORDERS: [] as any,
     FILTERS: {
       HIDE_FULL: false,
@@ -567,28 +581,7 @@ export default Vue.extend({
       HIDE_LOCKED: false,
       SEARCH_INPUT: ''
     },
-    SERVERS: [
-      // {
-      //   n: 'Test server',
-      //   cp: 200,
-      //   mp: 200,
-      //   l: 25,
-      //   m: 'Forest (Legacy)',
-      //   w: 'restarve.pro',
-      //   u: 'xxxxx-xxxxxxxx-xxxx-xxxxx',
-      //   lc: false,
-      // },
-      // {
-      //   n: 'Test x server',
-      //   cp: 4500,
-      //   mp: 200,
-      //   l: 25,
-      //   m: 'Forest (Legacy)',
-      //   w: 'restarve.pro',
-      //   u: 'xxxxx-xxxxxxxx-xxxx-xxxxx',
-      //   lc: false,
-      // },
-    ] as Server[],
+    SERVERS: [] as Server[],
   }),
   computed: {
     SERVERS_FILTERED() {
@@ -623,6 +616,29 @@ export default Vue.extend({
     },
   },
   methods: {
+    async S_load() {
+      if (!this.UPDATE.UPDATING) {
+        this.UPDATE.UPDATING = true;
+
+        const r = await get(`${env.LOLIPOP_LOBBY_URL}/servers`);
+
+        if (r && this.UPDATE.UPDATING) {
+          this.SERVERS = r;
+
+          this.UPDATE.LAST_UPDATED = Date.now();
+          this.UPDATE.UPDATING = false;
+        }
+      }
+    },
+    S_update() {
+      const now: number = Date.now();
+      const remained: number = now - this.UPDATE.LAST_UPDATED;
+
+      if (remained >= 5000 && !this.UPDATE.UPDATING) this.S_load(); 
+    },
+    S_init() {
+      this.S_load();
+    },
     S_sort(property: string, index: number) {
       if (this.ORDERS[index] === '-') {
         this.SERVERS = this.SERVERS.sort(sortBy(property));
@@ -654,6 +670,9 @@ export default Vue.extend({
         description: 'You are joining to..'
       });
     }
+  },
+  created() {
+    this.S_init();
   }
 })
 </script>

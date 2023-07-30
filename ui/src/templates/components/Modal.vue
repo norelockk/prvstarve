@@ -278,6 +278,8 @@
 
 <script lang="ts">
 import Vue from 'vue';
+
+import { destroyMessage, showMessage } from '@/uiCalls';
 import { get } from '../../utils';
 import env from '@/env';
 
@@ -319,11 +321,30 @@ export default Vue.extend({
       return this.$store.dispatch('modals/destroy', this.$props.identifier);
     },
     async M_connect() {
-      // TODO: call API to resolve the real server data n' stuff.
       if (!this.__isStrEmpty(this.$props.serverId) && typeof this.$props.serverId === 'string') {
-        const SERVER_INFO = await get(`${env.LOLIPOP_LOBBY_URL}/server/${this.$props.serverId}`);
+        // Destroy current modal
+        this.M_close();
 
-        console.log(SERVER_INFO);
+        // Display connecting message with retriving server data
+        showMessage({
+          description: 'Retrieving server data..',
+          identifier: 'DOWNLOAD_SERVER_DATA',
+          progress: {
+            show: true,
+            fill: 0
+          },
+          title: 'Connecting',
+          actions: []
+        });
+
+        // Get server data
+        const SERVER_INFO = await get(`${env.LOLIPOP_LOBBY_URL}/server/${this.$props.serverId}`);
+        if (SERVER_INFO) {
+          if ('LOLIPOP_SELECTED_SERVER' in window && window['LOLIPOP_SELECTED_SERVER'] !== SERVER_INFO) window['LOLIPOP_SELECTED_SERVER'] = SERVER_INFO;
+          if ('client' in window) window.client.connect();
+        } else if (!SERVER_INFO.ok) {
+          destroyMessage('DOWNLOAD_SERVER_DATA');
+        }
       }
     },
   },

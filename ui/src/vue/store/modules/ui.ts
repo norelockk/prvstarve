@@ -14,7 +14,10 @@ const getters: GetterTree<UiState, {}> = {
 
 const mutations: MutationTree<UiState> = {
   show(state) {
-    state.show = !state.show
+    state.show = !state.show;
+
+    if ('state' in window['LOLIPOP_UI'])
+      window['LOLIPOP_UI']['state'] = state.show;
   }
 };
 
