@@ -4,10 +4,10 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import { convertBoolToNumber } from "../../../Utils";
-import Game from "../../../components/game/Game";
-import { Player, PlayerSkin } from "../../../entities/Player";
-import { ClientPacket, Gamemodes } from "../../../enums";
+import { convertBoolToNumber } from "../../../../Utils";
+import Game from "../../../../components/game/Game";
+import { Player, PlayerSkin } from "../../../../entities/Player";
+import { ClientPacket, Gamemodes } from "../../../../enums";
 
 export class Versioning {
   public environment: string = 'production';

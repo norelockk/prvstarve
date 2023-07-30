@@ -13,8 +13,8 @@ import { EntityState, ItemType, RemoveType } from '../enums';
 import { PlayerHandshakeInput, Players } from '../interfaces';
 import { isStringEmpty } from '../Utils';
 import { Item, ItemStack } from '../components/Item';
-import { UpdateUnits } from '../networking/packets/bin/Units';
-import Leaderboard from '../networking/packets/bin/Leaderboard';
+import { UpdateUnits } from '../components/networking/packets/bin/Units';
+import Leaderboard from '../components/networking/packets/bin/Leaderboard';
 
 export class PlayerSkin {
   public bag: number;

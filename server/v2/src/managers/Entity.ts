@@ -4,7 +4,7 @@ import Entity from "../components/Entity";
 import Logger from "../helpers/Logger";
 
 import { Player } from "../entities/Player";
-import { DeleteUnits } from "../networking/packets/bin/Units";
+import { DeleteUnits } from "../components/networking/packets/bin/Units";
 
 export default class EntityManager {
   private readonly logger: Logger = new Logger(EntityManager.name);

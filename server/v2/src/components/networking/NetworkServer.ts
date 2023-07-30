@@ -20,26 +20,14 @@ import { EntityState } from '../../enums';
 import { getPublicIPAddress, isStringEmpty } from '../../Utils';
 
 export default class NetworkServer {
+  private readonly logger: Logger = new Logger(NetworkServer.name);
+
+  private config!: ConfigReader;
+  private socket!: uws.TemplatedApp;
+
   private host: string = '';
-  private game: Game;
-  private config: ConfigReader;
-  private socket: uws.TemplatedApp;
-  private logger: Logger = new Logger(NetworkServer.name);
 
-  public clients: ClientHandler;
-
-  /**
-   * @function construct
-   * @description Constructs a new instance of NetworkServer.
-   * @static
-   * @param {ConfigReader} config - The configuration reader instance.
-   * @param {Game} game - The game instance.
-   * @returns {NetworkServer} The created NetworkServer instance.
-   * @memberOf NetworkServer
-   */
-  public static construct(game: Game): NetworkServer {
-    return new NetworkServer(game);
-  }
+  // public clients: ClientHandler;
 
   /**
    * @constructor
@@ -47,10 +35,10 @@ export default class NetworkServer {
    * @param {ConfigReader} config - The configuration reader instance.
    * @memberOf NetworkServer
    */
-  constructor(game: Game) {
+  constructor(private game: Game) {
     this.game = game;
+
     this.config = this.game.config;
-    this.clients = new ClientHandler(this.game);
 
     this.socket = uws.App()
       .ws('/', {
@@ -71,7 +59,7 @@ export default class NetworkServer {
    * @memberOf NetworkServer
    */
   private socketOpen(socket: uws.WebSocket<any>): void {
-    this.clients.addClient(socket);
+    this.game.clients.addClient(socket);
   }
 
   /**
@@ -81,7 +69,7 @@ export default class NetworkServer {
    * @memberOf NetworkServer
    */
   private socketMessage(socket: uws.WebSocket<any>, message: any): void {
-    const client = this.clients.findClientBySocket(socket);
+    const client = this.game.clients.findClientBySocket(socket);
 
     if (client) {
       client.handleMessage(message);
@@ -95,7 +83,7 @@ export default class NetworkServer {
    * @memberOf NetworkServer
    */
   private socketClose(socket: uws.WebSocket<any>): void {
-    this.clients.destroyClient(this.clients.findClientBySocket(socket));
+    this.game.clients.destroyClient(this.game.clients.findClientBySocket(socket));
   }
 
   /**
@@ -133,7 +121,7 @@ export default class NetworkServer {
   }
 
   public update(): void {
-    const clients: NetworkClient[] = this.clients.array;
+    const clients: NetworkClient[] = this.game.clients.array;
     const length: number = clients.length;
 
     // States

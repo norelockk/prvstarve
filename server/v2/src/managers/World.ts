@@ -14,7 +14,7 @@ import Logger from "../helpers/Logger";
 import Vector2 from "../libs/vector";
 import GameBiome from "../components/game/GameBiome";
 import GameObject from "../components/game/GameObject";
-import TimeUpdate from "../networking/packets/bin/Time";
+import TimeUpdate from "../components/networking/packets/bin/Time";
 
 import { Player } from "../entities/Player";
 import { GameMap } from "../interfaces";

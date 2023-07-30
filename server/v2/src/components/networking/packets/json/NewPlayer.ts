@@ -1,5 +1,5 @@
-import { Player } from "../../../entities/Player";
-import { ClientPacket } from "../../../enums";
+import { Player } from "../../../../entities/Player";
+import { ClientPacket } from "../../../../enums";
 
 export default class NewPlayer {
   constructor(private player: Player) {

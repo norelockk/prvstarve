@@ -1,7 +1,7 @@
-import { BinaryWriter } from "../../../libs/binary";
-import Entity from "../../../components/Entity";
-import { EntityState, ServerPacket } from "../../../enums";
-import { Player } from "../../../entities/Player";
+import { BinaryWriter } from "../../../../libs/binary";
+import Entity from "../../../../components/Entity";
+import { EntityState, ServerPacket } from "../../../../enums";
+import { Player } from "../../../../entities/Player";
 
 export class UpdateUnits {
   private buffer: BinaryWriter = new BinaryWriter();

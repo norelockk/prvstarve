@@ -1,6 +1,6 @@
-import { BinaryWriter } from "../../../libs/binary";
-import { Player } from "../../../entities/Player";
-import { ServerPacket } from "../../../enums";
+import { BinaryWriter } from "../../../../libs/binary";
+import { Player } from "../../../../entities/Player";
+import { ServerPacket } from "../../../../enums";
 
 export default class Leaderboard {
   private buffer: BinaryWriter = new BinaryWriter;

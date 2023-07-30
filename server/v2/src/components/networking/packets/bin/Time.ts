@@ -1,6 +1,6 @@
-import { BinaryWriter } from "../../../libs/binary";
-import { ServerPacket } from "../../../enums";
-import { convertBoolToNumber } from "../../../Utils";
+import { BinaryWriter } from "../../../../libs/binary";
+import { ServerPacket } from "../../../../enums";
+import { convertBoolToNumber } from "../../../../Utils";
 
 export default class TimeUpdate {
   private readonly buffer: BinaryWriter = new BinaryWriter;

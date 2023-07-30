@@ -4,7 +4,8 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import NetworkServer from "../networking";
+import NetworkServer from "../networking/NetworkServer";
+import ClientManager from "../../managers/Client";
 import ConfigReader from "../../helpers/ConfigReader";
 import Entities from "../../managers/Entity";
 import Logger from "../../helpers/Logger";
@@ -20,6 +21,7 @@ export default class Game {
 
   // Managers
   public world!: World;
+  public clients!: ClientManager;
   public network!: NetworkServer;
   public entities!: Entities;
 
@@ -38,6 +40,7 @@ export default class Game {
 
     // Setup world, network and entities
     this.world = new World(this);
+    this.clients = new ClientManager(this);
     this.network = new NetworkServer(this);
     this.entities = new Entities(this);
 

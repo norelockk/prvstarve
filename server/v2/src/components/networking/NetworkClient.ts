@@ -9,13 +9,13 @@ import msgpack from 'msgpack-lite';
 
 import Game from '../game/Game';
 import Logger from "../../helpers/Logger";
-import NewPlayer from '../../networking/packets/json/NewPlayer';
+import NewPlayer from '../networking/packets/json/NewPlayer';
 import GameBiome from '../game/GameBiome';
 
 import { Player } from '../../entities/Player';
 import { xorDecrypt } from '../../Utils';
 import { RegisteredJSONHandler } from '../../types';
-import { Handshake, HandshakeResponse } from '../../networking/packets/json/Handshake';
+import { Handshake, HandshakeResponse } from '../networking/packets/json/Handshake';
 import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack } from './handlers/Base';
 
 export default class NetworkClient {
@@ -126,11 +126,11 @@ export default class NetworkClient {
               this.game.entities.addEntity(this.entity);
 
               // Send to other clients to register new player
-              const len: number = this.game.network.clients.array.length;
+              const len: number = this.game.clients.array.length;
               const packet: NewPlayer = new NewPlayer(this.entity);
 
               for (let index = 0; index < len; index++) {
-                const client = this.game.network.clients.array[index];
+                const client = this.game.clients.array[index];
 
                 if (client.socket === this.socket)
                   continue;
