@@ -9,11 +9,11 @@
 import uws, { DEDICATED_COMPRESSOR_64KB } from 'uWebSockets.js';
 
 import ConfigReader from '../../helpers/ConfigReader';
-import Game from '../game/Game';
-import Logger from '../../helpers/Logger';
-import ClientHandler from '../../managers/Client';
 import NetworkClient from './NetworkClient';
+import Logger from '../../helpers/Logger';
 import Entity from '../game/GameEntity';
+import Lobby from '../../helpers/Lobby';
+import Game from '../game/Game';
 
 import { Player } from '../../entities/Player';
 import { EntityState } from '../../enums';
@@ -21,11 +21,13 @@ import { getPublicIPAddress, isStringEmpty } from '../../Utils';
 
 export default class NetworkServer {
   private readonly logger: Logger = new Logger(NetworkServer.name);
+  private lobby!: Lobby;
 
   private config!: ConfigReader;
   private socket!: uws.TemplatedApp;
 
-  private host: string = '';
+  public host: string = 'localhost';
+  public port: number = 8888;
 
   // public clients: ClientHandler;
 
@@ -37,8 +39,8 @@ export default class NetworkServer {
    */
   constructor(private game: Game) {
     this.game = game;
-
     this.config = this.game.config;
+    this.port = this.config.get('SERVER')?.PORT ?? 8888;
 
     this.socket = uws.App()
       .ws('/', {
@@ -49,7 +51,7 @@ export default class NetworkServer {
       });
 
     // Set socket to be listening
-    this.socket.listen(this.config.get('SERVER')?.PORT, (ready) => this.ready(ready as boolean));
+    this.socket.listen(this.port, (ready) => this.ready(ready as boolean));
   }
 
   /**
@@ -114,6 +116,8 @@ export default class NetworkServer {
       const start: boolean = await this.recognize();
 
       if (start) {
+        this.lobby = new Lobby(this.game);
+        
         // Server is listening, inform about that
         this.logger.log('info', `Server started on ${this.host}:${this.config.get('SERVER')?.PORT}`);
       } else process.exit(1);

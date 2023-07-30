@@ -2,7 +2,7 @@ import { WebSocket, WebSocketServer } from 'ws';
 import Logger from '../libs/logger';
 import Announcer from './Announcer';
 
-const CHECK_ANNOUNCERS_INTERVAL: number = 5 * 1000;
+const CHECK_ANNOUNCERS_INTERVAL: number = 10 * 1000;
 
 export default class MasterSocket extends WebSocketServer {
   private logger: Logger = new Logger('MasterSocket'); 
@@ -14,7 +14,7 @@ export default class MasterSocket extends WebSocketServer {
 
     super({
       port,
-      path: '/announcer'
+      path: '/announce'
     });
 
     this.on('listening', this.init.bind(this));

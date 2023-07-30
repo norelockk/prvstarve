@@ -18,7 +18,7 @@ export default class Game {
   // Logging system
   private readonly logger: Logger = new Logger(Game.name);
   private readonly init: number = Date.now();
-
+  
   // Managers
   public world!: World;
   public clients!: ClientManager;

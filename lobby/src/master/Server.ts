@@ -18,22 +18,29 @@ export default class Server {
     this.address = data.address;
     this.currentPlayers = data.currentPlayers;
     this.maxPlayers = data.maxPlayers;
-
-    console.log('server created', this.uuid, data);
   }
 
   update(data: ServerUpdateData): void {
     this.currentPlayers = data.playerCount;
   }
 
-  get json(): object {
-    return {
-      a: this.name,
-      i: this.address,
-      p: this.port,
-      m: this.maxPlayers,
-      nu: this.currentPlayers,
-      ssl: 0
+  json(type: string = 'info'): object {
+    switch (type) {
+      case 'info': return {
+        n: this.name,
+        w: 'restarve.pro',
+        u: this.uuid,
+        m: 'Sandbox',
+        cp: this.currentPlayers,
+        mp: this.maxPlayers,
+        lc: false,
+      }
+      case 'response': return {
+        h: this.address,
+        p: this.port,
+        t: null
+      }
+      default: return {};
     }
   }
 }
