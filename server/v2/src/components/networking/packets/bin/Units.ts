@@ -1,5 +1,5 @@
 import { BinaryWriter } from "../../../../libs/binary";
-import Entity from "../../../../components/Entity";
+import Entity from "../../../game/GameEntity";
 import { EntityState, ServerPacket } from "../../../../enums";
 import { Player } from "../../../../entities/Player";
 

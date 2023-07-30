@@ -78,7 +78,8 @@ export default class ClientManager {
     if (!client) {
       const id: number = this.createId();
       
-      client = new NetworkClient(this.game, id, socket);
+      client = new NetworkClient(this.game, socket);
+      client.id = id;
 
       this.idIndexMap.set(id, this.array.length);
       this.array.push(client);

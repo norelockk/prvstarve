@@ -7,12 +7,12 @@
 import Matter from 'matter-js';
 
 import Game from '../components/game/Game';
-import Entity from '../components/Entity';
+import Entity from '../components/game/GameEntity';
 import NetworkClient from '../components/networking/NetworkClient';
 import { EntityState, ItemType, RemoveType } from '../enums';
 import { PlayerHandshakeInput, Players } from '../interfaces';
 import { isStringEmpty } from '../Utils';
-import { Item, ItemStack } from '../components/Item';
+import { Item, ItemStack } from '../components/game/GameItem';
 import { UpdateUnits } from '../components/networking/packets/bin/Units';
 import Leaderboard from '../components/networking/packets/bin/Leaderboard';
 

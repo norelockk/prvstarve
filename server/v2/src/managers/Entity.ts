@@ -1,6 +1,6 @@
 import Pool from "../libs/pool";
 import Game from "../components/game/Game";
-import Entity from "../components/Entity";
+import Entity from "../components/game/GameEntity";
 import Logger from "../helpers/Logger";
 
 import { Player } from "../entities/Player";

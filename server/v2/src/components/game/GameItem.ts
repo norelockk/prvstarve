@@ -1,4 +1,4 @@
-import { ItemType } from "../enums";
+import { ItemType } from "../../enums";
 
 export class Damage {
   public pvp: number = 0;

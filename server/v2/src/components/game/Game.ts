@@ -9,7 +9,7 @@ import ClientManager from "../../managers/Client";
 import ConfigReader from "../../helpers/ConfigReader";
 import Entities from "../../managers/Entity";
 import Logger from "../../helpers/Logger";
-import World from "../../managers/World";
+import World from "./GameWorld";
 
 import { hrtimeMs } from "../../Utils";
 import { TICK_RATE } from "../../constants";

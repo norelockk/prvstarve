@@ -4,9 +4,9 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Game from './game/Game';
-import Vector2 from '../libs/vector';
-import { Direction, EntityState, EntityType } from '../enums';
+import Game from './Game';
+import Vector2 from '../../libs/vector';
+import { Direction, EntityState, EntityType } from '../../enums';
 
 export default class Entity {
   public id: number = -1;
@@ -20,9 +20,9 @@ export default class Entity {
 
   public action: boolean = true;
   public position: Vector2 = new Vector2(0, 0);
+  public direction: number | null = null;
 
   private velocity: Vector2 = new Vector2(0, 0);
-  private direction: number | null = null;
 
   constructor(public game: Game) {
     this.game = game;

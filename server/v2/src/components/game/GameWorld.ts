@@ -8,21 +8,21 @@
 
 import Matter from "matter-js";
 
-import Game from "../components/game/Game";
-import Bounds from "../components/col/Bounds";
-import Logger from "../helpers/Logger";
-import Vector2 from "../libs/vector";
-import GameBiome from "../components/game/GameBiome";
-import GameObject from "../components/game/GameObject";
-import TimeUpdate from "../components/networking/packets/bin/Time";
+import Game from "./Game";
+import Bounds from "../col/Bounds";
+import Logger from "../../helpers/Logger";
+import Vector2 from "../../libs/vector";
+import GameBiome from "./GameBiome";
+import GameObject from "./GameObject";
+import TimeUpdate from "../networking/packets/bin/Time";
 
-import { Player } from "../entities/Player";
-import { GameMap } from "../interfaces";
-import { DAY_TIME } from "../constants";
-import { WorldBiomes } from "../enums";
+import { Player } from "../../entities/Player";
+import { GameMap } from "../../interfaces";
+import { DAY_TIME } from "../../constants";
+import { WorldBiomes } from "../../enums";
 
-export default class World implements GameMap {
-  private readonly logger: Logger = new Logger(World.name);
+export default class GameWorld implements GameMap {
+  private readonly logger: Logger = new Logger(GameWorld.name);
   private readonly init: number = Date.now();
 
   // Initialization properties

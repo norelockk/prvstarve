@@ -20,10 +20,14 @@ import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttac
 
 export default class NetworkClient {
   // Logger
-  private logger: Logger = new Logger(NetworkClient.name);
+  private readonly logger: Logger = new Logger(NetworkClient.name);
 
   // Player entity
   public entity?: Player;
+
+  // Public properties
+  public id: number = -1;
+  public handshaked: boolean = false;
 
   // Handlers
   private JSONHandlers: Map<number, Function> = new Map();
@@ -40,11 +44,7 @@ export default class NetworkClient {
       this.JSONHandlers.set(registeredHandler.header, registeredHandler.handler);
   }
 
-  // Public properties
-  public handshaked: boolean = false;
-
-  constructor(public game: Game, public id: number = -1, public socket: uws.WebSocket<any>) {
-    this.id = id;
+  constructor(public game: Game, public socket: uws.WebSocket<any>) {
     this.game = game;
     this.socket = socket;
 
@@ -66,7 +66,6 @@ export default class NetworkClient {
    */
   private handleJSONCommunication = (data: any) => {
     const [header, ...payload] = data;
-
     const handler = this.JSONHandlers.get(header);
 
     if (handler) handler(this as NetworkClient, payload);

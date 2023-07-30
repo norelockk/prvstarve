@@ -13,7 +13,7 @@ import Game from '../game/Game';
 import Logger from '../../helpers/Logger';
 import ClientHandler from '../../managers/Client';
 import NetworkClient from './NetworkClient';
-import Entity from '../Entity';
+import Entity from '../game/GameEntity';
 
 import { Player } from '../../entities/Player';
 import { EntityState } from '../../enums';
