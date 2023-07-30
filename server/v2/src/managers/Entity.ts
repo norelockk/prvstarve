@@ -1,18 +1,23 @@
-import E from "../components/Entity";
 import Pool from "../libs/pool";
 import Game from "../components/game/Game";
+import Entity from "../components/Entity";
 import Logger from "../helpers/Logger";
 
 import { Player } from "../entities/Player";
 import { DeleteUnits } from "../networking/packets/bin/Units";
 
-export default class Entity {
-  private readonly logger: Logger = new Logger(Entity.name);
+export default class EntityManager {
+  private readonly logger: Logger = new Logger(EntityManager.name);
+  private readonly init: number = Date.now();
 
-  public pool: Pool<E> = new Pool;
+  public pool: Pool<Entity> = new Pool;
 
   constructor(private readonly game: Game) {
+    const now: number = Date.now();
+
     this.game = game;
+
+    this.logger.log('debug', `Ready (took ${now - this.init}ms)`);
   }
 
   update(delta: number): void {
@@ -20,11 +25,11 @@ export default class Entity {
     for (const entity of this.pool.array) entity.update(delta);
   }
   
-  addEntity(entity: E): void {
+  addEntity(entity: Entity): void {
     this.pool.insert(entity);
   }
 
-  removeEntity(entity: E): void {
+  removeEntity(entity: Entity): void {
     const del: DeleteUnits = new DeleteUnits(entity);
     const players: Player[] = this.pool.array.filter(e => e instanceof Player && e !== entity) as Player[];
 

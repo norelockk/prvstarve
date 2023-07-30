@@ -1,4 +1,4 @@
-import NetworkClient from '../Client';
+import NetworkClient from '../NetworkClient';
 
 import { Player } from '../../../entities/Player';
 import { ClientPacket } from '../../../enums';

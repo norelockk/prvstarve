@@ -2,13 +2,14 @@ import uws from 'uWebSockets.js';
 
 import Game from '../components/game/Game';
 import Logger from '../helpers/Logger';
-import NetworkClient from '../networking/components/Client';
+import NetworkClient from '../components/networking/NetworkClient';
 
 import { EntityState } from '../enums';
 
-export default class Client {
+export default class ClientManager {
   // Logger
-  private readonly logger: Logger = new Logger(Client.name);
+  private readonly logger: Logger = new Logger(ClientManager.name);
+  private readonly init: number = Date.now();
   
   // ID pool
   private idCtr: number = 1;
@@ -23,7 +24,11 @@ export default class Client {
    * @description Creates a new client handler.
    */
   constructor(private game: Game) {
+    const now: number = Date.now();
+
     this.game = game;
+
+    this.logger.log('debug', `Ready (took ${now - this.init}ms)`);
   }
 
   /**

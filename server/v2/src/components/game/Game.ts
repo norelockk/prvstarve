@@ -4,7 +4,7 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import NetworkServer from "../../networking";
+import NetworkServer from "../networking";
 import ConfigReader from "../../helpers/ConfigReader";
 import Entities from "../../managers/Entity";
 import Logger from "../../helpers/Logger";
@@ -16,6 +16,7 @@ import { TICK_RATE } from "../../constants";
 export default class Game {
   // Logging system
   private readonly logger: Logger = new Logger(Game.name);
+  private readonly init: number = Date.now();
 
   // Managers
   public world!: World;
@@ -50,18 +51,20 @@ export default class Game {
    */
   private initialize(): void {
     if (!this.initialized) {
+      // When the game got initialized
+      const now: number = Date.now();
+
       // Initialize world
+      this.world.initialize();
 
       // Set proper tick rate
       this.TICK_LENGTH_MS = 1000 / TICK_RATE;
 
       // Start ticking
-      this._tick();
+      this.tick();
 
-      // Informs the game that it is ready
-      this.logger.log('info', "Game ready");
-
-      // Set up to be initialized
+      // Informs the game that it is ready & be initialized rn
+      this.logger.log('debug', `Ready (took ${now - this.init}ms)`);
       this.initialized = true;
     }
   }
@@ -70,7 +73,7 @@ export default class Game {
    * @function tick
    * @description Calculates the current tick
    */
-  private _tick(): void {
+  private tick(): void {
     const now: number = hrtimeMs();
 
     if (this.PREVIOUS_TICK + this.TICK_LENGTH_MS <= now) {
@@ -82,10 +85,7 @@ export default class Game {
       this.update(this.DELTA);
     }
 
-    if (hrtimeMs() - this.PREVIOUS_TICK < this.TICK_LENGTH_MS - 16)
-      setTimeout(() => this._tick());
-    else
-      setImmediate(() => this._tick());
+    if (now - this.PREVIOUS_TICK < this.TICK_LENGTH_MS - 16) setTimeout(() => this.tick()); else setImmediate(() => this.tick());
   }
 
   /**
@@ -94,10 +94,8 @@ export default class Game {
    * @param {number} delta
    */
   private update(delta: number): void {
-    // Update world
+    // Update world & entities
     this.world.update(delta);
-
-    // Update entities
     this.entities.update(delta);
 
     // Send updates to network

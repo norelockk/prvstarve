@@ -5,12 +5,13 @@
  */
 
 import ConfigReader from "../../helpers/ConfigReader";
-import Logger from "../../helpers/Logger";
 import Game from "./Game";
 
-export default class GameServer {
-  private readonly logger: Logger = new Logger(GameServer.name);
-  private readonly config: ConfigReader = new ConfigReader('./game.json');
+const config: ConfigReader = new ConfigReader('./game.json');
 
-  public readonly game: Game = new Game(this.config);
+export default class GameServer extends Game {
+  constructor() {
+    super(config);
+    
+  }
 }

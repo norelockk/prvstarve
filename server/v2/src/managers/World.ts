@@ -23,6 +23,10 @@ import { WorldBiomes } from "../enums";
 
 export default class World implements GameMap {
   private readonly logger: Logger = new Logger(World.name);
+  private readonly init: number = Date.now();
+
+  // Initialization properties
+  public initialized: boolean = false;
 
   // World time
   public time: number = 0;
@@ -45,110 +49,119 @@ export default class World implements GameMap {
 
   constructor(private readonly game: Game) {
     this.game = game;
-
-    // Initialize loading map tiles
-    this.initialize();
   }
 
-  private initialize(): void {
-    // Initialize world engine
-    this.engine = Matter.Engine.create();
+  public initialize(): void {
+    if (!this.initialized) {
+      // Counting time when world is done to initialized
+      const now: number = Date.now();
 
-    // Set to engine no any gravities
-    this.engine.gravity.x = 0;
-    this.engine.gravity.y = 0;
+      // Initialize world engine
+      this.engine = Matter.Engine.create();
 
-    // Load world bounds
-    const bW: number = this.game.config.get('GAMEPLAY')?.MAP?.WIDTH * 100;
-    const bH: number = this.game.config.get('GAMEPLAY')?.MAP?.HEIGHT * 100;
+      // Set to engine no any gravities
+      this.engine.gravity.x = 0;
+      this.engine.gravity.y = 0;
 
-    this.bounds = new Bounds(
-      new Vector2(0, 0),
-      new Vector2(bW, bH)
-    );
+      // Load world bounds
+      const bW: number = this.game.config.get('GAMEPLAY')?.MAP?.WIDTH * 100;
+      const bH: number = this.game.config.get('GAMEPLAY')?.MAP?.HEIGHT * 100;
 
-    this.logger.log('debug', `Bounds has been applied (start: ${this.bounds.min}, end: ${this.bounds.max})`);
+      this.bounds = new Bounds(
+        new Vector2(0, 0),
+        new Vector2(bW, bH)
+      );
 
-    // Load world tiles
-    const MAP_TILES = this.game.config.get('GAMEPLAY')?.MAP?.TILES;
+      this.logger.log('debug', `Bounds has been applied (start: ${this.bounds.min}, end: ${this.bounds.max})`);
 
-    for (const TILE of MAP_TILES) {
-      // Parse tile data
-      const [TILE_TYPE, ...TILE_DATA] = TILE;
+      // Load world tiles
+      const MAP_TILES = this.game.config.get('GAMEPLAY')?.MAP?.TILES;
 
-      // Can tile be pushed so it can be shown on game
-      let canPush: boolean = false;
+      for (const TILE of MAP_TILES) {
+        // Parse tile data
+        const [TILE_TYPE, ...TILE_DATA] = TILE;
 
-      switch (TILE_TYPE) {
-        // Parsing biome
-        case 0: {
-          let biome: GameBiome | boolean = false;
+        // Can tile be pushed so it can be shown on game
+        let canPush: boolean = false;
 
-          // Parse biome tile data
-          const [BIOME_TYPE, START_X, START_Y, MAX_W, MAX_H] = TILE_DATA;
+        switch (TILE_TYPE) {
+          // Parsing biome
+          case 0: {
+            let biome: GameBiome | boolean = false;
 
-          // Setup biome bounds
-          const bounds: Bounds = new Bounds(
-            new Vector2(START_X * 100, START_Y * 100),
-            new Vector2(MAX_W * 100, MAX_H * 100)
-          );
+            // Parse biome tile data
+            const [BIOME_TYPE, START_X, START_Y, MAX_W, MAX_H] = TILE_DATA;
 
-          // Parse biome type
-          switch (BIOME_TYPE) {
-            case "FOREST": {
-              biome = new GameBiome(WorldBiomes.FOREST, bounds);
-              break;
+            // Setup biome bounds
+            const bounds: Bounds = new Bounds(
+              new Vector2(START_X * 100, START_Y * 100),
+              new Vector2(MAX_W * 100, MAX_H * 100)
+            );
+
+            // Parse biome type
+            switch (BIOME_TYPE) {
+              case "FOREST": {
+                biome = new GameBiome(WorldBiomes.FOREST, bounds);
+                break;
+              }
+              default: return this.logger.log('warn', 'Unknown biome type', BIOME_TYPE);
             }
-            default: return this.logger.log('warn', 'Unknown biome type', BIOME_TYPE);
+
+            // Push biome
+            if (biome && biome instanceof GameBiome) {
+              this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied (start: ${bounds.min}, end: ${bounds.max})`);
+              this.biomes.push(biome);
+
+              canPush = true;
+            }
+
+            break;
           }
 
-          // Push biome
-          if (biome && biome instanceof GameBiome) {
-            this.logger.log('debug', `Biome ${BIOME_TYPE} has been applied (start: ${bounds.min}, end: ${bounds.max})`);
-            this.biomes.push(biome);
+          // Parsing map tile (object)
+          case 1: {
+            let object: GameObject | boolean = false;
 
-            canPush = true;
+            // Parse map tile data
+            const [OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y] = TILE_DATA;
+
+            // Push object
+            if (object && object instanceof GameObject) {
+              this.logger.log('debug', `Object ${OBJECT_NAME} has been applied`);
+              this.objects.push(object);
+
+              canPush = true;
+            }
+
+            break;
           }
 
-          break;
-        }
-
-        // Parsing map tile (object)
-        case 1: {
-          let object: GameObject | boolean = false;
-
-          // Parse map tile data
-          const [OBJECT_NAME, OBJECT_RADIUS, OBJECT_X, OBJECT_Y] = TILE_DATA;
-
-          // Push object
-          if (object && object instanceof GameObject) {
-            this.logger.log('debug', `Object ${OBJECT_NAME} has been applied`);
-            this.objects.push(object);
-
-            canPush = true;
+          // Unknown world tile report
+          default: {
+            this.logger.log('warn', `Unknown world tile`, TILE);
+            break;
           }
-
-          break;
         }
 
-        // Unknown world tile report
-        default: {
-          this.logger.log('warn', `Unknown world tile`, TILE);
-          break;
-        }
+        if (canPush) this.tiles.push(TILE);
       }
 
-      if (canPush) this.tiles.push(TILE);
+      // Set fallback biome
+      this.fallbackBiome = this.biomes.find(b => b.biomeType === WorldBiomes.SEA)!;
+
+      // Set biomes where we can spawn
+      this.spawnBiomes = this.biomes.filter(b => b.biomeType === WorldBiomes.FOREST);
+
+      // World is ready
+      this.logger.log('debug', `Ready (took ${now - this.init}ms)`);
+      this.initialized = true;
     }
-
-    // Set fallback biome
-    this.fallbackBiome = this.biomes.find(b => b.biomeType === WorldBiomes.SEA)!;
-
-    // Set biomes where we can spawn
-    this.spawnBiomes = this.biomes.filter(b => b.biomeType === WorldBiomes.FOREST);
   }
 
   update(delta: number): void {
+    // If it's not initialized then it's no sense to make it update qwq
+    if (!this.initialized) return;
+
     // Update world time
     if (this.game.CURRENT_TICK % 45 === 0) {
       this.time += ~~(DAY_TIME / 50);

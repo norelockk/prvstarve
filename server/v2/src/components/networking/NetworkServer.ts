@@ -8,16 +8,16 @@
 
 import uws, { DEDICATED_COMPRESSOR_64KB } from 'uWebSockets.js';
 
-import ConfigReader from '../helpers/ConfigReader';
-import Game from '../components/game/Game';
-import Logger from '../helpers/Logger';
-import ClientHandler from '../managers/Client';
-import NetworkClient from './components/Client';
-import Entity from '../components/Entity';
+import ConfigReader from '../../helpers/ConfigReader';
+import Game from '../game/Game';
+import Logger from '../../helpers/Logger';
+import ClientHandler from '../../managers/Client';
+import NetworkClient from './NetworkClient';
+import Entity from '../Entity';
 
-import { Player } from '../entities/Player';
-import { EntityState } from '../enums';
-import { getPublicIPAddress, isStringEmpty } from '../Utils';
+import { Player } from '../../entities/Player';
+import { EntityState } from '../../enums';
+import { getPublicIPAddress, isStringEmpty } from '../../Utils';
 
 export default class NetworkServer {
   private host: string = '';

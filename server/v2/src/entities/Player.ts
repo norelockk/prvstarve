@@ -8,7 +8,7 @@ import Matter from 'matter-js';
 
 import Game from '../components/game/Game';
 import Entity from '../components/Entity';
-import NetworkClient from '../networking/components/Client';
+import NetworkClient from '../components/networking/NetworkClient';
 import { EntityState, ItemType, RemoveType } from '../enums';
 import { PlayerHandshakeInput, Players } from '../interfaces';
 import { isStringEmpty } from '../Utils';
