@@ -11,8 +11,6 @@ namespace client.Classes.Game.Objects
         public DiscordRichPresence()
         {
             clientId = manager.discordClientId;
-
-            Console.WriteLine("got", clientId);
         }
 
         public void Update(string str)

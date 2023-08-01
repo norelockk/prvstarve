@@ -69,6 +69,7 @@ namespace client.Classes.Game
             foreach (var objInfo in namedObjects)
             {
                 browser.JavascriptObjectRepository.Register(objInfo.Name, objInfo.Object, isAsync: false, options: BindingOptions.DefaultBinder);
+                // browser.ExecuteScriptAsyncWhenPageLoaded($"cefSharp.bindObjectAsync('{objInfo.Name}')", true);
             }
         }
 

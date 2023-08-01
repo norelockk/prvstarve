@@ -12,7 +12,7 @@ import Logger from "../../helpers/Logger";
 import World from "./GameWorld";
 
 import { hrtimeMs } from "../../Utils";
-import { TICK_RATE } from "../../constants";
+import { TICK_RATE, TodoList, renderTodoList } from "../../constants";
 
 export default class Game {
   // Logging system
@@ -27,6 +27,7 @@ export default class Game {
 
   // Properties
   public initialized: boolean = false;
+  public welcomeMessage: string = renderTodoList(TodoList);
 
   // Ticks system
   private DELTA: number = 0;
