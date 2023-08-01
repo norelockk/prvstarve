@@ -1,3 +1,92 @@
 node_modules
 logs
 build
+
+# Build and output files
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.dll.config
+*.cache
+*.suo
+*.user
+*.bak
+
+# Visual Studio files
+.vs/
+*_i.c
+*_p.c
+*.ncb
+*.sdf
+*.opensdf
+*.sln.docstates
+
+# Resharper files
+_resharper/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+_ReSharper*/
+
+# NuGet packages
+packages/
+
+# MSTest Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Exclude unnecessary files from publishing
+*.Publish.xml
+*.pubxml
+*.publishproj
+
+# Cache and logs
+*.userprefs
+*.log
+*.vscode
+.vscode/
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+
+# RIA/Silverlight projects
+Generated_Code/
+
+# Backup & report files from converting an old project file
+Backup*/
+UpgradeLog*.XML
+UpgradeLog*.htm
+
+# Windows Azure Build Output
+csx/
+*.build.csdef
+
+# Windows Store app package directory
+AppPackages/
+
+# StyleCop
+StyleCopReport.xml
+
+# Files built by Visual Studio LightSwitch
+GeneratedArtifacts/
+_Pvt_Extensions/
+ModelManifest.xml
+
+# Build results from Fakes
+FakesAssemblies/
+
+# BenchmarkDotNet artifacts directory
+BenchmarkDotNet.Artifacts/
+
+# Roslyn cache directories
+*.ide/
+
+# Unity generated folders
+Temp/
+Library/
+obj/
+Build/

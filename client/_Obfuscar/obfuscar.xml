@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Include>
+  <Var name="RegenerateDebugInfo" value="false" />
+  <Var name="MarkedOnly" value="false" />
+  <Var name="RenameProperties" value="true" />
+  <Var name="RenameEvents" value="true" />
+  <Var name="RenameFields" value="true" />
+  <Var name="KeepPublicApi" value="false" />
+  <Var name="HidePrivateApi" value="true" />
+  <Var name="ReuseNames" value="true" />
+  <Var name="HideStrings" value="true" />
+  <Var name="OptimizeMethods" value="true" />
+  <Var name="SuppressIldasm" value="true" />
+  <Var name="AnalyzeXaml" value="false" />
+  <Var name="UseUnicodeNames" value="true" />
+  <Var name="UseKoreanNames" value="true" />
+  <Module file="$(InPath)\Restarve.exe">
+    <SkipType name="*AnonymousType*" skipProperties="true" skipMethods="true" skipFields="true" skipEvents="true" skipStringHiding="true" />
+  </Module>
+  <AssemblySearchPath path="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\" />
+  <AssemblySearchPath path="packages\CefSharp.Common.114.2.120\lib\net452\" />
+  <AssemblySearchPath path="packages\CefSharp.WinForms.114.2.120\lib\net462\" />
+  <AssemblySearchPath path="packages\DiscordRichPresence.1.2.1.24\lib\net45\" />
+  <AssemblySearchPath path="packages\Newtonsoft.Json.13.0.3\lib\net45\" />
+</Include>
