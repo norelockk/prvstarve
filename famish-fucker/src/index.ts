@@ -134,7 +134,7 @@ class BotSocket {
           this.token, "",
           0, 0, 0, 0, 0, 1, 0, 0, 0
           , null, null
-          , this.crypton, "26CcXPDyf3f9i6MtyDcCYAs3NStqwmy1I5xSnolDhpvWJ61QuFmenAuhV13l", "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDSUwNZdTmwUjtBDrkRpUV6vUcrl3/j1E+shNlAcsgrEiVNhMIURwsvv55wYojyRQ6eywYxOwewmZxJ1oj9wq+Wy1ZWGYCZnsFXKvRNgLUdLzhtlZMVwKse0YAQEvDSBOP1uKIl6dd+1l1m7IuOyvTWCuSbT9VvYkUHKDuHJQOn9QIDAQAB"];
+          , this.crypton, "CCb3aVsfV4huQllCiDK4io0ruIOKdenmsCVtINExUPQqS3X6Jx8d00PmEj05", "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3kj4pB5sEp0VgeMSn0xViQMOUNK1Xh10h9qs/SUQvEQOdTknRnSBRSD6+ezxhMXq/cukTDs0/lTOiZnCLPE1WQt0ZpMplruDr+I9ERA590z8QWnq1qD2xG1OuTmTE9RqgYsK1oHa9VugiZJpLRo1ZbaYborjbC42OnQ1umZgvmQIDAQAB"];
 
         this.ws.send(JSON.stringify(payload));
       }, 350);

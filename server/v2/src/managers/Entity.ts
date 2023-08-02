@@ -36,8 +36,9 @@ export default class EntityManager {
     const del: DeleteUnits = new DeleteUnits(entity);
     const players: Player[] = this.pool.array.filter(e => e instanceof Player && e !== entity) as Player[];
 
-    for (const player of players)
+    for (const player of players) {
       player.client.socket.send(del.build, true);
+    }
 
     this.pool.remove(entity);
   }

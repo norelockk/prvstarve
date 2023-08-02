@@ -5,7 +5,6 @@ using CefSharp;
 using CefSharp.WinForms;
 
 using System;
-using System.Diagnostics;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
@@ -39,6 +38,14 @@ namespace client
         {
             // Initialize base
             InitializeComponent();
+
+            // No more game instances
+            if (!Program.IncrementInstanceCount())
+            {
+                MessageBox.Show("Maximum game instance count reached. Cannot open another instance.", "Game error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Close();
+                return;
+            }
 
             // Initialize game
             InitializeGame();
@@ -93,6 +100,11 @@ namespace client
                     chromium.ShowDevTools();
                 #endif
             }
+        }
+
+        private void GameWindow_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Program.DecrementInstanceCount();
         }
     }
 }
