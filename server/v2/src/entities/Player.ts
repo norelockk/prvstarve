@@ -4,17 +4,16 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import Matter from 'matter-js';
-
 import Game from '../components/game/Game';
 import Entity from '../components/game/GameEntity';
+import Leaderboard from '../components/networking/packets/bin/Leaderboard';
 import NetworkClient from '../components/networking/NetworkClient';
+
 import { EntityState, ItemType, RemoveType } from '../enums';
 import { PlayerHandshakeInput, Players } from '../interfaces';
 import { isStringEmpty } from '../Utils';
 import { Item, ItemStack } from '../components/game/GameItem';
 import { UpdateUnits } from '../components/networking/packets/bin/Units';
-import Leaderboard from '../components/networking/packets/bin/Leaderboard';
 
 export class PlayerSkin {
   public bag: number;
@@ -183,30 +182,26 @@ export class PlayerInventory {
 }
 
 export class Player extends Entity {
+  public client: NetworkClient;
+  
+  // Player skin, inventory
+  public skin: PlayerSkin = new PlayerSkin();
+  public inventory: PlayerInventory = new PlayerInventory(this);
+  
   // Player data
+  public ghost: boolean = false;
   public score: number = 0;
   public kills: number = 0;
   public nickname: string = '';
-  public skin: PlayerSkin = new PlayerSkin();
-  
-  // Player inventory
-  public inventory: PlayerInventory = new PlayerInventory(this);
+  public attacking: boolean = false;
 
   // Player attack
-  private attackBox!: Matter.Body;
   private attackElapsed: number = 0;
   private attackDuration: number = 0.20 * 0.11;
 
-  // Player states
-  public ghost: boolean = false;
-  public attacking: boolean = false;
-
   // Entities own by this player
   public ownedEntities: Entity[] = [];
-
-  // Entities that is visible to player
-  public visibleEntities: Entity[] = [];
-
+  
   // Player states update
   private resetAttacking(): void {
     this.attacking = false;
@@ -221,15 +216,9 @@ export class Player extends Entity {
     //     if (target === this) continue;
     //   }
     // }
-
-    this.attackBox = Matter.Bodies.rectangle(this.position.x, this.position.y, 60, 50, {
-      label: "attackBox",
-      angle: this.angle,
-      isSensor: true,
-    });
   }
 
-  constructor(game: Game, public client: NetworkClient, data: PlayerHandshakeInput) {
+  constructor(game: Game, client: NetworkClient, data: PlayerHandshakeInput) {
     super(game);
 
     // Setting client so we can send messages to it
@@ -242,17 +231,17 @@ export class Player extends Entity {
     // If player nickname is empty make it default as 'Player#0'
     if (data.nickname) {
       if (isStringEmpty(data.nickname))
-        nickname = `Player#${this.client.id}`;
+        nickname = `Player#${this.pid}`;
       else
         nickname = data.nickname;
-    } else nickname = `Player#${this.client.id}`;
+    } else nickname = `Player#${this.pid}`;
 
     this.nickname = nickname;
   }
 
   get json(): Players {
     return {
-      i: this.client.id,
+      i: this.pid,
       n: this.nickname,
       s: this.skin.skin,
       a: this.skin.accessory,
@@ -260,7 +249,7 @@ export class Player extends Entity {
       b: this.skin.book,
       d: this.skin.deadBox,
       g: this.skin.bag,
-      l: this.client.id
+      l: this.pid
     } as Players;
   }
 

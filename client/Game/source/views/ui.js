@@ -1,13 +1,7 @@
 function UI(can, ctx) {
   this.can = can;
   this.ctx = ctx;
-  if (window.navigator.userAgent.indexOf("Edge") > -1) {
-    this.cursor0 = "default";
-    this.cursor1 = "pointer";
-  } else {
-    this.cursor0 = "url(\'img/cursor0.png\'), default";
-    this.cursor1 = "url(\'img/cursor1.png\'), pointer";
-  }
+
   var _this = this;
   this.waiting = false;
   this.in_this_view = 0;
@@ -28,14 +22,15 @@ function UI(can, ctx) {
       ctx.restore();
     }
   };
-
   this.bread = 0;
   this.previous_bread = -1;
   this.bread_img = undefined;
   this.new_nickname = "";
   this.previous_new_nickname = "";
   this.new_nickname_img = undefined;
-
+  this.lvl = 0;
+  this.previous_lvl = -1;
+  this.lvl_img = undefined;
   this.xp = 0;
   this.xp_dest = 0;
   this.firstName = 0;
@@ -62,6 +57,10 @@ function UI(can, ctx) {
   this.privateServerTime_img_day = undefined;
   this.cosmetic_name = undefined;
   this.cosmetic_author = undefined;
+  this.leaderboard_range = undefined;
+  this.leaderboard_mode = undefined;
+  this.leaderboard_sorted = undefined;
+  this.leaderboard_season = undefined;
   this.profile_season = 3;
   this.breath = 0;
 
@@ -270,7 +269,6 @@ function UI(can, ctx) {
   };;
   this.unlock_cosmetics = unlock_cosmetics;
   unlock_cosmetics();
-
   var appear_effect_step = 0;
   var appear_effect_max_step = 30;
   var appear_effect = function () {
@@ -298,11 +296,11 @@ function UI(can, ctx) {
     _this.update();
     quit_effect_step++;
     if (quit_effect_step == quit_effect_max_step) {
-      // Cookies.set("starve_nickname", _this.nickname.input.value, {
-      //   expires: 30
-      // });
-      // _this.nickname.style.display = "none";
-      // _this.server_list.style.display = "none";
+      Cookies.set("starve_nickname", _this.nickname.input.value, {
+        expires: 30
+      });
+      _this.nickname.style.display = "none";
+      _this.server_list.style.display = "none";
       _this.stop();
       fun_after_quit();
       return;
@@ -315,8 +313,8 @@ function UI(can, ctx) {
   };
   this.run = function () {
     document.getElementById("game_body").style.backgroundColor = SPRITE.GROUND[fake_world.time];
-    // _this.nickname.style.display = "inline-block";
-    // _this.server_list.style.display = "inline-block";
+    _this.nickname.style.display = "inline-block";
+    _this.server_list.style.display = "inline-block";
     _this.waiting = false;
     _this.is_run = true;
     quit_effect_step = -1;
@@ -324,9 +322,6 @@ function UI(can, ctx) {
     appear_effect();
   };
   this.update_component = function (component, effect) {
-    if (component === undefined || typeof component === 'undefined')
-      return;
-
     effect = (effect < 0) ? -effect : effect;
     if ((component.position & __MIDDLE_X__) === __MIDDLE_X__) {
       if ((component.position & __LEFT__) === __LEFT__)
@@ -388,20 +383,122 @@ function UI(can, ctx) {
       this.loading.translate.y -= (move_effect > 0) ? move_effect : -move_effect;
     }
   };
-
+  this.create_spin = function (info) {
+    var spin = document.createElement("canvas");
+    var spinCtx = spin.getContext("2d");
+    spin.width = 342;
+    spin.height = 342;
+    var start = -Math.PI / 2;
+    for (var i = 0; i < info.length; i++) {
+      var col = info[i][0];
+      var deg = (info[i][1] * Math.PI) / 180;
+      spinCtx.beginPath();
+      spinCtx.arc(171, 171, 170, start, start + deg, false);
+      spinCtx.lineTo(171, 171);
+      spinCtx.fillStyle = col;
+      spinCtx.fill();
+      start += deg;
+    }
+    return spin;
+  };
+  this.generate_new_nickname = function () {
+    this.new_nickname = document.getElementById("account_nickname_input").value;
+    if (this.new_nickname !== this.previous_new_nickname) {
+      this.previous_new_nickname = this.new_nickname;
+      this.new_nickname_img = gui_render_text(this.new_nickname, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 45, 550);
+    }
+  };
   this.draw = function () {
     draw_fake_world();
-
+    ui.xp = Utils.lerp(ui.xp, ui.xp_dest, 0.03);
+    this.bkgd[LEVEL_GAUGE].translate.x = (this.bkgd[0].translate.x + -72) + (165 * ui.xp);
+    this.bkgd[LEVEL_GAUGE].translate._x = this.bkgd[LEVEL_GAUGE].translate.x;
+    this.bkgd[LEVEL_GAUGE].translate.y = this.bkgd[0].translate.y + 30;
+    this.bkgd[LEVEL_GAUGE].translate._y = this.bkgd[LEVEL_GAUGE].translate.y;
     for (var i = 2; i < this.bkgd.length; i++) {
       if (this.bkgd[i].active === __DISPLAY__)
         this.bkgd[i].draw(ctx);
 
     }
-
+    var remains = this.kit - Date.now();
+    if (remains > 0) {
+      var min = Math.floor(remains / 60000);
+      var hour = Math.floor(min / 60);
+      min %= 60;
+      if (min !== this.previous_kit_min) {
+        this.previous_kit_min = min;
+        min = (min < 10) ? ("0" + min) : ("" + min);
+        _this.kit_img_min = gui_render_text(min, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 80, 200);
+      }
+      if (hour !== this.previous_kit_hour) {
+        this.previous_kit_hour = hour;
+        hour = (hour < 10) ? ("0" + hour) : ("" + hour);
+        _this.kit_img_hour = gui_render_text(hour, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 80, 200);
+      }
+      var remain_box = this.bkgd[BAG_REMAIN_BOX];
+      remain_box.draw(ctx);
+      var img = this.kit_img_hour;
+      ctxDrawImage(ctx, img, (remain_box.translate.x - (img.width / 4)) + 182, (remain_box.translate.y - (img.height / 4)) + 40, img.width / 2, img.height / 2);
+      var img = this.kit_img_min;
+      ctxDrawImage(ctx, img, (remain_box.translate.x - (img.width / 4)) + 251, (remain_box.translate.y - (img.height / 4)) + 40, img.width / 2, img.height / 2);
+    }
+    var remains = this.privateServerTime - Date.now();
+    if (remains > 0) {
+      var min = Math.floor(remains / 60000);
+      var hour = Math.floor(min / 60);
+      var day = Math.floor(hour / 24);
+      min %= 60;
+      hour %= 24;
+      if (min !== this.previous_privateServerTime_min) {
+        this.previous_privateServerTime_min = min;
+        min = (min < 10) ? ("0" + min) : ("" + min);
+        _this.privateServerTime_img_min = gui_render_text(min, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 80, 200);
+      }
+      if (hour !== this.previous_privateServerTime_hour) {
+        this.previous_privateServerTime_hour = hour;
+        hour = (hour < 10) ? ("0" + hour) : ("" + hour);
+        _this.privateServerTime_img_hour = gui_render_text(hour, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 80, 200);
+      }
+      if (day !== this.previous_privateServerTime_day) {
+        this.previous_privateServerTime_day = day;
+        day = (day < 10) ? ("0" + day) : ("" + day);
+        _this.privateServerTime_img_day = gui_render_text(day, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 80, 200);
+      }
+      var remain_box = this.bkgd[SERVER_REMAIN_BOX];
+      remain_box.draw(ctx);
+      var img = this.privateServerTime_img_day;
+      ctxDrawImage(ctx, img, (remain_box.translate.x - (img.width / 4)) + 113, (remain_box.translate.y - (img.height / 4)) + 40, img.width / 2, img.height / 2);
+      var img = this.privateServerTime_img_hour;
+      ctxDrawImage(ctx, img, (remain_box.translate.x - (img.width / 4)) + 182, (remain_box.translate.y - (img.height / 4)) + 40, img.width / 2, img.height / 2);
+      var img = this.privateServerTime_img_min;
+      ctxDrawImage(ctx, img, (remain_box.translate.x - (img.width / 4)) + 251, (remain_box.translate.y - (img.height / 4)) + 40, img.width / 2, img.height / 2);
+    }
     if ((this.current_view & __GAME__) === __GAME__)
       this.buttons[GAME_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __LEADERBOARD__) === __LEADERBOARD__)
+      this.buttons[LEADERBOARD_BUTTON].info.state = BUTTON_CLICK;
     else if ((this.current_view & __COSMETICS__) === __COSMETICS__)
       this.buttons[COSMETICS_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __PROFILE__) === __PROFILE__)
+      this.buttons[PROFILE_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __TUTORIAL__) === __TUTORIAL__)
+      this.buttons[TUTORIAL_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __LOGIN__) === __LOGIN__)
+      this.buttons[LOGIN_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SHOP__) === __SHOP__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SPIN_1__) === ___1__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SPIN_2__) === __SPIN_2__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SPIN_3__) === __SPIN_3__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SPIN_4__) === __SPIN_4__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SPIN_5__) === __SPIN_5__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SPIN_6__) === __SPIN_6__)
+      this.buttons[SHOP_BUTTON].info.state = BUTTON_CLICK;
     else if ((this.current_view & __SKIN__) === __SKIN__)
       this.buttons[COSMETICS_BUTTON].info.state = BUTTON_CLICK;
     else if ((this.current_view & __BAG__) === __BAG__)
@@ -414,9 +511,88 @@ function UI(can, ctx) {
       this.buttons[COSMETICS_BUTTON].info.state = BUTTON_CLICK;
     else if ((this.current_view & __LOOT__) === __LOOT__)
       this.buttons[COSMETICS_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SERVER_LOCATION__) === __SERVER_LOCATION__)
+      this.buttons[SERVER_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SERVER_DURATION__) === __SERVER_DURATION__)
+      this.buttons[SERVER_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SERVER_ACCESS__) === __SERVER_ACCESS__)
+      this.buttons[SERVER_BUTTON].info.state = BUTTON_CLICK;
+    else if ((this.current_view & __SEASON5__) === __SEASON5__)
+      this.buttons[PROFILE_BUTTON].info.state = BUTTON_CLICK;
 
+    if ((this.current_view & __LEADERBOARD__) === __LEADERBOARD__) {
+      if (this.leaderboard_mode === this.LEADERBOARD_TOTAL) {
+        this.leaderboard_range = this.LEADERBOARD_ALL;
+        this.buttons[this.LEADERBOARD_ALL].info.active = __HIDE__;
+        this.buttons[this.LEADERBOARD_WEEK].info.active = __HIDE__;
+        this.buttons[this.LEADERBOARD_TODAY].info.active = __HIDE__;
+      } else {
+        this.buttons[this.LEADERBOARD_ALL].info.active = __DISPLAY__;
+        this.buttons[this.LEADERBOARD_WEEK].info.active = __DISPLAY__;
+        this.buttons[this.LEADERBOARD_TODAY].info.active = __DISPLAY__;
+      }
+      if (this.leaderboard_mode === this.LEADERBOARD_NORMAL)
+        this.buttons[this.LEADERBOARD_NORMAL].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_mode === this.LEADERBOARD_VAMPIRE)
+        this.buttons[this.LEADERBOARD_VAMPIRE].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_mode === this.LEADERBOARD_TOTAL)
+        this.buttons[this.LEADERBOARD_TOTAL].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_mode === this.LEADERBOARD_ZOMBIE)
+        this.buttons[this.LEADERBOARD_ZOMBIE].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_mode === this.LEADERBOARD_FOREST)
+        this.buttons[this.LEADERBOARD_FOREST].info.state = BUTTON_CLICK;
 
-    if (((this.current_view & __GAME__) === __GAME__)) {
+      if (this.leaderboard_range === this.LEADERBOARD_ALL)
+        this.buttons[this.LEADERBOARD_ALL].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_range === this.LEADERBOARD_WEEK)
+        this.buttons[this.LEADERBOARD_WEEK].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_range === this.LEADERBOARD_TODAY)
+        this.buttons[this.LEADERBOARD_TODAY].info.state = BUTTON_CLICK;
+
+      if (this.leaderboard_sorted === this.LEADERBOARD_KILL)
+        this.buttons[this.LEADERBOARD_KILL].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_sorted === this.LEADERBOARD_SCORE)
+        this.buttons[this.LEADERBOARD_SCORE].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_sorted === this.LEADERBOARD_TIME)
+        this.buttons[this.LEADERBOARD_TIME].info.state = BUTTON_CLICK;
+
+      if (this.leaderboard_season === this.LEADERBOARD_SEASON1)
+        this.buttons[this.LEADERBOARD_SEASON1].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_season === this.LEADERBOARD_SEASON2)
+        this.buttons[this.LEADERBOARD_SEASON2].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_season === this.LEADERBOARD_SEASON3)
+        this.buttons[this.LEADERBOARD_SEASON3].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_season === this.LEADERBOARD_SEASON4)
+        this.buttons[this.LEADERBOARD_SEASON4].info.state = BUTTON_CLICK;
+      else if (this.leaderboard_season === this.LEADERBOARD_SEASON5)
+        this.buttons[this.LEADERBOARD_SEASON5].info.state = BUTTON_CLICK;
+
+    }
+    if ((this.current_view & __PROFILE__) === __PROFILE__) {
+      if (this.current_mode_score === -1)
+        this.buttons[SCORE_MODE_TOTAL].info.state = BUTTON_CLICK;
+      else if (this.current_mode_score === WORLD.MODE_PVP)
+        this.buttons[SCORE_MODE_NORMAL].info.state = BUTTON_CLICK;
+      else if (this.current_mode_score === WORLD.MODE_ZOMBIES)
+        this.buttons[SCORE_MODE_ZOMBIE].info.state = BUTTON_CLICK;
+      else if (this.current_mode_score === WORLD.MODE_VAMPIRES)
+        this.buttons[SCORE_MODE_VAMPIRE].info.state = BUTTON_CLICK;
+      else if (this.current_mode_score === WORLD.MODE_LEGACY)
+        this.buttons[SCORE_MODE_FOREST].info.state = BUTTON_CLICK;
+
+      if (this.profile_season === 0)
+        this.buttons[SCORE_MODE_SEASON1].info.state = BUTTON_CLICK;
+      else if (this.profile_season === 1)
+        this.buttons[SCORE_MODE_SEASON2].info.state = BUTTON_CLICK;
+      else if (this.profile_season === 2)
+        this.buttons[SCORE_MODE_SEASON3].info.state = BUTTON_CLICK;
+      else if (this.profile_season === 3)
+        this.buttons[SCORE_MODE_SEASON4].info.state = BUTTON_CLICK;
+      else if (this.profile_season === 4)
+        this.buttons[SCORE_MODE_SEASON5].info.state = BUTTON_CLICK;
+
+    }
+    if (((this.current_view & __GAME__) === __GAME__) && (client.privateServer === 0)) {
       if (this.buttons[NORMAL_MODE].in_button(mouse.pos))
         this.buttons[NORMAL_MODE].hint = Math.min(1, this.buttons[NORMAL_MODE].hint + (delta * 1.5));
       else
@@ -443,13 +619,47 @@ function UI(can, ctx) {
         this.buttons[VAMPIRE_MODE].hint = Math.max(0, this.buttons[VAMPIRE_MODE].hint - (delta * 1.5));
     }
     var _r = 1;
+    if ((this.current_view & (((((__SPIN_1__ | __SPIN_2__) | __SPIN_3__) | __SPIN_4__) | __SPIN_5__) | __SPIN_6__)) > 1) {
+      var img = IMAGES.ARROW_SPIN;
+      ctx.save();
+      ctx.translate(canw2, SPIN_TOP + (img.height / 4));
+      if (this.spin === 1) {
+        this.spin_effect += delta / 3;
+        _r = this.spin_target - (100 / Math.pow(1 + this.spin_effect, 1 + this.spin_effect));
+        ctx.rotate(_r);
+      }
+      ctxDrawImage(ctx, img, -img.width / 4, -img.height / 4, img.width / 2, img.height / 2);
+      ctx.restore();
+    }
+    if (client.privateServer === 0) {
+      if (client.current_mode === WORLD.MODE_PVP)
+        this.buttons[NORMAL_MODE].info.state = BUTTON_CLICK;
+      else if (client.current_mode === WORLD.MODE_LEGACY)
+        this.buttons[FOREST_MODE].info.state = BUTTON_CLICK;
+      else if (client.current_mode === WORLD.MODE_ZOMBIES)
+        this.buttons[ZOMBIE_MODE].info.state = BUTTON_CLICK;
+      else if (client.current_mode === WORLD.MODE_VAMPIRES)
+        this.buttons[VAMPIRE_MODE].info.state = BUTTON_CLICK;
+      else if (client.current_mode === WORLD.MODE_COMMUNITY)
+        this.buttons[MODE_COMMUNITY].info.state = BUTTON_CLICK;
+      else if (client.current_mode === WORLD.MODE_EXPERIMENTAL)
+        this.buttons[MODE_EXPERIMENTAL].info.state = BUTTON_CLICK;
 
+    }
     for (var i = 1; i < this.buttons.length; i++) {
       if (this.buttons[i].info.active === __DISPLAY__)
         this.buttons[i].draw(ctx);
 
     }
     this.bkgd[0].draw(ctx);
+    if ((this.current_view & (__CHANGE_NICKNAME0__ | __CHANGE_NICKNAME1__)) > 0) {
+      var img = this.new_nickname_img;
+      ctxDrawImage(ctx, img, canw2 - (img.width / 4), 138, img.width / 2, img.height / 2);
+    }
+    var lvl = Math.max(1, Math.min(18, Math.floor((ui.lvl + 3) / 2)));
+    this.bkgd[lvl].active = __DISPLAY__;
+    this.bkgd[lvl].draw(ctx);
+    this.bkgd[lvl].active = __HIDE__;
     this.buttons[0].draw(ctx);
     if ((this.current_view & ((((__COSMETICS__ | __BAG__) | __BOOK__) | __SKIN__) | __ACCESSORY__)) > 1) {
       var _x = ((this.current_view & (((__BAG__ | __BOOK__) | __SKIN__) | __ACCESSORY__)) > 1) ? -190 : 0;
@@ -501,39 +711,106 @@ function UI(can, ctx) {
       var img = this.cosmetic_author;
       ctxDrawImage(ctx, img, canw2 - 312, 395, img.width / 2, img.height / 2);
     }
-
-    var hint = this.buttons[NORMAL_MODE].hint;
-    if (hint > 0) {
-      var img = IMAGES.NORMAL_MODE_HOVER;
-      ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+    if (this.bread !== this.previous_bread) {
+      this.previous_bread = this.bread;
+      this.bread_img = gui_render_text("" + this.bread, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 60, 250);
     }
-    var hint = this.buttons[FOREST_MODE].hint;
-    if (hint > 0) {
-      var img = IMAGES.FOREST_MODE_HOVER;
-      ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+    ctxDrawImage(ctx, this.bread_img, this.bkgd[0].translate.x + 350, 15, this.bread_img.w2, this.bread_img.h2);
+    if (this.lvl !== this.previous_lvl) {
+      this.previous_lvl = this.lvl;
+      this.lvl_img = gui_render_text("LVL " + (this.lvl + 1), "\'Baloo Paaji\', sans-serif", "#EFE4B4", 50, 250, undefined, 30, 24, undefined, undefined, undefined, undefined, "#3F3019", 20);
     }
-    var hint = this.buttons[MODE_COMMUNITY].hint;
-    if (hint > 0) {
-      var img = IMAGES.MODE_COMMUNITY_HOVER;
-      ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+    ctxDrawImage(ctx, this.lvl_img, this.bkgd[0].translate.x + 94, 0, this.lvl_img.w2, this.lvl_img.h2);
+    if (client.privateServer === 0) {
+      var hint = this.buttons[NORMAL_MODE].hint;
+      if (hint > 0) {
+        var img = IMAGES.NORMAL_MODE_HOVER;
+        ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+      }
+      var hint = this.buttons[FOREST_MODE].hint;
+      if (hint > 0) {
+        var img = IMAGES.FOREST_MODE_HOVER;
+        ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+      }
+      var hint = this.buttons[MODE_COMMUNITY].hint;
+      if (hint > 0) {
+        var img = IMAGES.MODE_COMMUNITY_HOVER;
+        ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+      }
+      var hint = this.buttons[MODE_EXPERIMENTAL].hint;
+      if (hint > 0) {
+        var img = IMAGES.MODE_EXPERIMENTAL_HOVER;
+        ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+      }
+      var hint = this.buttons[VAMPIRE_MODE].hint;
+      if (hint > 0) {
+        var img = IMAGES.VAMPIRE_MODE_HOVER;
+        ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+      }
+      var hint = this.buttons[ZOMBIE_MODE].hint;
+      if (hint > 0) {
+        var img = IMAGES.ZOMBIE_MODE_HOVER;
+        ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+      }
     }
-    var hint = this.buttons[MODE_EXPERIMENTAL].hint;
-    if (hint > 0) {
-      var img = IMAGES.MODE_EXPERIMENTAL_HOVER;
-      ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
+    if ((this.spin === 1) && (Math.abs(_r - this.spin_target) < 0.006)) {
+      ctx.globalAlpha = Math.min(1, this.spin_win_effect * 3);
+      var img = IMAGES.SPIN_LIGHT;
+      ctx.save();
+      ctx.translate(canw2, 260);
+      this.spin_win_effect += delta;
+      ctx.rotate(this.spin_win_effect);
+      ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2, img.width, img.height);
+      ctx.restore();
+      var v = 1.05 + (0.05 * Math.sin(this.spin_win_effect * 5));
+      if (this.spin_type === 0) {
+        img = COSMETICS.SKIN[this.spin_win].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctxDrawImage(ctx, img, canw2 - (w / 2), 260 - (h / 2), w, h);
+      } else if (this.spin_type === 1) {
+        img = COSMETICS.SKIN[0].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctxDrawImage(ctx, img, canw2 - (w / 2), 260 - (h / 2), w, h);
+        img = COSMETICS.ACCESSORY[this.spin_win].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctxDrawImage(ctx, img, canw2 - (w / 2), 260 - (h / 2), w, h);
+      } else if (this.spin_type === 2) {
+        img = COSMETICS.BAG[this.spin_win].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctxDrawImage(ctx, img, canw2 - (w / 2), 180 - (h / 2), w, h);
+        img = COSMETICS.SKIN[0].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctxDrawImage(ctx, img, canw2 - (w / 2), 260 - (h / 2), w, h);
+      } else if (this.spin_type === 3) {
+        img = COSMETICS.BOOK[this.spin_win].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctx.save();
+        ctx.translate(canw2, 260);
+        ctx.rotate(Math.PI);
+        ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
+        ctx.restore();
+      } else if (this.spin_type === 4) {
+        img = COSMETICS.CRATE[this.spin_win].day;
+        var w = v * img.width;
+        var h = v * img.height;
+        ctxDrawImage(ctx, img, canw2 - (w / 2), 260 - (h / 2), w, h);
+      }
+      var img = this.spin_name;
+      ctxDrawImage(ctx, img, canw2 - (img.width / 4), 340, img.width / 2, img.height / 2);
+      var img = this.spin_author;
+      ctxDrawImage(ctx, img, canw2 - (img.width / 4), 365, img.width / 2, img.height / 2);
+      if (this.spin_win_effect > 6) {
+        this.spin = 0;
+        select_subview(__SHOP__);
+      }
+      ctx.globalAlpha = 1;
     }
-    var hint = this.buttons[VAMPIRE_MODE].hint;
-    if (hint > 0) {
-      var img = IMAGES.VAMPIRE_MODE_HOVER;
-      ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
-    }
-    var hint = this.buttons[ZOMBIE_MODE].hint;
-    if (hint > 0) {
-      var img = IMAGES.ZOMBIE_MODE_HOVER;
-      ctxDrawImage(ctx, img, canw2 - (img.width / 4), -36 - ((img.height * Utils.ease_in_out_quad(1 - hint)) / 2), img.width / 2, img.height / 2);
-    }
-
-
     user.alert.draw("#FFF", "#000");
     if (_this.waiting)
       this.loading.draw();
@@ -541,19 +818,38 @@ function UI(can, ctx) {
   };
   var COUNTER = 0;
   var __GAME__ = Math.pow(2, COUNTER++);
+  var __PROFILE__ = Math.pow(2, COUNTER++);
+  this.__PROFILE__ = __PROFILE__;
+  var __LOGIN__ = Math.pow(2, COUNTER++);
   var __COSMETICS__ = Math.pow(2, COUNTER++);
+  var __SHOP__ = Math.pow(2, COUNTER++);
+  var __TUTORIAL__ = Math.pow(2, COUNTER++);
+  var __LEADERBOARD__ = Math.pow(2, COUNTER++);
   var __BUY__ = Math.pow(2, COUNTER++);
   this.__BUY__ = __BUY__;
   var __LOCKED_SKIN__ = Math.pow(2, COUNTER++);
   var __LOCKED_ACC__ = Math.pow(2, COUNTER++);
-
+  var __SPIN_1__ = Math.pow(2, COUNTER++);
+  var __SPIN_2__ = Math.pow(2, COUNTER++);
+  var __SPIN_3__ = Math.pow(2, COUNTER++);
+  var __SPIN_4__ = Math.pow(2, COUNTER++);
+  var __SPIN_5__ = Math.pow(2, COUNTER++);
+  var __SPIN_6__ = Math.pow(2, COUNTER++);
   var __SKIN__ = Math.pow(2, COUNTER++);
   var __CRATE__ = Math.pow(2, COUNTER++);
   var __BAG__ = Math.pow(2, COUNTER++);
   var __BOOK__ = Math.pow(2, COUNTER++);
   var __ACCESSORY__ = Math.pow(2, COUNTER++);
   var __LOOT__ = Math.pow(2, COUNTER++);
-
+  var __CHANGE_NICKNAME1__ = Math.pow(2, COUNTER++);
+  var __CHANGE_NICKNAME0__ = Math.pow(2, COUNTER++);
+  var __SERVER_LOCATION__ = Math.pow(2, COUNTER++);
+  this.__SERVER_LOCATION__ = __SERVER_LOCATION__;
+  var __SERVER_DURATION__ = Math.pow(2, COUNTER++);
+  this.__SERVER_DURATION__ = __SERVER_DURATION__;
+  var __SERVER_ACCESS__ = Math.pow(2, COUNTER++);
+  this.__SERVER_ACCESS__ = __SERVER_ACCESS__;
+  var __SEASON5__ = Math.pow(2, COUNTER++);
   this.current_view = __GAME__;
 
   function update_subview(view, mode, _css) {
@@ -572,8 +868,7 @@ function UI(can, ctx) {
         _this.css[i].style.display = _css;
 
     }
-  };;
-  var assetInfo = [];
+  };
 
   function correct_selected_skin() {
     var ct = Number(Cookies.get("starve_crate"));
@@ -609,7 +904,7 @@ function UI(can, ctx) {
     update_subview(__LOCKED_SKIN__, __HIDE__, "none");
     update_subview(__LOCKED_ACC__, __HIDE__, "none");
     correct_selected_skin();
-    if ((view === _this.current_view))
+    if ((view === _this.current_view) || (_this.spin >= 1))
       return;
 
     update_subview(_this.current_view, __HIDE__, "none");
@@ -618,13 +913,16 @@ function UI(can, ctx) {
   };;
   this.select_subview = select_subview;
 
+  function play_after() {
+    correct_selected_skin();
+    client.connect();
+  };;
+
   this.play_game = function () {
     if (_this.waiting === false) {
       user.reconnect.enabled = false;
       _this.waiting = true;
-
-      correct_selected_skin();
-      client.connect();
+      play_after();
     }
   };
   var __LEFT__ = 1;
@@ -639,89 +937,255 @@ function UI(can, ctx) {
   var __BREATH__ = 1;
   var __HIDE__ = 0;
   var __DISPLAY__ = 1;
-  // if (window.innerWidth < 1300) {
-  //   this.nickname = {
-  //     id: document.getElementById("nickname_block"),
-  //     style: document.getElementById("nickname_block").style,
-  //     input: document.getElementById("nickname_input"),
-  //     active: __DISPLAY__,
-  //     position: __TOP__ | __LEFT__,
-  //     view: __GAME__,
-  //     translate: {
-  //       x: 0,
-  //       y: 0,
-  //       _x: 200,
-  //       _y: 184
-  //     }
-  //   };
-  // } else {
-  //   this.nickname = {
-  //     id: document.getElementById("nickname_block"),
-  //     style: document.getElementById("nickname_block").style,
-  //     input: document.getElementById("nickname_input"),
-  //     active: __DISPLAY__,
-  //     position: __TOP__ | __MIDDLE_X__,
-  //     view: __GAME__,
-  //     translate: {
-  //       x: 0,
-  //       y: 0,
-  //       _x: -180,
-  //       _y: 184
-  //     }
-  //   };
-  // }
-  // this.nickname.id.addEventListener("keyup", function (event) {
-  //   event.preventDefault();
-  //   if (((event.keyCode == 13) && !_this.waiting) && !_this.settings)
-  //     _this.play_game();
+  if (window.innerWidth < 1300) {
+    this.nickname = {
+      id: document.getElementById("nickname_block"),
+      style: document.getElementById("nickname_block").style,
+      input: document.getElementById("nickname_input"),
+      active: __DISPLAY__,
+      position: __TOP__ | __LEFT__,
+      view: __GAME__,
+      translate: {
+        x: 0,
+        y: 0,
+        _x: 200,
+        _y: 184
+      }
+    };
+  } else {
+    this.nickname = {
+      id: document.getElementById("nickname_block"),
+      style: document.getElementById("nickname_block").style,
+      input: document.getElementById("nickname_input"),
+      active: __DISPLAY__,
+      position: __TOP__ | __MIDDLE_X__,
+      view: __GAME__,
+      translate: {
+        x: 0,
+        y: 0,
+        _x: -180,
+        _y: 184
+      }
+    };
+  }
+  this.nickname.id.addEventListener("keyup", function (event) {
+    event.preventDefault();
+    if (((event.keyCode == 13) && !_this.waiting) && !_this.settings)
+      _this.play_game();
 
-  // });
-  // this.nickname.input.value = Cookies.get("starve_nickname") ? Cookies.get("starve_nickname") : "";
-  // if (window.innerWidth < 1300)
-  //   this.server_list = {
-  //     id: document.getElementById("servselect"),
-  //     style: document.getElementById("servselect").style,
-  //     active: __DISPLAY__,
-  //     position: __TOP__ | __LEFT__,
-  //     view: __GAME__,
-  //     translate: {
-  //       x: 0,
-  //       y: 0,
-  //       _x: 208,
-  //       _y: 225
-  //     }
-  //   };
-  // else
-  //   this.server_list = {
-  //     id: document.getElementById("servselect"),
-  //     style: document.getElementById("servselect").style,
-  //     active: __DISPLAY__,
-  //     position: __TOP__ | __MIDDLE_X__,
-  //     view: __GAME__,
-  //     translate: {
-  //       x: 0,
-  //       y: 0,
-  //       _x: -180,
-  //       _y: 225
-  //     }
-  //   };
-
+  });
+  this.nickname.input.value = Cookies.get("starve_nickname") ? Cookies.get("starve_nickname") : "";
+  if (window.innerWidth < 1300)
+    this.server_list = {
+      id: document.getElementById("servselect"),
+      style: document.getElementById("servselect").style,
+      active: __DISPLAY__,
+      position: __TOP__ | __LEFT__,
+      view: __GAME__,
+      translate: {
+        x: 0,
+        y: 0,
+        _x: 208,
+        _y: 225
+      }
+    };
+  else
+    this.server_list = {
+      id: document.getElementById("servselect"),
+      style: document.getElementById("servselect").style,
+      active: __DISPLAY__,
+      position: __TOP__ | __MIDDLE_X__,
+      view: __GAME__,
+      translate: {
+        x: 0,
+        y: 0,
+        _x: -180,
+        _y: 225
+      }
+    };
   COUNTER = 0;
   this.css = [];
-  // this.css[COUNTER++] = this.nickname;
-  // this.css[COUNTER++] = this.server_list;
+  this.css[COUNTER++] = this.nickname;
+  this.css[COUNTER++] = this.server_list;
   COUNTER = 0;
   this.bkgd = [];
-
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_RESUME, __DISPLAY__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL1, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL2, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL3, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL4, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL5, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL6, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL7, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL8, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL9, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL10, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL11, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL12, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL13, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL14, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL15, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL16, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL17, __HIDE__, 0, 0, __LEFT__);
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.AVATAR_LVL18, __HIDE__, 0, 0, __LEFT__);
   if (window.innerWidth < 1300)
     this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.LOGO_INTERFACE, __DISPLAY__, 200, 100, __TOP__ | __LEFT__);
   else
     this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.LOGO_INTERFACE, __DISPLAY__, -753 / 4, 100, __TOP__ | __MIDDLE_X__);
   this.bkgd[COUNTER++].view = __GAME__;
-
+  this.bkgd[COUNTER++] = gui_create_image_hd(IMAGES.LINKS_BG, __DISPLAY__, 353, -10, __RIGHT__);
+  if (window.innerWidth > 1300) {
+    this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.CHANGELOG_BOX, __DISPLAY__, -885 / 4, -319 / 2, __BOTTOM__ | __MIDDLE_X__);
+    this.bkgd[COUNTER++].view = __GAME__;
+  }
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.PROFILE_BOX, __HIDE__, -1293 / 4, 100, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __PROFILE__;
   this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SKINS_BOX, __HIDE__, -1425 / 4, 100, __TOP__ | __MIDDLE_X__);
   this.bkgd[COUNTER++].view = __COSMETICS__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.ACCOUNT_BOX, __HIDE__, -905 / 4, 50, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __LOGIN__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SHOP_BOX, __HIDE__, -1608 / 4, 130, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SHOP__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SERVER_LOCATION_BOX, __HIDE__, -1117 / 4, 130, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SERVER_LOCATION__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SERVER_DURATION_BOX, __HIDE__, -1222 / 4, 130, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SERVER_DURATION__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SERVER_ACCESS_BOX, __HIDE__, -1222 / 4, 100, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SERVER_ACCESS__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SEASON5_BOX, __HIDE__, (-IMAGES.SEASON5_BOX.width / 4) - 350, -15, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SEASON5__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.TUTORIAL_BOX, __HIDE__, -1497 / 4, 110, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __TUTORIAL__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.LEADERBOARD_BOX, __HIDE__, -1226 / 4, 100, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __LEADERBOARD__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.BUY_BREAD_BOX, __HIDE__, -1381 / 4, 80, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __BUY__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SPIN1, __HIDE__, -1542 / 4, 150, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_1__;
+  var DEG = 360 / 100;
+  var spinImg = this.create_spin([
+    ["#25c5d6", DEG * 3],
+    ["#e2cf27", DEG * 10],
+    ["#afac98", DEG * 30],
+    ["#d88e23", DEG * 57]
+  ]);
+  this.bkgd[COUNTER] = gui_create_image_hd(spinImg, __HIDE__, -spinImg.width / 4, 178, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_1__;
+  this.play_spin = function (_target, type, win) {
+    _this.spin = 1;
+    _this.spin_effect = 0;
+    _this.spin_win_effect = 0;
+    _this.spin_target = _target;
+    _this.spin_type = type;
+    var info;
+    var i = 0;
+    if (type === 0) {
+      for (i = 0; i < COSMETICS.SKIN.length; i++) {
+        if (win === COSMETICS.SKIN[i].id)
+          break;
 
+      }
+      info = COSMETICS.SKIN[i];
+      _this.unlock.skin[i] = 1;
+    } else if (type === 1) {
+      for (i = 0; i < COSMETICS.ACCESSORY.length; i++) {
+        if (win === COSMETICS.ACCESSORY[i].id)
+          break;
+
+      }
+      info = COSMETICS.ACCESSORY[i];
+      _this.unlock.accessory[i] = 1;
+    } else if (type === 2) {
+      for (i = 0; i < COSMETICS.BAG.length; i++) {
+        if (win === COSMETICS.BAG[i].id)
+          break;
+
+      }
+      info = COSMETICS.BAG[i];
+      _this.unlock.bag[i] = 1;
+    } else if (type === 3) {
+      for (i = 0; i < COSMETICS.BOOK.length; i++) {
+        if (win === COSMETICS.BOOK[i].id)
+          break;
+
+      }
+      info = COSMETICS.BOOK[i];
+      _this.unlock.book[i] = 1;
+    } else if (type === 4) {
+      for (i = 0; i < COSMETICS.CRATE.length; i++) {
+        if (win === COSMETICS.CRATE[i].id)
+          break;
+
+      }
+      info = COSMETICS.CRATE[i];
+      _this.unlock.crate[i] = 1;
+      _this.unlock.dead[i] = 1;
+    }
+    _this.spin_win = i;
+    _this.spin_author = gui_render_text("by " + info.author, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 40, 500, undefined, 30, 24, undefined, undefined, undefined, undefined, "#000000", 24);
+    _this.spin_name = gui_render_text(info.name, "\'Baloo Paaji\', sans-serif", "#EFE4B4", 60, 600, undefined, 30, 24, undefined, undefined, undefined, undefined, "#000000", 20);
+  };
+  this.spin = 0;
+  this.spin_effect = 0;
+  this.spin_target = 0;
+  this.spin_type = 0;
+  this.spin_win_effect = 0;
+  this.spin_author = undefined;
+  this.spin_name = undefined;
+  var SPIN_TOP = (150 + (448 / 4)) - (260 / 4);
+  var SPIN_CENTER = -260 / 4;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SPIN2, __HIDE__, -1542 / 4, 150, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_5__;
+  var spinImg = this.create_spin([
+    ["#d45ce5", DEG * 3],
+    ["#25c5d6", DEG * 10],
+    ["#e2cf27", DEG * 30],
+    ["#afac98", DEG * 57]
+  ]);
+  this.bkgd[COUNTER] = gui_create_image_hd(spinImg, __HIDE__, -spinImg.width / 4, 178, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_5__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SPIN3, __HIDE__, -1542 / 4, 150, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_3__;
+  var spinImg = this.create_spin([
+    ["#d33a2a", DEG * 3],
+    ["#d45ce5", DEG * 10],
+    ["#25c5d6", DEG * 30],
+    ["#e2cf27", DEG * 57]
+  ]);
+  this.bkgd[COUNTER] = gui_create_image_hd(spinImg, __HIDE__, -spinImg.width / 4, 178, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_3__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SPIN4, __HIDE__, -1542 / 4, 150, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_4__;
+  var spinImg = this.create_spin([
+    ["#25c5d6", DEG * 3],
+    ["#e2cf27", DEG * 10],
+    ["#afac98", DEG * 30],
+    ["#d88e23", DEG * 57]
+  ]);
+  this.bkgd[COUNTER] = gui_create_image_hd(spinImg, __HIDE__, -spinImg.width / 4, 178, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_4__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SPIN5, __HIDE__, -1542 / 4, 150, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_2__;
+  var spinImg = this.create_spin([
+    ["#d45ce5", DEG * 3],
+    ["#25c5d6", DEG * 10],
+    ["#e2cf27", DEG * 30],
+    ["#afac98", DEG * 57]
+  ]);
+  this.bkgd[COUNTER] = gui_create_image_hd(spinImg, __HIDE__, -spinImg.width / 4, 178, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_2__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.SPIN6, __HIDE__, -1542 / 4, 150, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_6__;
+  var spinImg = this.create_spin([
+    ["#d33a2a", DEG * 3],
+    ["#d45ce5", DEG * 10],
+    ["#25c5d6", DEG * 30],
+    ["#e2cf27", DEG * 57]
+  ]);
+  this.bkgd[COUNTER] = gui_create_image_hd(spinImg, __HIDE__, -spinImg.width / 4, 178, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SPIN_6__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.CUSTOM_SKIN_BOX, __HIDE__, -1366 / 4, 100, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __SKIN__;
   this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.ACCESSORIES_BOX, __HIDE__, -1366 / 4, 100, __TOP__ | __MIDDLE_X__);
   this.bkgd[COUNTER++].view = __ACCESSORY__;
   this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.BAG_BOX, __HIDE__, -1366 / 4, 100, __TOP__ | __MIDDLE_X__);
@@ -732,22 +1196,100 @@ function UI(can, ctx) {
   this.bkgd[COUNTER++].view = __CRATE__;
   this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.LOOT_BOX, __HIDE__, -1366 / 4, 100, __TOP__ | __MIDDLE_X__);
   this.bkgd[COUNTER++].view = __LOOT__;
-
+  BAG_REMAIN_BOX = COUNTER++;
+  this.bkgd[BAG_REMAIN_BOX] = gui_create_image_hd(IMAGES.BAG_REMAIN_BOX, __HIDE__, (908 / 2) + 30, 0, __TOP__);
+  SERVER_REMAIN_BOX = COUNTER++;
+  this.bkgd[SERVER_REMAIN_BOX] = gui_create_image_hd(IMAGES.SERVER_REMAIN_BOX, __HIDE__, ((908 / 2) + (597 / 2)) + 60, 0, __TOP__);
   this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.LOCKED_CUSTOM_ALERT, __HIDE__, -758 / 4, -5, __TOP__ | __MIDDLE_X__);
   this.bkgd[COUNTER++].view = __LOCKED_ACC__;
   this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.LOCKED_SKIN_ALERT, __HIDE__, -758 / 4, -5, __TOP__ | __MIDDLE_X__);
   this.bkgd[COUNTER++].view = __LOCKED_SKIN__;
-
+  LEVEL_GAUGE = COUNTER++;
+  this.bkgd[LEVEL_GAUGE] = gui_create_image_hd(IMAGES.GAUGE, __DISPLAY__, 93, 30, __TOP__);
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.CHANGE_NICKNAME1_BOX, __HIDE__, -692 / 4, 110, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __CHANGE_NICKNAME1__;
+  this.bkgd[COUNTER] = gui_create_image_hd(IMAGES.CHANGE_NICKNAME0_BOX, __HIDE__, -692 / 4, 110, __TOP__ | __MIDDLE_X__);
+  this.bkgd[COUNTER++].view = __CHANGE_NICKNAME0__;
   COUNTER = 0;
   this.buttons = [];
-
+  this.buttons[COUNTER++] = gui_create_button(50, 57, "", [IMAGES.BUY_BREAD_OUT, IMAGES.BUY_BREAD_IN, IMAGES.BUY_BREAD_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      select_subview(__BUY__);
+    else
+      select_subview(__LOGIN__);
+  }, 320, 0, __LEFT__, __DISPLAY__);
   if (window.innerWidth < 1300)
     this.buttons[COUNTER] = gui_create_button(202, 97, "", [IMAGES.PLAY_BUTTON_OUT, IMAGES.PLAY_BUTTON_IN, IMAGES.PLAY_BUTTON_CLICK], __HD__, __NO_BREATH__, this.play_game, 462, 235, __TOP__ | __LEFT__, __DISPLAY__);
   else
     this.buttons[COUNTER] = gui_create_button(202, 97, "", [IMAGES.PLAY_BUTTON_OUT, IMAGES.PLAY_BUTTON_IN, IMAGES.PLAY_BUTTON_CLICK], __HD__, __NO_BREATH__, this.play_game, 74, 235, __TOP__ | __MIDDLE_X__, __DISPLAY__);
-
   this.buttons[COUNTER++].view = __GAME__;
+  if (window.innerWidth > 1300) {
+    this.buttons[COUNTER] = gui_create_button(355, 168, "", [IMAGES.CHANGELOG_BUTTON_OUT, IMAGES.CHANGELOG_BUTTON_OUT, IMAGES.CHANGELOG_BUTTON_OUT], __HD__, __NO_BREATH__, function () {
+      window.open("./changelog.html", "_blank");
+    }, -195, -115, __BOTTOM__ | __MIDDLE_X__, __DISPLAY__);
+    this.buttons[COUNTER++].view = __GAME__;
+    this.buttons[COUNTER] = gui_create_button(355, 168, "", [IMAGES.DEVASTIO_BUTTON_OUT, IMAGES.DEVASTIO_BUTTON_OUT, IMAGES.DEVASTIO_BUTTON_OUT], __HD__, __NO_BREATH__, function () {
+      window.open("https://devast.io", "_blank");
+    }, 20, -115, __BOTTOM__ | __MIDDLE_X__, __DISPLAY__);
+    this.buttons[COUNTER++].view = __GAME__;
+  }
+  this.buttons[COUNTER++] = gui_create_button(80, 80, "", [IMAGES.DISCORD_BUTTON_OUT, IMAGES.DISCORD_BUTTON_IN, IMAGES.DISCORD_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://discord.gg/starveio", "_blank");
+  }, 330, 10, __RIGHT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(80, 80, "", [IMAGES.REDDIT_BUTTON_OUT, IMAGES.REDDIT_BUTTON_IN, IMAGES.REDDIT_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://reddit.com/r/starveio", "_blank");
+  }, 280, 10, __RIGHT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(80, 80, "", [IMAGES.WIKI_BUTTON_OUT, IMAGES.WIKI_BUTTON_IN, IMAGES.WIKI_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://starveiopro.wikia.com/wiki/", "_blank");
+  }, 230, 10, __RIGHT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(80, 80, "", [IMAGES.FACEBOOK_BUTTON_OUT, IMAGES.FACEBOOK_BUTTON_IN, IMAGES.FACEBOOK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://www.facebook.com/pages/category/Video-Game/limaxio-571818073000979/", "_blank");
+  }, 155, 10, __RIGHT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(80, 80, "", [IMAGES.TWITTER_BUTTON_OUT, IMAGES.TWITTER_BUTTON_IN, IMAGES.TWITTER_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://twitter.com/lapamauve", "_blank");
+  }, 105, 10, __RIGHT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(80, 80, "", [IMAGES.YOUTUBE_BUTTON_OUT, IMAGES.YOUTUBE_BUTTON_IN, IMAGES.YOUTUBE_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://youtube.com/c/lapamauve", "_blank");
+  }, 55, 10, __RIGHT__, __DISPLAY__);
+  LEADERBOARD_BUTTON = COUNTER++;
+  this.buttons[LEADERBOARD_BUTTON] = gui_create_button(232, 142, "", [IMAGES.ICONS_BOTTOM_BG_BUTTON_OUT, IMAGES.ICONS_BOTTOM_BG_BUTTON_IN, IMAGES.ICONS_BOTTOM_BG_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__LEADERBOARD__);
+    getLeaderboard(ui.LEADERBOARD_ALL, ui.LEADERBOARD_TOTAL, ui.LEADERBOARD_SCORE, ui.LEADERBOARD_SEASON5);
+  }, -5, 573, __LEFT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(236, 165, "", [IMAGES.LEADERBOARD_ICON, IMAGES.LEADERBOARD_ICON, IMAGES.LEADERBOARD_ICON], __HD__, __BREATH__, function () {
+    select_subview(__LEADERBOARD__);
+  }, -5, 566, __LEFT__, __DISPLAY__);
+  TUTORIAL_BUTTON = COUNTER++;
+  this.buttons[TUTORIAL_BUTTON] = gui_create_button(236, 165, "", [IMAGES.ICONS_BG_BUTTON_OUT, IMAGES.ICONS_BG_BUTTON_IN, IMAGES.ICONS_BG_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__TUTORIAL__);
+  }, -5, 494, __LEFT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(236, 165, "", [IMAGES.TUTORIAL_ICON, IMAGES.TUTORIAL_ICON, IMAGES.TUTORIAL_ICON], __HD__, __BREATH__, function () {
+    select_subview(__TUTORIAL__);
+  }, -5, 494, __LEFT__, __DISPLAY__);
+  SERVER_BUTTON = COUNTER++;
+  this.buttons[SERVER_BUTTON] = gui_create_button(236, 165, "", [IMAGES.ICONS_BG_BUTTON_OUT, IMAGES.ICONS_BG_BUTTON_IN, IMAGES.ICONS_BG_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged()) {
+      if ((ui.privateServerTime - Date.now()) > 0)
+        select_subview(__SERVER_ACCESS__);
 
+    } else
+      select_subview(__LOGIN__);
+  }, -5, 415, __LEFT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(236, 165, "", [IMAGES.SERVER_ACCESS_ICON, IMAGES.SERVER_ACCESS_ICON, IMAGES.SERVER_ACCESS_ICON], __HD__, __BREATH__, function () {
+    if (_this.isUserLogged()) {
+      if ((ui.privateServerTime - Date.now()) > 0)
+        select_subview(__SERVER_ACCESS__);
+
+    } else
+      select_subview(__LOGIN__);
+  }, -5, 415, __LEFT__, __DISPLAY__);
+  SHOP_BUTTON = COUNTER++;
+  this.buttons[SHOP_BUTTON] = gui_create_button(236, 165, "", [IMAGES.ICONS_BG_BUTTON_OUT, IMAGES.ICONS_BG_BUTTON_IN, IMAGES.ICONS_BG_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, -5, 336, __LEFT__, __DISPLAY__);
+  this.buttons[COUNTER++] = gui_create_button(236, 165, "", [IMAGES.SHOP_ICON, IMAGES.SHOP_ICON, IMAGES.SHOP_ICON], __HD__, __BREATH__, function () {
+    select_subview(__SHOP__);
+  }, -5, 336, __LEFT__, __DISPLAY__);
   COSMETICS_BUTTON = COUNTER++;
   this.buttons[COSMETICS_BUTTON] = gui_create_button(236, 165, "", [IMAGES.ICONS_BG_BUTTON_OUT, IMAGES.ICONS_BG_BUTTON_IN, IMAGES.ICONS_BG_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
     select_subview(__COSMETICS__);
@@ -762,76 +1304,174 @@ function UI(can, ctx) {
   this.buttons[COUNTER++] = gui_create_button(236, 165, "", [IMAGES.START_ICON, IMAGES.START_ICON, IMAGES.START_ICON], __HD__, __BREATH__, function () {
     select_subview(__GAME__);
   }, -5, 178, __LEFT__, __DISPLAY__);
+  LOGIN_BUTTON = COUNTER++;
+  this.LOGIN_BUTTON = LOGIN_BUTTON;
+  this.buttons[LOGIN_BUTTON] = gui_create_button(324, 222, "", [IMAGES.LOGIN_BUTTON_OUT, IMAGES.LOGIN_BUTTON_IN, IMAGES.LOGIN_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__LOGIN__);
+  }, 0, 70, __LEFT__, __DISPLAY__);
+  PROFILE_BUTTON = COUNTER++;
+  PROFILE_BUTTON_2 = COUNTER++;
+  this.PROFILE_BUTTON = PROFILE_BUTTON;
+  this.PROFILE_BUTTON_2 = PROFILE_BUTTON_2;
+  this.buttons[PROFILE_BUTTON] = gui_create_button(324, 222, "", [IMAGES.PROFILE_BUTTON_OUT, IMAGES.PROFILE_BUTTON_IN, IMAGES.PROFILE_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__PROFILE__);
+    init_profile(-1);
+  }, 0, 70, __LEFT__, __HIDE__);
+  this.buttons[PROFILE_BUTTON_2] = gui_create_button(324, 222, "", [IMAGES.PROFILE_ICON, IMAGES.PROFILE_ICON, IMAGES.PROFILE_ICON], __HD__, __BREATH__, function () {
+    select_subview(__PROFILE__);
+    init_profile(-1);
+  }, 0, 70, __LEFT__, __HIDE__);
+  if (client.privateServer === 0) {
+    var NORMAL_MODE = COUNTER++;
+    if (window.innerWidth < 1300)
+      this.buttons[NORMAL_MODE] = gui_create_button(266, 176, "", [IMAGES.NORMAL_MODE_OUT, IMAGES.NORMAL_MODE_IN, IMAGES.NORMAL_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_PVP);
+      }, 150, 300, __LEFT__ | __TOP__, __DISPLAY__);
+    else
+      this.buttons[NORMAL_MODE] = gui_create_button(266, 176, "", [IMAGES.NORMAL_MODE_OUT, IMAGES.NORMAL_MODE_IN, IMAGES.NORMAL_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_PVP);
+      }, -340, 100, __MIDDLE_X__ | __TOP__, __DISPLAY__);
+    this.buttons[NORMAL_MODE].view = __GAME__;
+    this.buttons[NORMAL_MODE].hint = 0;
+    var FOREST_MODE = COUNTER++;
+    if (window.innerWidth < 1300)
+      this.buttons[FOREST_MODE] = gui_create_button(266, 176, "", [IMAGES.FOREST_MODE_OUT, IMAGES.FOREST_MODE_IN, IMAGES.FOREST_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_LEGACY);
+      }, 150, 400, __LEFT__ | __TOP__, __DISPLAY__);
+    else
+      this.buttons[FOREST_MODE] = gui_create_button(266, 176, "", [IMAGES.FOREST_MODE_OUT, IMAGES.FOREST_MODE_IN, IMAGES.FOREST_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_LEGACY);
+      }, -340, 200, __MIDDLE_X__ | __TOP__, __DISPLAY__);
+    this.buttons[FOREST_MODE].view = __GAME__;
+    this.buttons[FOREST_MODE].hint = 0;
+    var MODE_COMMUNITY = COUNTER++;
+    if (window.innerWidth < 1300)
+      this.buttons[MODE_COMMUNITY] = gui_create_button(266, 176, "", [IMAGES.MODE_COMMUNITY_OUT, IMAGES.MODE_COMMUNITY_IN, IMAGES.MODE_COMMUNITY_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_COMMUNITY);
+      }, 450, 300, __LEFT__ | __TOP__, __DISPLAY__);
+    else
+      this.buttons[MODE_COMMUNITY] = gui_create_button(266, 176, "", [IMAGES.MODE_COMMUNITY_OUT, IMAGES.MODE_COMMUNITY_IN, IMAGES.MODE_COMMUNITY_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_COMMUNITY);
+      }, -340, 300, __MIDDLE_X__ | __TOP__, __DISPLAY__);
+    this.buttons[MODE_COMMUNITY].view = __GAME__;
+    this.buttons[MODE_COMMUNITY].hint = 0;
+    var ZOMBIE_MODE = COUNTER++;
+    if (window.innerWidth < 1300)
+      this.buttons[ZOMBIE_MODE] = gui_create_button(266, 176, "", [IMAGES.ZOMBIE_MODE_OUT, IMAGES.ZOMBIE_MODE_IN, IMAGES.ZOMBIE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_ZOMBIES);
+      }, 300, 300, __LEFT__ | __TOP__, __DISPLAY__);
+    else
+      this.buttons[ZOMBIE_MODE] = gui_create_button(266, 176, "", [IMAGES.ZOMBIE_MODE_OUT, IMAGES.ZOMBIE_MODE_IN, IMAGES.ZOMBIE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_ZOMBIES);
+      }, 204, 100, __MIDDLE_X__ | __TOP__, __DISPLAY__);
+    this.buttons[ZOMBIE_MODE].view = __GAME__;
+    this.buttons[ZOMBIE_MODE].hint = 0;
+    var VAMPIRE_MODE = COUNTER++;
+    if (window.innerWidth < 1300)
+      this.buttons[VAMPIRE_MODE] = gui_create_button(266, 176, "", [IMAGES.VAMPIRE_MODE_OUT, IMAGES.VAMPIRE_MODE_IN, IMAGES.VAMPIRE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_VAMPIRES);
+      }, 300, 400, __LEFT__ | __TOP__, __DISPLAY__);
+    else
+      this.buttons[VAMPIRE_MODE] = gui_create_button(266, 176, "", [IMAGES.VAMPIRE_MODE_OUT, IMAGES.VAMPIRE_MODE_IN, IMAGES.VAMPIRE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
+        client.select_gamemode(WORLD.MODE_VAMPIRES);
+      }, 204, 200, __MIDDLE_X__ | __TOP__, __DISPLAY__);
+    this.buttons[VAMPIRE_MODE].view = __GAME__;
+    this.buttons[VAMPIRE_MODE].hint = 0;
+    var MODE_EXPERIMENTAL = COUNTER++;
+    this.buttons[MODE_EXPERIMENTAL] = gui_create_button(266, 176, "", [IMAGES.MODE_EXPERIMENTAL_OUT, IMAGES.MODE_EXPERIMENTAL_IN, IMAGES.MODE_EXPERIMENTAL_CLICK], __HD__, __NO_BREATH__, function () {
+      client.select_gamemode(WORLD.MODE_EXPERIMENTAL);
+    }, (window.innerWidth < 1300) ? 450 : 204, (window.innerWidth < 1300) ? 400 : 300, ((window.innerWidth < 1300) ? __LEFT__ : __MIDDLE_X__) | __TOP__, __DISPLAY__);
+    this.buttons[MODE_EXPERIMENTAL].view = __GAME__;
+    this.buttons[MODE_EXPERIMENTAL].hint = 0;
+  }
+  this.buttons[COUNTER] = gui_create_button(87, 78, "", [IMAGES.MODIFY_NAME_OUT, IMAGES.MODIFY_NAME_IN, IMAGES.MODIFY_NAME_CLICK], __HD__, __NO_BREATH__, function () {
+    ui.generate_new_nickname();
+    if (ui.firstName === 0)
+      select_subview(__CHANGE_NICKNAME0__);
+    else
+      select_subview(__CHANGE_NICKNAME1__);
+  }, 127, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  this.buttons[COUNTER] = gui_create_button(87, 78, "", [IMAGES.LOGOUT_OUT, IMAGES.LOGOUT_IN, IMAGES.LOGOUT_CLICK], __HD__, __NO_BREATH__, function () {
+    logout();
+  }, 255, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  this.buttons[COUNTER] = gui_create_button(58, 64, "", [IMAGES.CLOSE_BUTTON_OUT, IMAGES.CLOSE_BUTTON_IN, IMAGES.CLOSE_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__GAME__);
+  }, 189, 118, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LOGIN__;
+  this.buttons[COUNTER] = gui_create_button(497, 72, "", [IMAGES.LOGIN_GOOGLE_OUT, IMAGES.LOGIN_GOOGLE_IN, IMAGES.LOGIN_GOOGLE_CLICK], __HD__, __NO_BREATH__, function () {
+    loginWithGoogle();
+  }, -130, 390, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LOGIN__;
+  this.buttons[COUNTER] = gui_create_button(497, 72, "", [IMAGES.LOGIN_FACEBOOK_OUT, IMAGES.LOGIN_FACEBOOK_IN, IMAGES.LOGIN_FACEBOOK_CLICK], __HD__, __NO_BREATH__, function () {
+    logWithFacebook();
+  }, -130, 430, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LOGIN__;
+  __LEVEL_FACTOR__ = 20000;
 
+  function xp_formula(score) {
+    var lvl = ui.level_formula(score);
+    var previous_exp = (lvl * lvl) * __LEVEL_FACTOR__;
+    var next_exp = (((lvl + 1) * (lvl + 1)) * __LEVEL_FACTOR__) - previous_exp;
+    score -= previous_exp;
+    return score / next_exp;
+  };;
+  this.xp_formula = xp_formula;
 
-  var NORMAL_MODE = COUNTER++;
-  if (window.innerWidth < 1300)
-    this.buttons[NORMAL_MODE] = gui_create_button(266, 176, "", [IMAGES.NORMAL_MODE_OUT, IMAGES.NORMAL_MODE_IN, IMAGES.NORMAL_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_PVP);
-    }, 150, 300, __LEFT__ | __TOP__, __DISPLAY__);
-  else
-    this.buttons[NORMAL_MODE] = gui_create_button(266, 176, "", [IMAGES.NORMAL_MODE_OUT, IMAGES.NORMAL_MODE_IN, IMAGES.NORMAL_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_PVP);
-    }, -340, 100, __MIDDLE_X__ | __TOP__, __DISPLAY__);
-  this.buttons[NORMAL_MODE].view = __GAME__;
-  this.buttons[NORMAL_MODE].hint = 0;
-  var FOREST_MODE = COUNTER++;
-  if (window.innerWidth < 1300)
-    this.buttons[FOREST_MODE] = gui_create_button(266, 176, "", [IMAGES.FOREST_MODE_OUT, IMAGES.FOREST_MODE_IN, IMAGES.FOREST_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_LEGACY);
-    }, 150, 400, __LEFT__ | __TOP__, __DISPLAY__);
-  else
-    this.buttons[FOREST_MODE] = gui_create_button(266, 176, "", [IMAGES.FOREST_MODE_OUT, IMAGES.FOREST_MODE_IN, IMAGES.FOREST_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_LEGACY);
-    }, -340, 200, __MIDDLE_X__ | __TOP__, __DISPLAY__);
-  this.buttons[FOREST_MODE].view = __GAME__;
-  this.buttons[FOREST_MODE].hint = 0;
-  var MODE_COMMUNITY = COUNTER++;
-  if (window.innerWidth < 1300)
-    this.buttons[MODE_COMMUNITY] = gui_create_button(266, 176, "", [IMAGES.MODE_COMMUNITY_OUT, IMAGES.MODE_COMMUNITY_IN, IMAGES.MODE_COMMUNITY_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_COMMUNITY);
-    }, 450, 300, __LEFT__ | __TOP__, __DISPLAY__);
-  else
-    this.buttons[MODE_COMMUNITY] = gui_create_button(266, 176, "", [IMAGES.MODE_COMMUNITY_OUT, IMAGES.MODE_COMMUNITY_IN, IMAGES.MODE_COMMUNITY_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_COMMUNITY);
-    }, -340, 300, __MIDDLE_X__ | __TOP__, __DISPLAY__);
-  this.buttons[MODE_COMMUNITY].view = __GAME__;
-  this.buttons[MODE_COMMUNITY].hint = 0;
-  var ZOMBIE_MODE = COUNTER++;
-  if (window.innerWidth < 1300)
-    this.buttons[ZOMBIE_MODE] = gui_create_button(266, 176, "", [IMAGES.ZOMBIE_MODE_OUT, IMAGES.ZOMBIE_MODE_IN, IMAGES.ZOMBIE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_ZOMBIES);
-    }, 300, 300, __LEFT__ | __TOP__, __DISPLAY__);
-  else
-    this.buttons[ZOMBIE_MODE] = gui_create_button(266, 176, "", [IMAGES.ZOMBIE_MODE_OUT, IMAGES.ZOMBIE_MODE_IN, IMAGES.ZOMBIE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_ZOMBIES);
-    }, 204, 100, __MIDDLE_X__ | __TOP__, __DISPLAY__);
-  this.buttons[ZOMBIE_MODE].view = __GAME__;
-  this.buttons[ZOMBIE_MODE].hint = 0;
-  var VAMPIRE_MODE = COUNTER++;
-  if (window.innerWidth < 1300)
-    this.buttons[VAMPIRE_MODE] = gui_create_button(266, 176, "", [IMAGES.VAMPIRE_MODE_OUT, IMAGES.VAMPIRE_MODE_IN, IMAGES.VAMPIRE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_VAMPIRES);
-    }, 300, 400, __LEFT__ | __TOP__, __DISPLAY__);
-  else
-    this.buttons[VAMPIRE_MODE] = gui_create_button(266, 176, "", [IMAGES.VAMPIRE_MODE_OUT, IMAGES.VAMPIRE_MODE_IN, IMAGES.VAMPIRE_MODE_CLICK], __HD__, __NO_BREATH__, function () {
-      client.select_gamemode(WORLD.MODE_VAMPIRES);
-    }, 204, 200, __MIDDLE_X__ | __TOP__, __DISPLAY__);
-  this.buttons[VAMPIRE_MODE].view = __GAME__;
-  this.buttons[VAMPIRE_MODE].hint = 0;
-  var MODE_EXPERIMENTAL = COUNTER++;
-  this.buttons[MODE_EXPERIMENTAL] = gui_create_button(266, 176, "", [IMAGES.MODE_EXPERIMENTAL_OUT, IMAGES.MODE_EXPERIMENTAL_IN, IMAGES.MODE_EXPERIMENTAL_CLICK], __HD__, __NO_BREATH__, function () {
-    client.select_gamemode(WORLD.MODE_EXPERIMENTAL);
-  }, (window.innerWidth < 1300) ? 450 : 204, (window.innerWidth < 1300) ? 400 : 300, ((window.innerWidth < 1300) ? __LEFT__ : __MIDDLE_X__) | __TOP__, __DISPLAY__);
-  this.buttons[MODE_EXPERIMENTAL].view = __GAME__;
-  this.buttons[MODE_EXPERIMENTAL].hint = 0;
+  function level_formula(score) {
+    return Math.floor(Math.sqrt(score / __LEVEL_FACTOR__));
+  };;
+  this.level_formula = level_formula;
+  this.update_score = function (score) {
+    ui.lvl = ui.level_formula(score);
+    ui.xp_dest = ui.xp_formula(score);
+    ui.xp = 0;
+    ui.score = score;
+  };
 
+  function init_profile(id, season) {
+    if (season !== undefined) {
+      ui.profile_season = season;
+      var lastSeason = ui.seasons[season];
+      ui.score = lastSeason["score"];
+      ui.kill = lastSeason["kill"];
+      ui.death = lastSeason["death"];
+      ui.time = lastSeason["time"];
+      ui.bestScore = lastSeason["bestScore"];
+      ui.bestKill = lastSeason["bestKill"];
+      ui.bestTime = lastSeason["bestTime"];
+      ui.scoreTotal = lastSeason["scoreTotal"];
+    }
+    if (id === undefined)
+      id = ui.current_mode_score;
+
+    ui.current_mode_score = id;
+    if (id >= 0) {
+      document.getElementById("stats_box_time").innerHTML = ui.bestTime[id];
+      document.getElementById("stats_box_kill").innerHTML = ui.bestKill[id];
+      document.getElementById("stats_box_score").innerHTML = ui.bestScore[id];
+    } else {
+      var kill = 0;
+      for (var i = 0; i < ui.kill.length; i++)
+        kill += ui.kill[i];
+      var time = 0;
+      for (var i = 0; i < ui.time.length; i++)
+        time += ui.time[i];
+      document.getElementById("stats_box_time").innerHTML = time;
+      document.getElementById("stats_box_kill").innerHTML = kill;
+      document.getElementById("stats_box_score").innerHTML = ui.score;
+    }
+  };;
   this.login_restore_data = function (data) {
     ui.buttons[ui.LOGIN_BUTTON].info.active = 0;
     ui.buttons[ui.PROFILE_BUTTON].info.active = 1;
     ui.buttons[ui.PROFILE_BUTTON_2].info.active = 1;
     init_skin();
-
+    if (data["name"].indexOf("Starver#") === -1)
+      document.getElementById("account_nickname_input").value = window["decodeURIComponent"](window["escape"](window["atob"](data["name"])));
+    else
+      document.getElementById("account_nickname_input").value = data["name"];
     ui.bread = data["bread"];
     var seasons = data["seasons"];
     var lastSeason = seasons[seasons.length - 1];
@@ -916,6 +1556,106 @@ function UI(can, ctx) {
     }
   };
 
+
+  this.isUserLogged = function () {
+    return ui.buttons[ui.PROFILE_BUTTON].info.active;
+  };
+  this.buttons[COUNTER] = gui_create_button(461, 105, "", [IMAGES.GET_MORE_BUTTON_OUT, IMAGES.GET_MORE_BUTTON_IN, IMAGES.GET_MORE_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      select_subview(__BUY__);
+    else
+      select_subview(__LOGIN__);
+  }, -100, 80, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(157, 158, "", [IMAGES.TUTO_WIKI_OUT, IMAGES.TUTO_WIKI_IN, IMAGES.TUTO_WIKI_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("https://starveiopro.wikia.com/wiki/", "_blank");
+  }, -35, 125, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __TUTORIAL__;
+  this.buttons[COUNTER] = gui_create_button(66, 73, "", [IMAGES.TUTO_PREVIOUS_OUT, IMAGES.TUTO_PREVIOUS_IN, IMAGES.TUTO_PREVIOUS_CLICK], __HD__, __NO_BREATH__, undefined, -68, 340, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __TUTORIAL__;
+  this.buttons[COUNTER] = gui_create_button(66, 73, "", [IMAGES.TUTO_NEXT_OUT, IMAGES.TUTO_NEXT_IN, IMAGES.TUTO_NEXT_CLICK], __HD__, __NO_BREATH__, undefined, -30, 340, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __TUTORIAL__;
+  this.buttons[COUNTER] = gui_create_button(97, 66, "", [IMAGES.LVL_LEADERBOARD_OUT, IMAGES.LVL_LEADERBOARD_IN, IMAGES.LVL_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, undefined, -14, 151, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_KILL = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(135, 66, "", [IMAGES.KILL_LEADERBOARD_OUT, IMAGES.KILL_LEADERBOARD_IN, IMAGES.KILL_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, ui.LEADERBOARD_KILL);
+  }, 37.5, 151, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_TIME = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(160, 66, "", [IMAGES.TIME_LEADERBOARD_OUT, IMAGES.TIME_LEADERBOARD_IN, IMAGES.TIME_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, ui.LEADERBOARD_TIME);
+  }, 107.5, 151, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_SCORE = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(207, 66, "", [IMAGES.SCORE_LEADERBOARD_OUT, IMAGES.SCORE_LEADERBOARD_IN, IMAGES.SCORE_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, ui.LEADERBOARD_SCORE);
+  }, 190.5, 151, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_TODAY = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(144, 66, "", [IMAGES.TODAY_LEADERBOARD_OUT, IMAGES.TODAY_LEADERBOARD_IN, IMAGES.TODAY_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(ui.LEADERBOARD_TODAY);
+  }, 103.5, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_WEEK = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(124, 66, "", [IMAGES.WEEK_LEADERBOARD_OUT, IMAGES.WEEK_LEADERBOARD_IN, IMAGES.WEEK_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(ui.LEADERBOARD_WEEK);
+  }, 177.5, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_ALL = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(104, 66, "", [IMAGES.ALL_LEADERBOARD_OUT, IMAGES.ALL_LEADERBOARD_IN, IMAGES.ALL_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(ui.LEADERBOARD_ALL);
+  }, 242, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_SEASON1 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(183, 66, "", [IMAGES.SEASON1_LEADERBOARD_OUT, IMAGES.SEASON1_LEADERBOARD_IN, IMAGES.SEASON1_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, undefined, ui.LEADERBOARD_SEASON1);
+  }, -290, 521, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_SEASON2 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(183, 66, "", [IMAGES.SEASON2_LEADERBOARD_OUT, IMAGES.SEASON2_LEADERBOARD_IN, IMAGES.SEASON2_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, undefined, ui.LEADERBOARD_SEASON2);
+  }, -185, 521, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_SEASON3 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(183, 66, "", [IMAGES.SEASON3_LEADERBOARD_OUT, IMAGES.SEASON3_LEADERBOARD_IN, IMAGES.SEASON3_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, undefined, ui.LEADERBOARD_SEASON3);
+  }, -80, 521, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_SEASON4 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(183, 66, "", [IMAGES.SEASON4_LEADERBOARD_OUT, IMAGES.SEASON4_LEADERBOARD_IN, IMAGES.SEASON4_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, undefined, ui.LEADERBOARD_SEASON4);
+  }, 25, 521, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_SEASON5 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(183, 66, "", [IMAGES.SEASON5_LEADERBOARD_OUT, IMAGES.SEASON5_LEADERBOARD_IN, IMAGES.SEASON5_LEADERBOARD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, undefined, undefined, ui.LEADERBOARD_SEASON5);
+  }, 130, 521, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.buttons[COUNTER] = gui_create_button(232, 352, "", [IMAGES.CURRENCY1_OUT, IMAGES.CURRENCY1_IN, IMAGES.CURRENCY1_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(300);
+  }, -330, 135, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __BUY__;
+  this.buttons[COUNTER] = gui_create_button(232, 352, "", [IMAGES.CURRENCY2_OUT, IMAGES.CURRENCY2_IN, IMAGES.CURRENCY2_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(600);
+  }, -195, 135, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __BUY__;
+  this.buttons[COUNTER] = gui_create_button(243, 374, "", [IMAGES.CURRENCY3_OUT, IMAGES.CURRENCY3_IN, IMAGES.CURRENCY3_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(2600);
+  }, -60, 130, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __BUY__;
+  this.buttons[COUNTER] = gui_create_button(232, 352, "", [IMAGES.CURRENCY4_OUT, IMAGES.CURRENCY4_IN, IMAGES.CURRENCY4_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(7000);
+  }, 78, 135, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __BUY__;
+  this.buttons[COUNTER] = gui_create_button(243, 374, "", [IMAGES.CURRENCY5_OUT, IMAGES.CURRENCY5_IN, IMAGES.CURRENCY5_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(20000);
+  }, 213, 130, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __BUY__;
+  this.buttons[COUNTER] = gui_create_button(58, 64, "", [IMAGES.CLOSE_BUTTON_OUT, IMAGES.CLOSE_BUTTON_IN, IMAGES.CLOSE_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 300, 88, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __BUY__;
   this.buttons[COUNTER] = gui_create_button(323, 112, "", [IMAGES.SKIN_BUTTON_OUT, IMAGES.SKIN_BUTTON_IN, IMAGES.SKIN_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
     select_subview(__SKIN__);
     skinSelector.initSelector();
@@ -946,7 +1686,151 @@ function UI(can, ctx) {
     crateSelector.initSelector();
   }, -315, 463, __MIDDLE_X__ | __TOP__, __HIDE__);
   this.buttons[COUNTER++].view = __COSMETICS__;
-
+  this.buttons[COUNTER] = gui_create_button(327, 117, "", [IMAGES.SEASON_5, IMAGES.SEASON_5_IN, IMAGES.SEASON_5_OUT], __HD__, __NO_BREATH__, function () {
+    select_subview(__SEASON5__);
+  }, 155, 70, __LEFT__, __DISPLAY__);
+  this.buttons[COUNTER++].view = __GAME__;
+  this.buttons[COUNTER] = gui_create_button(130, 129, "", [IMAGES.SHOP_BUTTON_OUT, IMAGES.SHOP_BUTTON_IN, IMAGES.SHOP_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    update_subview(__LOCKED_SKIN__, __HIDE__, "none");
+    select_subview(__SHOP__);
+  }, 10, 40, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LOCKED_SKIN__;
+  this.buttons[COUNTER] = gui_create_button(130, 129, "", [IMAGES.SHOP_BUTTON_OUT, IMAGES.SHOP_BUTTON_IN, IMAGES.SHOP_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    update_subview(__LOCKED_ACC__, __HIDE__, "none");
+    select_subview(__SHOP__);
+  }, 10, 40, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LOCKED_ACC__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 200, 140, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.ATLANTA_OUT, IMAGES.ATLANTA_IN, IMAGES.ATLANTA_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Atlanta");
+  }, -265, 300, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.DALLAS_OUT, IMAGES.DALLAS_IN, IMAGES.DALLAS_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Dallas");
+  }, -130, 300, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.FREMONT_OUT, IMAGES.FREMONT_IN, IMAGES.FREMONT_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Fremont");
+  }, 5, 300, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.NEWARK_OUT, IMAGES.NEWARK_IN, IMAGES.NEWARK_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Newark");
+  }, 140, 300, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.LONDON_OUT, IMAGES.LONDON_IN, IMAGES.LONDON_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("London");
+  }, -265, 365, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.FRANKFURT_OUT, IMAGES.FRANKFURT_IN, IMAGES.FRANKFURT_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Frankfurt");
+  }, -130, 365, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.SINGAPORE_OUT, IMAGES.SINGAPORE_IN, IMAGES.SINGAPORE_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Singapore");
+  }, 5, 365, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.TOKYO_OUT, IMAGES.TOKYO_IN, IMAGES.TOKYO_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Tokyo");
+  }, 140, 365, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.TORONTO_OUT, IMAGES.TORONTO_IN, IMAGES.TORONTO_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Toronto");
+  }, -265, 430, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(253, 110, "", [IMAGES.MUMBAI_OUT, IMAGES.MUMBAI_IN, IMAGES.MUMBAI_CLICK], __HD__, __NO_BREATH__, function () {
+    regionPreference("Mumbai");
+  }, -130, 430, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_LOCATION__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SERVER_LOCATION__);
+  }, 230, 140, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_DURATION__;
+  this.buttons[COUNTER] = gui_create_button(230, 352, "", [IMAGES.DAYS3_OUT, IMAGES.DAYS3_IN, IMAGES.DAYS3_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(350);
+  }, -280, 240, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_DURATION__;
+  this.buttons[COUNTER] = gui_create_button(230, 352, "", [IMAGES.DAYS7_OUT, IMAGES.DAYS7_IN, IMAGES.DAYS7_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(700);
+  }, -130, 240, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_DURATION__;
+  this.buttons[COUNTER] = gui_create_button(230, 352, "", [IMAGES.DAYS30_OUT, IMAGES.DAYS30_IN, IMAGES.DAYS30_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(1400);
+  }, 20, 240, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_DURATION__;
+  this.buttons[COUNTER] = gui_create_button(230, 352, "", [IMAGES.DAYS90_OUT, IMAGES.DAYS90_IN, IMAGES.DAYS90_CLICK], __HD__, __NO_BREATH__, function () {
+    openXsolla(3000);
+  }, 170, 240, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_DURATION__;
+  this.buttons[COUNTER] = gui_create_button(105, 119, "", [IMAGES.COPY_PASTE_OUT, IMAGES.COPY_PASTE_IN, IMAGES.COPY_PASTE_CLICK], __HD__, __NO_BREATH__, function () {
+    document.getElementById("serverAddressInput")["select"]();
+    document["execCommand"]('copy');
+  }, 170, 310, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_ACCESS__;
+  this.buttons[COUNTER] = gui_create_button(105, 119, "", [IMAGES.RESTART_OUT, IMAGES.RESTART_IN, IMAGES.RESTART_CLICK], __HD__, __NO_BREATH__, function () {
+    rebootServer();
+  }, 235, 310, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_ACCESS__;
+  this.buttons[COUNTER] = gui_create_button(204, 115, "", [IMAGES.GUIDE_OUT, IMAGES.GUIDE_IN, IMAGES.GUIDE_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("./commands.html", "_blank");
+  }, -265, 490, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SERVER_ACCESS__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE5_OUT, IMAGES.PRICE5_IN, IMAGES.PRICE5_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SPIN_1__);
+  }, -210, 170, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE1_OUT, IMAGES.PRICE1_IN, IMAGES.PRICE1_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SPIN_4__);
+  }, 70, 170, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE2_OUT, IMAGES.PRICE2_IN, IMAGES.PRICE2_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SPIN_2__);
+  }, 70, 204, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE3_OUT, IMAGES.PRICE3_IN, IMAGES.PRICE3_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SPIN_5__);
+  }, -210, 204, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE3_OUT, IMAGES.PRICE3_IN, IMAGES.PRICE3_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SPIN_6__);
+  }, 70, 238, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE3_OUT, IMAGES.PRICE3_IN, IMAGES.PRICE3_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buyKit(0, 300);
+    else
+      select_subview(__LOGIN__);
+  }, 307, 205, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE4_OUT, IMAGES.PRICE4_IN, IMAGES.PRICE4_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SPIN_3__);
+  }, -210, 238, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(145, 69, "", [IMAGES.PRICE4_OUT, IMAGES.PRICE4_IN, IMAGES.PRICE4_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buyKit(1, 600);
+    else
+      select_subview(__LOGIN__);
+  }, 307, 239, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
+  this.buttons[COUNTER] = gui_create_button(192, 101, "", [IMAGES.YES_BUTTON_OUT, IMAGES.YES_BUTTON_IN, IMAGES.YES_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    buyNameChanger();
+  }, -100, 250, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __CHANGE_NICKNAME0__;
+  this.buttons[COUNTER] = gui_create_button(192, 104, "", [IMAGES.YES_300_BUTTON_OUT, IMAGES.YES_300_BUTTON_IN, IMAGES.YES_300_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    buyNameChanger();
+  }, -100, 239, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __CHANGE_NICKNAME1__;
+  this.buttons[COUNTER] = gui_create_button(192, 101, "", [IMAGES.NO_BUTTON_OUT, IMAGES.NO_BUTTON_IN, IMAGES.NO_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__PROFILE__);
+  }, 10, 250, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __CHANGE_NICKNAME0__;
+  this.buttons[COUNTER] = gui_create_button(192, 104, "", [IMAGES.NO_THANKS_BUTTON_OUT, IMAGES.NO_THANKS_BUTTON_IN, IMAGES.NO_THANKS_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__PROFILE__);
+  }, 10, 239, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __CHANGE_NICKNAME1__;
   RARITY_BUTTON = [];
   RARITY_BUTTON[RARITY.FREE] = [IMAGES.FREE_ITEM_OUT, IMAGES.FREE_ITEM_IN, IMAGES.FREE_ITEM_CLICK];
   RARITY_BUTTON[RARITY.WOOD] = [IMAGES.WOOD_ITEM_OUT, IMAGES.WOOD_ITEM_IN, IMAGES.WOOD_ITEM_CLICK];
@@ -1119,7 +2003,151 @@ function UI(can, ctx) {
     select_subview(__COSMETICS__);
   }, -320, 470, __MIDDLE_X__ | __TOP__, __HIDE__);
   this.buttons[COUNTER++].view = __CRATE__;
-
+  this.buttons[COUNTER] = gui_create_button(260, 260, "", [IMAGES.SPIN_BUTTON_1_OUT, IMAGES.SPIN_BUTTON_1_IN, IMAGES.SPIN_BUTTON_1_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buySpin(3, 50);
+    else
+      select_subview(__LOGIN__);
+  }, -260 / 4, (150 + (448 / 4)) - (260 / 4), __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_4__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 309, 180, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_4__;
+  this.buttons[COUNTER] = gui_create_button(260, 260, "", [IMAGES.SPIN_BUTTON_2_OUT, IMAGES.SPIN_BUTTON_2_IN, IMAGES.SPIN_BUTTON_2_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buySpin(0, 100);
+    else
+      select_subview(__LOGIN__);
+  }, -260 / 4, (150 + (448 / 4)) - (260 / 4), __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_1__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 309, 180, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_1__;
+  this.buttons[COUNTER] = gui_create_button(260, 260, "", [IMAGES.SPIN_BUTTON_3_OUT, IMAGES.SPIN_BUTTON_3_IN, IMAGES.SPIN_BUTTON_3_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buySpin(4, 150);
+    else
+      select_subview(__LOGIN__);
+  }, -260 / 4, (150 + (448 / 4)) - (260 / 4), __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_2__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 309, 180, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_2__;
+  this.buttons[COUNTER] = gui_create_button(260, 260, "", [IMAGES.SPIN_BUTTON_4_OUT, IMAGES.SPIN_BUTTON_4_IN, IMAGES.SPIN_BUTTON_4_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buySpin(1, 300);
+    else
+      select_subview(__LOGIN__);
+  }, -260 / 4, (150 + (448 / 4)) - (260 / 4), __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_5__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 309, 180, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_5__;
+  this.buttons[COUNTER] = gui_create_button(260, 260, "", [IMAGES.SPIN_BUTTON_5_OUT, IMAGES.SPIN_BUTTON_5_IN, IMAGES.SPIN_BUTTON_5_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buySpin(2, 600);
+    else
+      select_subview(__LOGIN__);
+  }, -260 / 4, (150 + (448 / 4)) - (260 / 4), __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_3__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 309, 180, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_3__;
+  this.buttons[COUNTER] = gui_create_button(260, 260, "", [IMAGES.SPIN_BUTTON_4_OUT, IMAGES.SPIN_BUTTON_4_IN, IMAGES.SPIN_BUTTON_4_CLICK], __HD__, __NO_BREATH__, function () {
+    if (_this.isUserLogged())
+      buySpin(5, 300);
+    else
+      select_subview(__LOGIN__);
+  }, -260 / 4, (150 + (448 / 4)) - (260 / 4), __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_6__;
+  this.buttons[COUNTER] = gui_create_button(115, 73, "", [IMAGES.BACK_BUTTON_OUT, IMAGES.BACK_BUTTON_IN, IMAGES.BACK_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    select_subview(__SHOP__);
+  }, 309, 180, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SPIN_6__;
+  var SCORE_MODE_SEASON1 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(205, 67, "", [IMAGES.SEASON1_PROFILE_OUT, IMAGES.SEASON1_PROFILE_IN, IMAGES.SEASON1_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(undefined, 0);
+  }, -305, 125, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_SEASON2 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(205, 67, "", [IMAGES.SEASON2_PROFILE_OUT, IMAGES.SEASON2_PROFILE_IN, IMAGES.SEASON2_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(undefined, 1);
+  }, -305, 170, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_SEASON3 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(205, 67, "", [IMAGES.SEASON3_PROFILE_OUT, IMAGES.SEASON3_PROFILE_IN, IMAGES.SEASON3_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(undefined, 2);
+  }, -305, 215, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_SEASON4 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(205, 67, "", [IMAGES.SEASON4_PROFILE_OUT, IMAGES.SEASON4_PROFILE_IN, IMAGES.SEASON4_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(undefined, 3);
+  }, -305, 260, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_SEASON5 = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(205, 67, "", [IMAGES.SEASON5_PROFILE_OUT, IMAGES.SEASON5_PROFILE_IN, IMAGES.SEASON5_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(undefined, 3);
+  }, -305, 305, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_TOTAL = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(460, 73, "", [IMAGES.TOTAL_PROFILE_OUT, IMAGES.TOTAL_PROFILE_IN, IMAGES.TOTAL_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(-1);
+  }, -180, 170, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_NORMAL = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(222, 68, "", [IMAGES.NORMAL_PROFILE_OUT, IMAGES.NORMAL_PROFILE_IN, IMAGES.NORMAL_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(WORLD.MODE_PVP);
+  }, -180, 215, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_FOREST = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(222, 68, "", [IMAGES.FOREST_PROFILE_OUT, IMAGES.FOREST_PROFILE_IN, IMAGES.FOREST_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(WORLD.MODE_LEGACY);
+  }, -180, 260, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_ZOMBIE = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(222, 68, "", [IMAGES.ZOMBIE_PROFILE_OUT, IMAGES.ZOMBIE_PROFILE_IN, IMAGES.ZOMBIE_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(WORLD.MODE_ZOMBIES);
+  }, -60, 215, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  var SCORE_MODE_VAMPIRE = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(222, 68, "", [IMAGES.VAMPIRE_PROFILE_OUT, IMAGES.VAMPIRE_PROFILE_IN, IMAGES.VAMPIRE_PROFILE_CLICK], __HD__, __NO_BREATH__, function () {
+    init_profile(WORLD.MODE_VAMPIRES);
+  }, -60, 260, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __PROFILE__;
+  this.LEADERBOARD_TOTAL = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(143, 66, "", [IMAGES.TOTAL_LEAD_OUT, IMAGES.TOTAL_LEAD_IN, IMAGES.TOTAL_LEAD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, ui.LEADERBOARD_TOTAL);
+  }, -298, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_NORMAL = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(104, 66, "", [IMAGES.NORMAL_LEAD_OUT, IMAGES.NORMAL_LEAD_IN, IMAGES.NORMAL_LEAD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, ui.LEADERBOARD_NORMAL);
+  }, -223, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_FOREST = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(110, 66, "", [IMAGES.FOREST_LEAD_OUT, IMAGES.FOREST_LEAD_IN, IMAGES.FOREST_LEAD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, ui.LEADERBOARD_FOREST);
+  }, -168, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_ZOMBIE = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(88, 66, "", [IMAGES.ZOMBIE_LEAD_OUT, IMAGES.ZOMBIE_LEAD_IN, IMAGES.ZOMBIE_LEAD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, ui.LEADERBOARD_ZOMBIE);
+  }, -110, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.LEADERBOARD_VAMPIRE = COUNTER;
+  this.buttons[COUNTER] = gui_create_button(88, 66, "", [IMAGES.VAMPIRE_LEAD_OUT, IMAGES.VAMPIRE_LEAD_IN, IMAGES.VAMPIRE_LEAD_CLICK], __HD__, __NO_BREATH__, function () {
+    getLeaderboard(undefined, ui.LEADERBOARD_VAMPIRE);
+  }, -63, 110, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __LEADERBOARD__;
+  this.buttons[COUNTER] = gui_create_button(86, 44, "", [IMAGES.TERMS_BUTTON_OUT, IMAGES.TERMS_BUTTON_IN, IMAGES.TERMS_BUTTON_CLICK], __HD__, __NO_BREATH__, function () {
+    window.open("./terms.html", "_blank");
+  }, 349, 290, __MIDDLE_X__ | __TOP__, __HIDE__);
+  this.buttons[COUNTER++].view = __SHOP__;
   var skinSelector = new CosmeticSelector(COSMETICS.SKIN, FIRST_BUTTON_SKIN, function (v) {
     ui.skin = v;
     if (ui.unlock.skin[v] === 1)
@@ -1196,6 +2224,13 @@ function UI(can, ctx) {
       if (_this.buttons[i].info.active === __DISPLAY__)
         cursor |= _this.buttons[i].trigger(_this.can, mouse.pos, MOUSE_MOVE);
 
+    }
+    if (_this.current_cursor !== cursor) {
+      _this.current_cursor = cursor;
+      if (cursor)
+        can.style["cursor"] = _this.cursor1;
+      else
+        can.style["cursor"] = _this.cursor0;
     }
   };
   this.add_event_listener = function () {

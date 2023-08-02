@@ -24,7 +24,7 @@ export default class Leaderboard {
       const player: Player = this.players[index];
 
       if (player) {
-        this.buffer.writeU16(player.client.id);
+        this.buffer.writeU16(player.pid);
         this.buffer.writeU16(player.score);
       }
     }

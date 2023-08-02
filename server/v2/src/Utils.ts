@@ -109,7 +109,7 @@ export function xorDecrypt(encrypted: Uint16Array): any {
 function getDefaultOffsets(length: number, numOffsets: number): number[] {
   const offsets: number[] = [];
   for (let i = 0; i < length; i++) {
-    offsets.push(i % numOffsets);
+    offsets.push(i % numOffsets * 2);
   }
   return offsets;
 }

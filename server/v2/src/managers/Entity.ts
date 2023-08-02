@@ -5,12 +5,13 @@ import Logger from "../helpers/Logger";
 
 import { Player } from "../entities/Player";
 import { DeleteUnits } from "../components/networking/packets/bin/Units";
+import { EntityState } from "../enums";
 
 export default class EntityManager {
   private readonly logger: Logger = new Logger(EntityManager.name);
   private readonly init: number = Date.now();
 
-  public pool: Pool<Entity> = new Pool;
+  public pool: Pool<Entity> = new Pool(175);
 
   constructor(private readonly game: Game) {
     const now: number = Date.now();
@@ -30,6 +31,8 @@ export default class EntityManager {
   }
 
   removeEntity(entity: Entity): void {
+    entity.state |= EntityState.DELETE;
+
     const del: DeleteUnits = new DeleteUnits(entity);
     const players: Player[] = this.pool.array.filter(e => e instanceof Player && e !== entity) as Player[];
 

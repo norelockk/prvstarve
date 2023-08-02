@@ -5,13 +5,20 @@ using CefSharp;
 using CefSharp.WinForms;
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace client
 {
     public partial class GameWindow : Form
     {
+        private protected readonly string gameUrlPath = "game://game/index.html";
+        private protected readonly string[] cefStrArgs =
+        {
+            "remote-allow-origins,*"
+        };
+
         // Setup CEF stuff
 
         // Setup JS repo objects
@@ -27,12 +34,6 @@ namespace client
             WindowlessRenderingEnabled = true
         };
         private ChromiumWebBrowser chromium = new ChromiumWebBrowser();
-
-        // Settings in args, like remote origins n' stuff
-        private string[] cefStrArgs =
-        {
-            "remote-allow-origins,*"
-        };
 
         public GameWindow()
         {
@@ -58,6 +59,14 @@ namespace client
 
                     settings.CefCommandLineArgs.Add(setting[0], setting[1]);
                 }
+
+                // Register custom browser protocol
+                settings.RegisterScheme(new CefCustomScheme
+                {
+                    SchemeName = GameProtocol.SchemeName,
+                    SchemeHandlerFactory = new GameProtocol()
+                }); 
+
                 Cef.Initialize(settings);
 
                 // Setup custom objects
@@ -67,7 +76,7 @@ namespace client
                 chromium.IsBrowserInitializedChanged += OnGameReady;
 
                 // Load a game by our scheme URL n' stuff
-                chromium.LoadUrl("https://www.google.com/");
+                chromium.LoadUrl(gameUrlPath);
 
                 // Set 'browser' visible in window
                 chromium.Dock = DockStyle.Fill;

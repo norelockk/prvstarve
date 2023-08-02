@@ -29,7 +29,7 @@ const events: [string, Function][] = [
   ['ready', () => {
     switchUI();
 
-    if ('discord' in window) window.discord.update('In game', 'In main menu');
+    // if ('discord' in window) window.discord.update('In game', 'In main menu');
   }],
   ['switchUI', switchUI],
 

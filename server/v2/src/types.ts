@@ -4,7 +4,7 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
-import NetworkClient from './components/networking/NetworkClient';
+import NetworkClient from '../../NetworkClient';
 
 /**
  * Logger levels

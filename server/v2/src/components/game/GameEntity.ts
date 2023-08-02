@@ -10,30 +10,35 @@ import { Direction, EntityState, EntityType } from '../../enums';
 
 export default class Entity {
   public id: number = -1;
+  public pid: number = 0;
   public type: EntityType = EntityType.PLAYERS;
   public info: number = 0;
-  public speed: number = 200;
+  public state: EntityState = EntityState.NONE;
   public angle: number = 0;
   public extra: number = 0;
 
-  public state: EntityState = EntityState.NONE;
+  public speed: number = 240;
+  public radius: number = 30;
+  public maxSpeed: number = 240;
 
   public action: boolean = true;
   public position: Vector2 = new Vector2(0, 0);
   public direction: number | null = null;
-
+  
   private velocity: Vector2 = new Vector2(0, 0);
 
   constructor(public game: Game) {
     this.game = game;
 
-    switch (this.type) {
-      case EntityType.PLAYERS: {
-        this.info = 7;
-        break;
-      }
-      default: break;
-    }
+    // switch (this.type) {
+    //   case EntityType.PLAYERS: {
+    //     this.info = 7;
+    //     break;
+    //   }
+    //   default: break;
+    // }
+
+    console.log(this.id);
   }
 
   public updateDirection(direction: number): void {

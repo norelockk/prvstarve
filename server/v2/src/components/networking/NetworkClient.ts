@@ -16,11 +16,14 @@ import { Player } from '../../entities/Player';
 import { xorDecrypt } from '../../Utils';
 import { RegisteredJSONHandler } from '../../types';
 import { Handshake, HandshakeResponse } from '../networking/packets/json/Handshake';
-import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack } from './handlers/Base';
+import { handleChat, handleAngle, handleAttack, handleDirection, handleStopAttack, handleRecoverFocus } from '../networking/handlers/Base';
 
 export default class NetworkClient {
   // Logger
   private readonly logger: Logger = new Logger(NetworkClient.name);
+
+  public game: Game;
+  public socket: uws.WebSocket<NetworkClient>;
 
   // Player entity
   public entity?: Player;
@@ -36,7 +39,8 @@ export default class NetworkClient {
     [3, handleAngle],
     [4, handleAttack],
     [2, handleDirection],
-    [14, handleStopAttack]
+    [14, handleStopAttack],
+    [11, handleRecoverFocus],
   ];
 
   private registerHandler(registeredHandler: RegisteredJSONHandler): void {
@@ -44,7 +48,7 @@ export default class NetworkClient {
       this.JSONHandlers.set(registeredHandler.header, registeredHandler.handler);
   }
 
-  constructor(public game: Game, public socket: uws.WebSocket<any>) {
+  constructor(game: Game, socket: uws.WebSocket<any>) {
     this.game = game;
     this.socket = socket;
 
@@ -106,7 +110,7 @@ export default class NetworkClient {
 
             if (player) {
               let biome: GameBiome | boolean = false;
-
+              
               // Select random biome
               if (this.game.world.spawnBiomes.length > 1) {
                 const selectedBiome: number = ~~(Math.random() * this.game.world.spawnBiomes.length) - 1;
@@ -119,6 +123,8 @@ export default class NetworkClient {
                 player.position.x = Math.min(Math.max(~~(Math.random() * biome.bounds.max.x), biome.bounds.max.x / 2), biome.bounds.max.x - 1);
                 player.position.y = Math.min(Math.max(~~(Math.random() * biome.bounds.max.x), biome.bounds.max.y / 2), biome.bounds.max.y - 1);
               }
+              
+              player.pid = this.id;
 
               // Insert player to world
               this.entity = player;
@@ -159,5 +165,12 @@ export default class NetworkClient {
         }
       }
     }
+  }
+
+  /**
+   * @function update
+   */
+  public update(delta: number): void {
+    
   }
 }

@@ -1,7 +1,6 @@
 import { BinaryWriter } from "../../../../libs/binary";
 import Entity from "../../../game/GameEntity";
 import { EntityState, ServerPacket } from "../../../../enums";
-import { Player } from "../../../../entities/Player";
 
 export class UpdateUnits {
   private buffer: BinaryWriter = new BinaryWriter();
@@ -22,15 +21,13 @@ export class UpdateUnits {
       const entity: Entity = this.entities[index];
 
       if (entity) {
-        const entityId: number = entity instanceof Player ? entity.client.id : entity.id;
-
-        this.buffer.writeU8(entityId);
+        this.buffer.writeU8(entity.pid);
         this.buffer.writeU8(entity.angle);
         this.buffer.writeU16(entity.state);
         this.buffer.writeU16(entity.type);
         this.buffer.writeU16(entity.position.x);
         this.buffer.writeU16(entity.position.y);
-        this.buffer.writeU16(0); // info idk
+        this.buffer.writeU16(entity.id);
         this.buffer.writeU16(entity.info);
         this.buffer.writeU16(entity.speed);
         this.buffer.writeU16(entity.extra);
@@ -61,9 +58,9 @@ export class DeleteUnits {
         const entity: Entity = this.entities[index];
 
         if (entity) {
-          const entityId: number = entity instanceof Player ? entity.client.id : entity.id;
+          // const entityId: number = entity instanceof Player ? entity.client.id : 0;
 
-          this.buffer.writeU8(entityId);
+          this.buffer.writeU8(entity.pid);
           this.buffer.writeU8(0);
           this.buffer.writeU16(EntityState.DELETE);
           this.buffer.writeU16(0);
@@ -77,9 +74,9 @@ export class DeleteUnits {
       }
     } else {
       const entity: Entity = this.entities;
-      const entityId: number = entity instanceof Player ? entity.client.id : entity.id;
+      // const entityId: number = entity instanceof Player ? entity.client.id : 0;
 
-      this.buffer.writeU8(entityId);
+      this.buffer.writeU8(entity.pid);
       this.buffer.writeU8(0);
       this.buffer.writeU16(EntityState.DELETE);
       this.buffer.writeU16(0);

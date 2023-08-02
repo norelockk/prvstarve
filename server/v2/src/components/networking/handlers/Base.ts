@@ -2,10 +2,21 @@ import NetworkClient from '../NetworkClient';
 
 import { Player } from '../../../entities/Player';
 import { ClientPacket } from '../../../enums';
+import RecoverFocus from '../packets/bin/RecoverFocus';
 
 export const handleDirection = (client: NetworkClient, data: any[]): void => {
   if (client && client.entity instanceof Player)
     client.entity.updateDirection(data[0]);
+};
+
+export const handleRecoverFocus = (client: NetworkClient): void => {
+  if (client && client.entity instanceof Player) {
+    const pck: RecoverFocus = new RecoverFocus(client.entity);
+
+    if (pck) {
+      client.socket.send(pck.build, true);
+    }
+  }
 };
 
 export const handleAngle = (client: NetworkClient, data: any[]): void => {

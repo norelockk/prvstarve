@@ -21,8 +21,8 @@ import { getPublicIPAddress, isStringEmpty } from '../../Utils';
 
 export default class NetworkServer {
   private readonly logger: Logger = new Logger(NetworkServer.name);
+  
   private lobby!: Lobby;
-
   private config!: ConfigReader;
   private socket!: uws.TemplatedApp;
 
@@ -60,8 +60,12 @@ export default class NetworkServer {
    * @private
    * @memberOf NetworkServer
    */
-  private socketOpen(socket: uws.WebSocket<any>): void {
-    this.game.clients.addClient(socket);
+  private socketOpen(socket: uws.WebSocket<NetworkClient>): void {
+    const client: NetworkClient = new NetworkClient(this.game, socket);
+
+    if (client) {
+      this.game.clients.addClient(client);
+    }
   }
 
   /**

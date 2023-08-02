@@ -10,11 +10,12 @@ export enum ClientPacket {
 
 export enum ServerPacket {
   SERVER_FULL = 5,
+	LEADERBOARD = 21,
+	UPDATE_TIME = 22,
   UPDATE_UNITS = 0,
+	RECOVER_FOCUS = 17,
   GAME_OLD_VERSION = 4,
   HARD_REFRESH_UNITS = 1,
-	LEADERBOARD = 21,
-	UPDATE_TIME = 22
 }
 
 export enum Gamemodes {

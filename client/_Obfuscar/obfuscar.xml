@@ -14,7 +14,7 @@
   <Var name="AnalyzeXaml" value="false" />
   <Var name="UseUnicodeNames" value="true" />
   <Var name="UseKoreanNames" value="true" />
-  <Module file="$(InPath)\Restarve.exe">
+  <Module file="$(InPath)\client.exe">
     <SkipType name="*AnonymousType*" skipProperties="true" skipMethods="true" skipFields="true" skipEvents="true" skipStringHiding="true" />
   </Module>
   <AssemblySearchPath path="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\" />

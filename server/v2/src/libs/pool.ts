@@ -4,13 +4,17 @@
  * Copyright (c) 2023 DREAMY.CODES LIMITED. All Rights Reserved.
  */
 
+import { Player } from "../entities/Player";
 import { T_GENERIC } from "../interfaces";
 
 export default class Pool<T extends T_GENERIC> {
   array: T[] = [];
   map: Map<number, number> = new Map;
   unused_ids: number[] = [];
-  id_cursor: number = 100;
+  
+  constructor(private id_cursor: number = 0) {
+    this.id_cursor = id_cursor;
+  }
 
   insert(obj: T) {
     if (obj.id != -1) throw "Object already exists";
@@ -22,7 +26,11 @@ export default class Pool<T extends T_GENERIC> {
     this.array.push(obj);
 
     const id = this.unused_ids.length ? (this.unused_ids.pop() as number) : this.id_cursor++;
-    obj.id = id;
+
+    if (obj instanceof Player)
+      obj.id = 0;
+    else
+      obj.id = id;
 
     // store a link between the id and the index
     this.map.set(id, idx);
