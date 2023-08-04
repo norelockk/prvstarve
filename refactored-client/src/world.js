@@ -1,7 +1,25 @@
 import { ITEMS, WORLD, STATE, CLIENT, SLOW_DOWN, SPRITE } from './constants';
 import { LinearAnimation, RNG, intersect_aabb, get_std_angle, build_vector, norm, add_vector, copy_vector, dist, ease_in_out_quad, ease_out_cubic, ease_in_out_cubic, ease_out_quart, ease_out_quint, Ease } from './utils';
 import { delta } from './canvas';
-import { world } from './game';
+import { world, RAND_SIZE, RANDOM } from './game';
+
+import {
+  draw_pumpkin,
+  draw_garlic,
+  draw_windmill_head,
+  draw_wheat,
+  draw_sign,
+  draw_seed,
+  draw_chest,
+  draw_bread_oven,
+  draw_bed,
+  draw_resurrection,
+  draw_roof,
+  draw_fire_ground,
+  draw_fire_halo,
+  draw_breath,
+  draw_simple_item,
+} from './graphics/draw';
 
 export function Flakes(id, x, y, angle) {
   this.id = id;
@@ -40,25 +58,25 @@ export function Beach() {
     this.seedv3 = 2 + Math.floor(Math.random() * WORLD.SEED);
   };
   this.draw_foam_vert = function (y, p, seed, r1, r2, _left, _right) {
-    for (var i = 1; i < _right;) {
-      var j = (i * seed) % RAND_SIZE;
-      var v = RANDOM[j];
+    for (let i = 1; i < _right;) {
+      const j = (i * seed) % RAND_SIZE;
+      const v = RANDOM[j];
       if (v < 0.1) {
         r += 50;
         i += 50;
         continue;
       }
-      var r = Math.floor((v * r1) + r2);
+      const r = Math.floor((v * r1) + r2);
       if ((i > _left) && (i < _right)) {
-        var s = (Math.random() > 0.5) ? (-10 * delta) : (10 * delta);
-        var radius = r * p;
+        const s = (Math.random() > 0.5) ? (-10 * delta) : (10 * delta);
+        const radius = r * p;
         this.bxv[j] = Math.max(-WORLD.FLOAM_X, Math.min(WORLD.FLOAM_X, this.bxv[j] + s));
         this.byv[j] = Math.max(-WORLD.FLOAM_Y, Math.min(WORLD.FLOAM_Y, this.byv[j] + s));
         if (radius > 0) {
           ctx.beginPath();
           ctx.arc((i + user.cam.x) + this.byv[j], (y + this.bxv[j]) - (WORLD.FLOAM_X * 0.8), radius, 0, Math.PI * 2);
           if (world.transition) {
-            var shade = world.time ? (1 - world.shade.v) : world.shade.v;
+            const shade = world.time ? (1 - world.shade.v) : world.shade.v;
             ctx.fillStyle = get_color_transition(83, 156, 160, 236, 247, 249, shade);
           } else
             ctx.fillStyle = SPRITE.FLOAM_COLOR[world.time];
@@ -69,25 +87,25 @@ export function Beach() {
     }
   };
   this.draw_foam = function (x, p, seed, r1, r2, _top, _bottom) {
-    for (var i = 1; i < _bottom;) {
-      var j = (i * seed) % RAND_SIZE;
-      var v = RANDOM[j];
+    for (let i = 1; i < _bottom;) {
+      const j = (i * seed) % RAND_SIZE;
+      const v = RANDOM[j];
       if (v < 0.1) {
         r += 50;
         i += 50;
         continue;
       }
-      var r = Math.floor((v * r1) + r2);
+      const r = Math.floor((v * r1) + r2);
       if ((i > _top) && (i < _bottom)) {
-        var s = (Math.random() > 0.5) ? (-10 * delta) : (10 * delta);
-        var radius = r * p;
+        const s = (Math.random() > 0.5) ? (-10 * delta) : (10 * delta);
+        const radius = r * p;
         this.bx[j] = Math.max(-WORLD.FLOAM_X, Math.min(WORLD.FLOAM_X, this.bx[j] + s));
         this.by[j] = Math.max(-WORLD.FLOAM_Y, Math.min(WORLD.FLOAM_Y, this.by[j] + s));
         if (radius > 0) {
           ctx.beginPath();
           ctx.arc((x + this.bx[j]) - (WORLD.FLOAM_X * 0.8), (i + user.cam.y) + this.by[j], radius, 0, Math.PI * 2);
           if (world.transition) {
-            var shade = world.time ? (1 - world.shade.v) : world.shade.v;
+            const shade = world.time ? (1 - world.shade.v) : world.shade.v;
             ctx.fillStyle = get_color_transition(83, 156, 160, 236, 247, 249, shade);
           } else
             ctx.fillStyle = SPRITE.FLOAM_COLOR[world.time];
@@ -100,14 +118,15 @@ export function Beach() {
   this.draw_foams_bottom = function (y, y2, y3, diff_y, _left, _right) {
     _left -= 30;
     _right += 30;
-    var p = -((((y3 - WORLD.LW1SX) - diff_y) - 2) / WORLD.W1EX);
+    
+    let p = -((((y3 - WORLD.LW1SX) - diff_y) - 2) / WORLD.W1EX);
     if (p === 0)
       this.new_seed3();
 
     ctx.globalAlpha = ease_in_out_quad(p);
     this.draw_foam_vert(y3, p, this.seed3, 18, 16, _left, _right);
     ctx.globalAlpha = 1;
-    var p = -((((y - WORLD.LW2SX) - diff_y) + 500) / WORLD.W2EX);
+    p = -((((y - WORLD.LW2SX) - diff_y) + 500) / WORLD.W2EX);
     if (p === 0)
       this.new_seed();
 
@@ -117,7 +136,7 @@ export function Beach() {
     if (y2 === -1)
       return;
 
-    var p = -((((y2 - WORLD.LW3SX) - diff_y) + 698) / WORLD.W3EX);
+    p = -((((y2 - WORLD.LW3SX) - diff_y) + 698) / WORLD.W3EX);
     if (p <= 0.01)
       this.new_seed2();
 
@@ -128,14 +147,14 @@ export function Beach() {
   this.draw_foams_top = function (y, y2, y3, diff_y, _left, _right) {
     _left -= 30;
     _right += 30;
-    var p = -((((-y3 + WORLD.LW1SX) + diff_y) + 2) / WORLD.W1EX);
+    let p = -((((-y3 + WORLD.LW1SX) + diff_y) + 2) / WORLD.W1EX);
     if (p === 0)
       this.new_seed3();
 
     ctx.globalAlpha = ease_in_out_quad(p);
     this.draw_foam_vert(y3, p, this.seed3, 18, 16, _left, _right);
     ctx.globalAlpha = 1;
-    var p = -(((-y + WORLD.LW2SX) + diff_y) / WORLD.W2EX);
+    p = -(((-y + WORLD.LW2SX) + diff_y) / WORLD.W2EX);
     if (p === 0)
       this.new_seed();
 
@@ -145,7 +164,7 @@ export function Beach() {
     if (y2 === -1)
       return;
 
-    var p = -(((-y2 + WORLD.LW3SX) + diff_y) / WORLD.W3EX);
+    p = -(((-y2 + WORLD.LW3SX) + diff_y) / WORLD.W3EX);
     if (p <= 0.01)
       this.new_seed2();
 
@@ -156,14 +175,14 @@ export function Beach() {
   this.draw_foams_left = function (x, x2, x3, diff_x, _top, _bottom) {
     _top -= 30;
     _bottom += 30;
-    var p = -((((-x3 + WORLD.LW1SX) + diff_x) + 2) / WORLD.W1EX);
+    let p = -((((-x3 + WORLD.LW1SX) + diff_x) + 2) / WORLD.W1EX);
     if (p === 0)
       this.new_seed3();
 
     ctx.globalAlpha = ease_in_out_quad(p);
     this.draw_foam(x3, p, this.seed3, 18, 16, _top, _bottom);
     ctx.globalAlpha = 1;
-    var p = -(((-x + WORLD.LW2SX) + diff_x) / WORLD.W2EX);
+    p = -(((-x + WORLD.LW2SX) + diff_x) / WORLD.W2EX);
     if (p === 0)
       this.new_seed();
 
@@ -173,7 +192,7 @@ export function Beach() {
     if (x2 === -1)
       return;
 
-    var p = -(((-x2 + WORLD.LW3SX) + diff_x) / WORLD.W3EX);
+    p = -(((-x2 + WORLD.LW3SX) + diff_x) / WORLD.W3EX);
     if (p <= 0.01)
       this.new_seed2();
 
@@ -184,14 +203,14 @@ export function Beach() {
   this.draw_foams_right = function (x, x2, x3, diff_x, _top, _bottom) {
     _top -= 30;
     _bottom += 30;
-    var p = -((((x3 - WORLD.LW1SX) - diff_x) - 2) / WORLD.W1EX);
+    let p = -((((x3 - WORLD.LW1SX) - diff_x) - 2) / WORLD.W1EX);
     if (p === 0)
       this.new_seed3();
 
     ctx.globalAlpha = ease_in_out_quad(p);
     this.draw_foam(x3, p, this.seed3, 18, 16, _top, _bottom);
     ctx.globalAlpha = 1;
-    var p = -((((x - WORLD.LW2SX) - diff_x) + 500) / WORLD.W2EX);
+    p = -((((x - WORLD.LW2SX) - diff_x) + 500) / WORLD.W2EX);
     if (p === 0)
       this.new_seed();
 
@@ -201,7 +220,7 @@ export function Beach() {
     if (x2 === -1)
       return;
 
-    var p = -((((x2 - WORLD.LW3SX) - diff_x) + 698) / WORLD.W3EX);
+    p = -((((x2 - WORLD.LW3SX) - diff_x) + 698) / WORLD.W3EX);
     if (p <= 0.01)
       this.new_seed2();
 
@@ -222,7 +241,7 @@ export function Beach() {
     l: new Ease(ease_in_out_quad, 0, 10, WORLD.W3EX, WORLD.W3EX, WORLD.W3SX)
   };
   this.t_ = function (w_) {
-    var w;
+    let w;
     if (w_.r.x === w_.r.ex) {
       if (w_.l.x === w_.l.ex) {
         w = w_.r;
@@ -233,7 +252,7 @@ export function Beach() {
     return w;
   };
   this.t = function (w_) {
-    var w;
+    let w;
     if (w_.r.x === w_.r.ex) {
       if (w_.l.x === w_.l.ex) {
         w_.r.restart();
@@ -251,7 +270,7 @@ export function Beach() {
   this.bxv = [];
   this.byv = [];
   this.init = function () {
-    for (var i = 0; i < RAND_SIZE; i++) {
+    for (let i = 0; i < RAND_SIZE; i++) {
       this.bx[i] = Math.floor(RANDOM[i] * WORLD.FLOAM_X);
       this.by[i] = Math.floor(RANDOM[i] * WORLD.FLOAM_Y);
       this.bxv[i] = Math.floor(RANDOM[i] * WORLD.FLOAM_X);
@@ -369,17 +388,17 @@ export function World(max_units) {
 
   function add_biome(type, wmin, hmin, range, minDist) {
 
-    var w = wmin + Math.floor(world.RNG.get() * range);
-    var h = hmin + Math.floor(world.RNG.get() * range);
-    var x1 = 10 + Math.floor(world.RNG.get() * (world.nw - w - 20));
-    var y1 = 10 + Math.floor(world.RNG.get() * (world.nh - h - 20));
-    var x2 = x1 + w;
-    var y2 = y1 + h;
+    const w = wmin + Math.floor(world.RNG.get() * range);
+    const h = hmin + Math.floor(world.RNG.get() * range);
+    const x1 = 10 + Math.floor(world.RNG.get() * (world.nw - w - 20));
+    const y1 = 10 + Math.floor(world.RNG.get() * (world.nh - h - 20));
+    const x2 = x1 + w;
+    const y2 = y1 + h;
 
     // Check intersection
-    for (var i = 0; i < world.biomes.length; i++) {
+    for (let i = 0; i < world.biomes.length; i++) {
 
-      var biome = world.biomes[i];
+      const biome = world.biomes[i];
       if (intersect_aabb(x1, x2, y1, y2,
         biome.x1 / 100 - minDist, biome.x2 / 100 + minDist,
         biome.y1 / 100 - minDist, biome.y2 / 100 + minDist) === 1)
@@ -393,10 +412,10 @@ export function World(max_units) {
 
   function add_sea_biome(map, sx, sy) {
 
-    var xMax = sx;
-    for (var y = sy; y < world.nh; y++) {
+    let xMax = sx;
+    for (let y = sy; y < world.nh; y++) {
 
-      for (var x = sx; x < world.nw; x++) {
+      for (let x = sx; x < world.nw; x++) {
 
         if (y === sy)
           xMax = Math.max(x, xMax);
@@ -420,7 +439,7 @@ export function World(max_units) {
 
   function try_to_add_biome(type, wmin, hmin, range, attempt) {
 
-    for (var i = 0; i < attempt; i++) {
+    for (let i = 0; i < attempt; i++) {
 
       if (add_biome(type, wmin, hmin, range, 8) === 1)
         break;
@@ -441,10 +460,10 @@ export function World(max_units) {
 
   this.dist_from_biomes = function (player) {
 
-    var x = player.r.x;
-    var y = player.r.y;
-    var i = Math.floor(y / 100);
-    var j = Math.floor(x / 100);
+    const x = player.r.x;
+    const y = player.r.y;
+    let i = Math.floor(y / 100);
+    let j = Math.floor(x / 100);
 
     player.dist_winter = world.MAX_DIST;
     player.dist_desert = world.MAX_DIST;
@@ -453,11 +472,11 @@ export function World(max_units) {
     player.dist_dragon = world.MAX_DIST;
     player.dist_sand = world.MAX_DIST;
 
-    for (var k = 0; world.biomes[k].t !== world.BIOME_SEA; k++) {
+    for (let k = 0; world.biomes[k].t !== world.BIOME_SEA; k++) {
 
       if (world.biomes[k].t === world.BIOME_FOREST) {
 
-        var new_dist = world.dist_from_biome(k, x, y);
+        const new_dist = world.dist_from_biome(k, x, y);
         player.dist_forest = Math.max(player.dist_forest, new_dist);
 
         // Is the player in a beach ?
@@ -495,7 +514,7 @@ export function World(max_units) {
     world.dist_dragon = world.MAX_DIST;
     world.dist_forest = world.MAX_DIST;
 
-    for (var k = 0; world.biomes[k].t !== world.BIOME_SEA; k++) {
+    for (let k = 0; world.biomes[k].t !== world.BIOME_SEA; k++) {
 
       if (world.biomes[k].t === world.BIOME_FOREST)
         world.dist_forest = Math.max(world.dist_forest, world.dist_from_biome(k, x, y));
@@ -517,22 +536,22 @@ export function World(max_units) {
 
   this.dist_from_sand = function (bid, x, y) {
 
-    var biome = world.biomes[bid];
-    var is_sand = 0;
+    const biome = world.biomes[bid];
+    let is_sand = 0;
 
-    x1 = biome.x1 + 30 + (((biome.v & WORLD.LEFT) === 0) ? 150 : 0);
-    var d = x - x1;
+    const x1 = biome.x1 + 30 + (((biome.v & WORLD.LEFT) === 0) ? 150 : 0);
+    let d = x - x1;
     if ((biome.v & WORLD.LEFT) > 0 && d > 0 && d < 320)
       is_sand = 1;
-    y1 = biome.y1 + 250 + (((biome.v & WORLD.TOP) === 0) ? 150 : 0);
+    const y1 = biome.y1 + 250 + (((biome.v & WORLD.TOP) === 0) ? 150 : 0);
     d = y - y1;
     if ((biome.v & WORLD.TOP) > 0 && d > 0 && d < 320)
       is_sand = 1;
-    x2 = biome.x2 + 80 + (((biome.v & WORLD.RIGHT) === 0) ? -200 : 0);
+    const x2 = biome.x2 + 80 + (((biome.v & WORLD.RIGHT) === 0) ? -200 : 0);
     d = x2 - x;
     if ((biome.v & WORLD.RIGHT) > 0 && d > 0 && d < 320)
       is_sand = 1;
-    y2 = biome.y2 - 200 + (((biome.v & WORLD.BOTTOM) === 0) ? -200 : 0);
+    const y2 = biome.y2 - 200 + (((biome.v & WORLD.BOTTOM) === 0) ? -200 : 0);
     d = y2 - y;
     if ((biome.v & WORLD.BOTTOM) > 0 && d > 0 && d < 320)
       is_sand = 1;
@@ -545,22 +564,22 @@ export function World(max_units) {
 
   this.dist_from_biome = function (bid, x, y) {
 
-    var biome = world.biomes[bid];
-    x1 = biome.x1 + 30;
-    y1 = biome.y1 + 250;
-    x2 = biome.x2 + 80;
-    y2 = biome.y2 - 200;
+    const biome = world.biomes[bid];
+    const x1 = biome.x1 + 30;
+    const y1 = biome.y1 + 250;
+    const x2 = biome.x2 + 80;
+    const y2 = biome.y2 - 200;
 
     if (x >= x1 && x <= x2 && y >= y1 && y <= y2)
       return Math.min(x - x1, x2 - x, y - y1, y2 - y);
 
-    var dist = -1000000;
+    let dist = -1000000;
     if (x - x1 < 0)
       dist = Math.max(dist, x - x1);
     else if (x2 - x < 0)
       dist = Math.max(dist, x2 - x);
 
-    distY = -1000000;
+    let distY = -1000000;
     if (y < y1 || y > y2) {
 
       if (y - y1 < 0)
@@ -579,22 +598,22 @@ export function World(max_units) {
 
   function add_lava(amount, biome_id) {
 
-    var biome = world.biomes[biome_id];
+    const biome = world.biomes[biome_id];
 
-    for (var k = 0, _k = 0; k < amount && _k < 10000; _k++) {
+    for (let k = 0, _k = 0; k < amount && _k < 10000; _k++) {
 
       // Fill the biome with magma
-      var y = biome.y1 + world.RNG.get() * biome.h;
-      var x = biome.x1 + world.RNG.get() * biome.w;
-      var _i = Math.floor(y / 100);
-      var _j = Math.floor(x / 100);
+      const y = biome.y1 + world.RNG.get() * biome.h;
+      const x = biome.x1 + world.RNG.get() * biome.w;
+      const _i = Math.floor(y / 100);
+      const _j = Math.floor(x / 100);
 
-      var dist = world.dist_from_biome(biome_id, _j * 100 + 50, _i * 100 + 50);
+      const dist = world.dist_from_biome(biome_id, _j * 100 + 50, _i * 100 + 50);
       if (dist < 600) continue;
 
-      var ok = 1;
-      for (var i = _i - 4; (ok === 1) && i <= (_i + 4); i++) {
-        for (var j = _j - 4; (ok === 1) && j <= (_j + 4); j++) {
+      let ok = 1;
+      for (let i = _i - 4; (ok === 1) && i <= (_i + 4); i++) {
+        for (let j = _j - 4; (ok === 1) && j <= (_j + 4); j++) {
 
           if (MAP.tiles[i][j] !== undefined)
             ok = 0;
@@ -611,15 +630,15 @@ export function World(max_units) {
 
   function add_river_line(i, j, size, di, dj, mem, w, h) {
 
-    var w1 = Math.floor(w / 2);
-    var w2 = Math.max(1, Math.floor(w / 2));
-    var h1 = Math.floor(h / 2);
-    var h2 = Math.max(1, Math.floor(h / 2));
+    const w1 = Math.floor(w / 2);
+    const w2 = Math.max(1, Math.floor(w / 2));
+    const h1 = Math.floor(h / 2);
+    const h2 = Math.max(1, Math.floor(h / 2));
 
-    for (var k = 0; k < size; k++) {
+    for (let k = 0; k < size; k++) {
 
-      for (var _i = i - h1; _i < i + h2; _i++) {
-        for (var _j = j - w1; _j < j + w2; _j++) {
+      for (let _i = i - h1; _i < i + h2; _i++) {
+        for (let _j = j - w1; _j < j + w2; _j++) {
           if (render_single_resource(_i, _j, "wtb", 0, 1) === 1)
             mem.push([_i, _j, 1]);
         }
@@ -632,24 +651,24 @@ export function World(max_units) {
 
   function add_oasis(biome_id, mem) {
 
-    var biome = world.biomes[biome_id];
-    var i = Math.floor(biome.y1 / 100);
-    var j = Math.floor(biome.x1 / 100);
-    var h = Math.floor(biome.h / 100);
-    var w = Math.floor(biome.w / 100);
-    var h2 = i + Math.floor(h / 2);
-    var w2 = j + Math.floor(w / 2);
+    const biome = world.biomes[biome_id];
+    const i = Math.floor(biome.y1 / 100);
+    const j = Math.floor(biome.x1 / 100);
+    const h = Math.floor(biome.h / 100);
+    const w = Math.floor(biome.w / 100);
+    const h2 = i + Math.floor(h / 2);
+    const w2 = j + Math.floor(w / 2);
 
-    for (var k = 0; k < 3; k++) {
+    for (let k = 0; k < 3; k++) {
 
-      var _i = Math.floor(h2 - 3 + world.RNG.get() * 6);
-      var _j = Math.floor(w2 - 3 + world.RNG.get() * 6);
+      const _i = Math.floor(h2 - 3 + world.RNG.get() * 6);
+      const _j = Math.floor(w2 - 3 + world.RNG.get() * 6);
       render_single_resource(_i, _j, "plm", k, 1)
     }
 
-    for (var k = 0; k < 80; k++) {
-      var _i = Math.floor(h2 - 3 + world.RNG.get() * 6);
-      var _j = Math.floor(w2 - 3 + world.RNG.get() * 6);
+    for (let k = 0; k < 80; k++) {
+      const _i = Math.floor(h2 - 3 + world.RNG.get() * 6);
+      const _j = Math.floor(w2 - 3 + world.RNG.get() * 6);
       if (render_single_resource(_i, _j, "wtb", 0, 1) === 1)
         mem.push([_i, _j, 0]);
     }
@@ -657,21 +676,21 @@ export function World(max_units) {
 
   function add_river(biome_id, mem) {
 
-    var biome = world.biomes[biome_id];
-    var i = Math.floor(biome.y1 / 100);
-    var j = Math.floor(biome.x1 / 100);
-    var h = Math.floor(biome.h / 100);
-    var w = Math.floor(biome.w / 100);
-    var jMax = j + w;
+    const biome = world.biomes[biome_id];
+    const i = Math.floor(biome.y1 / 100);
+    const j = Math.floor(biome.x1 / 100);
+    const h = Math.floor(biome.h / 100);
+    const w = Math.floor(biome.w / 100);
+    const jMax = j + w;
 
-    var turn = 2;
+    let turn = 2;
 
     // River top - down
-    var _h = h;
-    var _i = i;
-    var _j = j + 10 + Math.floor((w - 20) * world.RNG.get());
+    let _h = h;
+    let _i = i;
+    let _j = j + 10 + Math.floor((w - 20) * world.RNG.get());
 
-    for (var __j = _j - 4; __j < _j + 4; __j++)
+    for (let __j = _j - 4; __j < _j + 4; __j++)
       render_single_resource(i - 1, __j, "wtb", 0, 1)
 
     while (_h > 0) {
@@ -679,7 +698,7 @@ export function World(max_units) {
       // Top of the river
       if (turn === 2) {
 
-        for (var k = 10; k > 1; k--) {
+        for (let k = 10; k > 1; k--) {
           add_river_line(_i, _j, 1, 1, 0, mem, k, 1);
           _h -= 1; _i += 1;
         }
@@ -690,7 +709,7 @@ export function World(max_units) {
       // End of the river
       if (_h < 10) {
 
-        for (var k = 1; _h > 0; k++) {
+        for (let k = 1; _h > 0; k++) {
           add_river_line(_i, _j, 1, 1, 0, mem, k, 1);
           _h -= 1; _i += 1;
         }
@@ -698,8 +717,8 @@ export function World(max_units) {
       }
 
       if (turn === 1) {
-        var __h = Math.min(_h, Math.floor(1 + 4 * world.RNG.get()));
-        var w = 1 + Math.floor(world.RNG.get() * 4);
+        const __h = Math.min(_h, Math.floor(1 + 4 * world.RNG.get()));
+        const w = 1 + Math.floor(world.RNG.get() * 4);
         add_river_line(_i, _j, __h, 1, 0, mem, w, w);
         turn = 0;
         _h -= __h;
@@ -708,8 +727,8 @@ export function World(max_units) {
       }
 
       turn = 1;
-      var __w = Math.floor(1 + 2 * world.RNG.get());
-      var ___w = 1 + Math.floor(world.RNG.get() * 4);
+      const __w = Math.floor(1 + 2 * world.RNG.get());
+      const ___w = 1 + Math.floor(world.RNG.get() * 4);
       if (_j < j + 16) {
         add_river_line(_i, _j, __w, 0, 1, mem, ___w, ___w);
         _j += __w;
@@ -725,17 +744,17 @@ export function World(max_units) {
       }
     }
 
-    for (var __j = _j - 1; __j < _j + 2; __j++)
+    for (let __j = _j - 1; __j < _j + 2; __j++)
       render_single_resource(_i, __j, "wtb", 0, 1)
   }
 
   function render_river(biome_id, mem) {
 
-    for (var k = 0; k < mem.length; k++) {
+    for (let k = 0; k < mem.length; k++) {
 
-      var _i = mem[k][0];
-      var _j = mem[k][1];
-      var current = mem[k][2];
+      const _i = mem[k][0];
+      const _j = mem[k][1];
+      const current = mem[k][2];
 
       add_single_river(_i, _j, biome_id, current);
     }
@@ -744,12 +763,12 @@ export function World(max_units) {
   this.add_island = function (type, x, y) {
 
     // Fill the island with sand block "iblk"
-    var _i = y;
-    var _j = x;
+    const _i = y;
+    const _j = x;
     render_single_resource(_i, _j, "isl", type, 1);
 
-    for (var k = 0; k < 4; k++) {
-      for (var l = 0; l < 3; l++) {
+    for (let k = 0; k < 4; k++) {
+      for (let l = 0; l < 3; l++) {
         render_single_resource(_i - l, _j - k, "iblk", 0);
         render_single_resource(_i + l, _j - k, "iblk", 0);
         render_single_resource(_i + l, _j + k, "iblk", 0);
@@ -757,89 +776,93 @@ export function World(max_units) {
       }
     }
 
-    if (type === 0) {
 
-      for (var k = 0; k < 2; k++) {
-        render_single_resource(_i - k, _j - 4, "iblk", 0);
-        render_single_resource(_i + k, _j - 4, "iblk", 0);
-        render_single_resource(_i - k, _j + 4, "iblk", 0);
-        render_single_resource(_i + k, _j + 4, "iblk", 0);
-      }
-      for (var k = 0; k < 3; k++) {
-        render_single_resource(_i - 3, _j + k, "iblk", 0);
-        render_single_resource(_i + 3, _j + k, "iblk", 0);
-        render_single_resource(_i - 3, _j - k, "iblk", 0);
-        render_single_resource(_i + 3, _j - k, "iblk", 0);
-      }
+    switch (type) {
+      case 0: {
+        for (let k = 0; k < 2; k++) {
+          render_single_resource(_i - k, _j - 4, "iblk", 0);
+          render_single_resource(_i + k, _j - 4, "iblk", 0);
+          render_single_resource(_i - k, _j + 4, "iblk", 0);
+          render_single_resource(_i + k, _j + 4, "iblk", 0);
+        }
 
-      render_single_resource(_i - 2, _j - 4, "iblk", 0);
-      render_single_resource(_i - 3, _j - 3, "iblk", 0);
-      render_single_resource(_i + 2, _j + 4, "iblk", 0);
-      render_single_resource(_i + 3, _j + 3, "iblk", 0);
-
-    } else if (type === 1) {
-
-      for (var k = 0; k < 3; k++) {
-        render_single_resource(_i - k, _j - 4, "iblk", 0);
-        render_single_resource(_i + k, _j - 4, "iblk", 0);
-        render_single_resource(_i - k, _j + 4, "iblk", 0);
-        render_single_resource(_i + k, _j + 4, "iblk", 0);
+        for (let k = 0; k < 3; k++) {
+          render_single_resource(_i - 3, _j + k, "iblk", 0);
+          render_single_resource(_i + 3, _j + k, "iblk", 0);
+          render_single_resource(_i - 3, _j - k, "iblk", 0);
+          render_single_resource(_i + 3, _j - k, "iblk", 0);
+        }
+        break;
       }
-      for (var k = 0; k < 4; k++) {
-        render_single_resource(_i - 3, _j + k, "iblk", 0);
-        render_single_resource(_i + 3, _j + k, "iblk", 0);
-        render_single_resource(_i - 3, _j - k, "iblk", 0);
-        render_single_resource(_i + 3, _j - k, "iblk", 0);
-      }
+      case 1: {
+        for (let k = 0; k < 3; k++) {
+          render_single_resource(_i - k, _j - 4, "iblk", 0);
+          render_single_resource(_i + k, _j - 4, "iblk", 0);
+          render_single_resource(_i - k, _j + 4, "iblk", 0);
+          render_single_resource(_i + k, _j + 4, "iblk", 0);
+        }
 
-    } else if (type === 2) {
+        for (let k = 0; k < 4; k++) {
+          render_single_resource(_i - 3, _j + k, "iblk", 0);
+          render_single_resource(_i + 3, _j + k, "iblk", 0);
+          render_single_resource(_i - 3, _j - k, "iblk", 0);
+          render_single_resource(_i + 3, _j - k, "iblk", 0);
+        }
+        break;
+      }
+      case 2: {
+        for (let k = 0; k < 2; k++) {
+          render_single_resource(_i - k, _j - 4, "iblk", 0);
+          render_single_resource(_i + k, _j - 4, "iblk", 0);
+          render_single_resource(_i - k, _j + 4, "iblk", 0);
+          render_single_resource(_i + k, _j + 4, "iblk", 0);
+        }
 
-      for (var k = 0; k < 2; k++) {
-        render_single_resource(_i - k, _j - 4, "iblk", 0);
-        render_single_resource(_i + k, _j - 4, "iblk", 0);
-        render_single_resource(_i - k, _j + 4, "iblk", 0);
-        render_single_resource(_i + k, _j + 4, "iblk", 0);
+        for (let k = 0; k < 3; k++) {
+          render_single_resource(_i - 3, _j + k, "iblk", 0);
+          render_single_resource(_i + 3, _j + k, "iblk", 0);
+          render_single_resource(_i - 3, _j - k, "iblk", 0);
+          render_single_resource(_i + 3, _j - k, "iblk", 0);
+        }
+        break;
       }
-      for (var k = 0; k < 3; k++) {
-        render_single_resource(_i - 3, _j + k, "iblk", 0);
-        render_single_resource(_i + 3, _j + k, "iblk", 0);
-        render_single_resource(_i - 3, _j - k, "iblk", 0);
-        render_single_resource(_i + 3, _j - k, "iblk", 0);
-      }
+      default: break;
     }
-
-
   };
 
   this.add_islands = function (amount) {
 
-    for (var i = 0; i < world.biomes.length && amount > 0; i++) {
+    for (let i = 0; i < world.biomes.length && amount > 0; i++) {
 
-      var biome = world.biomes[i];
+      const biome = world.biomes[i];
 
       if (biome.t !== world.BIOME_SEA)
         continue;
 
       if (biome.w > 1800 && biome.h > 1000) {
 
-        var _j = Math.floor((biome.x1 + biome.w / 2) / 100);
-        var _i = Math.floor((biome.y1 + biome.h / 2) / 100);
+        const _j = Math.floor((biome.x1 + biome.w / 2) / 100);
+        const _i = Math.floor((biome.y1 + biome.h / 2) / 100);
         world.add_island(amount % 3, _j, _i);
 
         // Fill the island with resources
-        for (var k = 0; k < 3; k++) {
-          var __i = _i - 2 + Math.floor(world.RNG.get() * 4);
-          var __j = _j - 3 + Math.floor(world.RNG.get() * 6);
+        for (let k = 0; k < 3; k++) {
+          let __i = _i - 2 + Math.floor(world.RNG.get() * 4);
+          let __j = _j - 3 + Math.floor(world.RNG.get() * 6);
+
           if (MAP.tiles[__i][__j]["s"] === undefined)
             render_single_resource(__i, __j, "plm", k);
-          var __i = _i - 2 + Math.floor(world.RNG.get() * 4);
-          var __j = _j - 3 + Math.floor(world.RNG.get() * 6);
+          
+          __i = _i - 2 + Math.floor(world.RNG.get() * 4);
+          __j = _j - 3 + Math.floor(world.RNG.get() * 6);
+
           if (MAP.tiles[__i][__j]["plm"] === undefined)
             render_single_resource(__i, __j, "s", k);
         }
 
-        var __i = _i - 2 + Math.floor(world.RNG.get() * 4);
-        var __j = _j - 3 + Math.floor(world.RNG.get() * 6);
+        const __i = _i - 2 + Math.floor(world.RNG.get() * 4);
+        const __j = _j - 3 + Math.floor(world.RNG.get() * 6);
+
         if (MAP.tiles[__i][__j]["plm"] === undefined && MAP.tiles[__i][__j]["s"] === undefined)
           render_single_resource(__i, __j, "p", 0, 1);
 
@@ -852,7 +875,7 @@ export function World(max_units) {
 
     world.RNG.init(seed);
 
-    var attempt = 0;
+    let attempt = 0;
 
     // Generate biome
     while (1) {
@@ -882,13 +905,13 @@ export function World(max_units) {
         if (world.custom_map !== 0 && world.custom_map.length > 0 && world.custom_map[0].length > 3) {
 
           // Biome placement
-          for (var b = 0; b < world.custom_map.length; b++) {
+          for (let b = 0; b < world.custom_map.length; b++) {
 
-            var elt = world.custom_map[b];
+            const elt = world.custom_map[b];
 
             if (elt[0] === 0) {
 
-              var __id = WORLD.BIOME_FOREST;
+              let __id = WORLD.BIOME_FOREST;
               switch (elt[1]) {
 
                 case "FOREST": __id = world.BIOME_FOREST; break;
@@ -897,6 +920,7 @@ export function World(max_units) {
                 case "LAVA": __id = world.BIOME_LAVA; break;
                 case "DRAGON": __id = world.BIOME_DRAGON; break;
               }
+
               world.biomes.push(new world.Biome(__id, elt[2],
                 elt[3], elt[4], elt[5], elt[6], elt[7]));
               continue;
@@ -907,9 +931,11 @@ export function World(max_units) {
           // Random generated map
         } else if (world.custom_map !== 0) {
 
-          for (var b = 0; b < world.custom_map.length; b++) {
-            var biome = world.custom_map[b];
-            var __id = WORLD.BIOME_FOREST;
+          for (let b = 0; b < world.custom_map.length; b++) {
+            const biome = world.custom_map[b];
+
+            let __id = WORLD.BIOME_FOREST;
+
             switch (biome[0]) {
 
               case "FOREST": __id = world.BIOME_FOREST; break;
@@ -934,29 +960,29 @@ export function World(max_units) {
     render_minimap();
 
     // Create a new sea biome
-    var map = [];
-    for (var i = 0; i < world.nh; i++) {
+    const map = [];
+    for (let i = 0; i < world.nh; i++) {
       map[i] = new Array(world.nw);
-      for (var j = 0; j < world.nw; j++)
+      for (let j = 0; j < world.nw; j++)
         map[i][j] = 0;
     }
 
     // Pre-fill the actual biome
-    for (var i = 0; i < world.biomes.length; i++) {
+    for (let i = 0; i < world.biomes.length; i++) {
 
-      var biome = world.biomes[i];
-      var x2 = biome.x2 / 100;
-      var y2 = biome.y2 / 100;
-      for (var x = biome.x1 / 100; x <= x2; x++) {
-        for (var y = biome.y1 / 100; y <= y2; y++)
+      const biome = world.biomes[i];
+      const x2 = biome.x2 / 100;
+      const y2 = biome.y2 / 100;
+      for (let x = biome.x1 / 100; x <= x2; x++) {
+        for (let y = biome.y1 / 100; y <= y2; y++)
           map[y][x] = 1;
       }
     }
 
     // Fill with the sea biome
-    for (var y = 0; y < world.nh; y++) {
+    for (let y = 0; y < world.nh; y++) {
 
-      for (var x = 0; x < world.nw; x++) {
+      for (let x = 0; x < world.nw; x++) {
 
         if (map[y][x] === 0)
           add_sea_biome(map, x, y);
@@ -965,15 +991,16 @@ export function World(max_units) {
 
     // Add entities to the map
     MAP = { w: world.nw, h: world.nh, tiles: [] };
-    for (var i = 0; i < world.nh; i++)
+
+    for (let i = 0; i < world.nh; i++)
       MAP.tiles[i] = [];
 
     // Add manually placed islands to the map
     if (world.custom_map !== 0 && world.custom_map.length > 0 && world.custom_map[0].length > 3) {
 
-      for (var b = 0; b < world.custom_map.length; b++) {
+      for (let b = 0; b < world.custom_map.length; b++) {
 
-        var elt = world.custom_map[b];
+        const elt = world.custom_map[b];
         if (elt[1] === "isl")
           world.add_island(elt[2], elt[3], elt[4]);
       }
@@ -984,10 +1011,10 @@ export function World(max_units) {
     // Add manually placed resources to the map
     if (world.custom_map !== 0 && world.custom_map.length > 0 && world.custom_map[0].length > 3) {
 
-      var mem = [];
-      for (var b = 0; b < world.custom_map.length; b++) {
+      const mem = [];
+      for (let b = 0; b < world.custom_map.length; b++) {
 
-        var elt = world.custom_map[b];
+        const elt = world.custom_map[b];
         if (elt[0] !== 1) continue;
 
         if (elt[1] === "r") {
@@ -1002,9 +1029,9 @@ export function World(max_units) {
 
       // Add randomly placed resources to the map
     } else {
-      for (var i = 0; i < world.biomes.length; i++) {
+      for (let i = 0; i < world.biomes.length; i++) {
 
-        var biome = world.biomes[i];
+        const biome = world.biomes[i];
 
         if (world.mode === WORLD.MODE_LEGACY) {
 
@@ -1036,11 +1063,11 @@ export function World(max_units) {
 
   function add_dragon_resources(biome_id) {
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "s", i, 15);
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "a", i, 1);
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "d", i, 1);
 
     render_corner(biome_id);
@@ -1048,13 +1075,13 @@ export function World(max_units) {
 
   function add_winter_resources(biome_id, size) {
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "s", i, Math.floor(18 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "f", i, Math.floor(24 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "d", i, Math.max(1, Math.floor(2 * size)), 0.3);
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "g", i, Math.floor(6 * size));
 
     render_corner(biome_id);
@@ -1062,15 +1089,15 @@ export function World(max_units) {
 
   function add_desert_resources(biome_id, size) {
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "s", i, Math.floor(12 * size));
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "m", i, Math.max(1, Math.floor(1 * size)), 0.2);
 
     add_resources(biome_id, "c", 0, Math.floor(36 * size));
 
-    var mem = [];
+    let mem = [];
     add_oasis(biome_id, mem);
     render_river(biome_id, mem);
     mem = [];
@@ -1080,13 +1107,13 @@ export function World(max_units) {
 
     add_lava(80 * size, biome_id);
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "s", i, Math.floor(12 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "g", i, Math.floor(6 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "re", i, Math.max(1, Math.floor(1 * size)), 0.2);
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "a", i, Math.max(1, Math.floor(2 * size)));
 
     render_corner(biome_id);
@@ -1094,29 +1121,29 @@ export function World(max_units) {
 
   function add_forest_resources_v2(biome_id, size) {
 
-    for (var i = 0; i < 6; i++)
+    for (let i = 0; i < 6; i++)
       add_resources(biome_id, "t", i, Math.floor(80 * size));
-    for (var i = 0; i < 4; i++)
+    for (let i = 0; i < 4; i++)
       add_resources(biome_id, "b", i, Math.floor(80 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "s", i, Math.floor(50 * size));
 
-    var mem = [];
-    for (var i = 0; i < 6; i++)
+    let mem = [];
+    for (let i = 0; i < 6; i++)
       add_river(biome_id, mem);
     render_river(biome_id, mem);
     mem = [];
 
     add_resources(biome_id, "p", 0, Math.floor(28 * size));
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "g", i, Math.floor(7 * size));
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "d", i, Math.floor(2 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "a", i, Math.floor(1 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "m", i, Math.floor(1 * size));
 
     add_resources(biome_id, "a", 0, Math.floor(1 * size));
@@ -1126,27 +1153,27 @@ export function World(max_units) {
 
   function add_forest_resources(biome_id, size) {
 
-    for (var i = 0; i < 6; i++)
+    for (let i = 0; i < 6; i++)
       add_resources(biome_id, "t", i, Math.floor(20 * size));
-    for (var i = 0; i < 4; i++)
+    for (let i = 0; i < 4; i++)
       add_resources(biome_id, "b", i, Math.floor(20 * size));
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "s", i, Math.floor(20 * size));
 
-    var mem = [];
+    let mem = [];
     add_river(biome_id, mem);
     render_river(biome_id, mem);
     mem = [];
 
     add_resources(biome_id, "p", 0, Math.floor(24 * size));
 
-    for (var i = 0; i < 3; i++)
+    for (let i = 0; i < 3; i++)
       add_resources(biome_id, "g", i, Math.floor(5 * size));
 
     if (world.mode === WORLD.MODE_ZOMBIES) {
-      for (var i = 0; i < 3; i++)
+      for (let i = 0; i < 3; i++)
         add_resources(biome_id, "d", i, Math.floor(3 * size));
-      for (var i = 0; i < 3; i++)
+      for (let i = 0; i < 3; i++)
         add_resources(biome_id, "a", i, Math.floor(2 * size));
     }
 
@@ -1155,7 +1182,7 @@ export function World(max_units) {
 
   function render_corner(biome_id) {
 
-    var biome = world.biomes[biome_id];
+    const biome = world.biomes[biome_id];
     render_single_resource(-3 + Math.floor(biome.y2 / 100), -1 + Math.floor(biome.x2 / 100), "s", 0, 0);
     render_single_resource(3 + Math.floor(biome.y1 / 100), -1 + Math.floor(biome.x2 / 100), "s", 0, 0);
     render_single_resource(-3 + Math.floor(biome.y2 / 100), 1 + Math.floor(biome.x1 / 100), "s", 0, 0);
@@ -1164,12 +1191,12 @@ export function World(max_units) {
 
   function add_resources(biome_id, type, subtype, amount, subpart) {
 
-    var biome = world.biomes[biome_id];
+    const biome = world.biomes[biome_id];
 
-    var x = Math.floor((biome.x1) / 100);
-    var y = Math.floor((biome.y1) / 100);
-    var w = Math.floor((biome.w) / 100);
-    var h = Math.floor((biome.h) / 100);
+    let x = Math.floor((biome.x1) / 100);
+    let y = Math.floor((biome.y1) / 100);
+    let w = Math.floor((biome.w) / 100);
+    let h = Math.floor((biome.h) / 100);
 
     if (subpart !== undefined) {
 
@@ -1181,43 +1208,50 @@ export function World(max_units) {
       h -= Math.floor(h * subpart);
     }
 
-    var tiles = MAP.tiles;
+    const tiles = MAP.tiles;
 
-    for (var k = 0, l = 0; k < amount; l++) {
+    for (let k = 0, l = 0; k < amount; l++) {
 
       if (l > 50000)
         break;
 
-      var i = y + Math.floor(world.RNG.get() * h);
-      var j = x + Math.floor(world.RNG.get() * w);
+      const i = y + Math.floor(world.RNG.get() * h);
+      const j = x + Math.floor(world.RNG.get() * w);
 
-      var dist = world.dist_from_biome(biome_id, j * 100 + 50, i * 100 + 50);
+      const dist = world.dist_from_biome(biome_id, j * 100 + 50, i * 100 + 50);
       if (dist < 400)
         continue;
 
       // Do not bind same resource type
-      var tile = tiles[i][j + 1];
+      let tile = tiles[i][j + 1];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i][j - 1];
+
+      tile = tiles[i][j - 1];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i + 1][j];
+
+      tile = tiles[i + 1][j];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i - 1][j];
+
+      tile = tiles[i - 1][j];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i + 1][j - 1];
+
+      tile = tiles[i + 1][j - 1];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i - 1][j + 1];
+
+      tile = tiles[i - 1][j + 1];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i + 1][j + 1];
+
+      tile = tiles[i + 1][j + 1];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
-      var tile = tiles[i - 1][j - 1];
+
+      tile = tiles[i - 1][j - 1];
       if (tile !== undefined && tile[type] !== undefined && tile[type][subtype] !== undefined)
         continue;
 
@@ -1235,7 +1269,6 @@ export function World(max_units) {
   };
 
   function add_single_river(i, j, biome_id, current) {
-
     if (!inside_map(i, j))
       return;
 
@@ -1246,7 +1279,7 @@ export function World(max_units) {
     if (tiles[i][j]["r"] !== undefined)
       return;
 
-    var code = 0;
+    let code = 0;
     if (inside_map(i - 1, j) && tiles[i - 1][j] !== undefined && tiles[i - 1][j]["wtb"] !== undefined) code += 2
     if (inside_map(i, j - 1) && tiles[i][j - 1] !== undefined && tiles[i][j - 1]["wtb"] !== undefined) code += 8
     if (inside_map(i, j + 1) && tiles[i][j + 1] !== undefined && tiles[i][j + 1]["wtb"] !== undefined) code += 16
@@ -1277,7 +1310,7 @@ export function World(max_units) {
     if (i < 0 || j < 0 || i >= world.nh || j >= world.nw)
       return;
 
-    tiles = MAP.tiles;
+    const tiles = MAP.tiles;
 
     if (tiles[i][j] === undefined)
       tiles[i][j] = {}
@@ -1309,7 +1342,7 @@ export function World(max_units) {
         if (!tile[o][k])
           continue;
 
-        for (l = 0; l < tile[o][k].length; l++) {
+        for (let l = 0; l < tile[o][k].length; l++) {
           tile[o][k][l].hit = anim;
           tile[o][k][l].update = false;
           tile[o][k][l].time = 0;
@@ -1322,8 +1355,8 @@ export function World(max_units) {
   this.map_wrapper = function (MAP) {
 
     /* Apply wrapper on map */
-    for (var i = 0; i < this.nh; i++) {
-      for (var j = 0; j < this.nw; j++) {
+    for (let i = 0; i < this.nh; i++) {
+      for (let j = 0; j < this.nw; j++) {
 
         if (!MAP.tiles[i])
           MAP.tiles[i] = [];
@@ -1332,11 +1365,11 @@ export function World(max_units) {
           continue;
         }
 
-        var tile = MAP.tiles[i][j];
+        const tile = MAP.tiles[i][j];
 
         if (tile["de"] && tile["de"].length > 0) {
 
-          for (var k = 0; k < tile["de"].length; k++) {
+          for (let k = 0; k < tile["de"].length; k++) {
 
             if (tile["de"][k] && tile["de"][k].length > 0) {
 
@@ -1344,9 +1377,9 @@ export function World(max_units) {
               if (k >= 41 && k <= 49) {
 
                 tile["de"].scale = 3;
-                var compo = Math.floor(Math.random() * 3 + 1);
+                const compo = Math.floor(Math.random() * 3 + 1);
                 tile["de"].p = [];
-                for (var l = 0; l < compo; l++) {
+                for (let l = 0; l < compo; l++) {
                   tile["de"].p.push({
                     x: Math.random() * 120 - 60,
                     y: Math.random() * 120 - 60,
@@ -1358,9 +1391,9 @@ export function World(max_units) {
               } else if (k >= 19 && k <= 26) {
 
                 tile["de"].scale = 3;
-                var compo = Math.floor(Math.random() * 3 + 1);
+                const compo = Math.floor(Math.random() * 3 + 1);
                 tile["de"].p = [];
-                for (var l = 0; l < compo; l++) {
+                for (let l = 0; l < compo; l++) {
                   tile["de"].p.push({
                     x: Math.random() * 120 - 60,
                     y: Math.random() * 120 - 60,
@@ -1432,8 +1465,8 @@ export function World(max_units) {
     this.fast_units[uid] = null;
 
     /* Remove all units with this uid */
-    var units = this.units[type];
-    for (var j = 0; j < units.length; j++) {
+    const units = this.units[type];
+    for (let j = 0; j < units.length; j++) {
 
       if (units[j].uid == uid) {
 
@@ -1447,9 +1480,9 @@ export function World(max_units) {
 
   this.find_tower = function (i, j) {
 
-    for (var k = 0; k < this.units[ITEMS.WOOD_TOWER].length; k++) {
+    for (let k = 0; k < this.units[ITEMS.WOOD_TOWER].length; k++) {
 
-      var b = this.units[ITEMS.WOOD_TOWER][k];
+      let b = this.units[ITEMS.WOOD_TOWER][k];
       if (Math.floor(b.x / 100) === j && Math.floor(b.y / 100) === i)
         return 1;
     }
@@ -1459,9 +1492,9 @@ export function World(max_units) {
 
   this.find_bridge = function (i, j) {
 
-    for (var k = 0; k < this.units[ITEMS.BRIDGE].length; k++) {
+    for (let k = 0; k < this.units[ITEMS.BRIDGE].length; k++) {
 
-      var b = this.units[ITEMS.BRIDGE][k];
+      let b = this.units[ITEMS.BRIDGE][k];
       if (Math.floor(b.x / 100) == i && Math.floor(b.y / 100) == j)
         return true;
     }
@@ -1471,25 +1504,25 @@ export function World(max_units) {
 
   this.move_units = function (list) {
 
-    for (var i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
 
-      b = list[i];
+      const b = list[i];
 
       /* Update angle */
       if (b.angle != b.nangle) {
 
-        var pi2 = Math.PI * 2;
+        const pi2 = Math.PI * 2;
         b.angle = (b.angle + pi2) % pi2
         b.nangle = (b.nangle + pi2) % pi2
 
         if (b.angle != b.nangle) {
 
-          var diff = b.nangle - b.angle;
+          const diff = b.nangle - b.angle;
 
           /* Ease rotation */
-          var min = Math.abs(diff);
+          let min = Math.abs(diff);
           if (min > Math.PI) min = Math.PI * 2 - min;
-          var rotate = 3 * (min / Math.PI) * WORLD.ROTATE * delta;
+          const rotate = 3 * (min / Math.PI) * WORLD.ROTATE * delta;
 
           if (diff > Math.PI)
             b.angle -= rotate;
@@ -1512,9 +1545,9 @@ export function World(max_units) {
         if (b.action & STATE.IDLE) b.action -= STATE.IDLE;
         b.action |= STATE.WALK;
 
-        var a = get_std_angle(b, b.r) + Math.PI;
-        var d = delta * b.speed;
-        var v = build_vector(d, a);
+        const a = get_std_angle(b, b.r) + Math.PI;
+        const d = delta * b.speed;
+        const v = build_vector(d, a);
 
         if (norm(v) < norm(get_vector(b, b.r)))
           add_vector(b, v);
@@ -1529,8 +1562,8 @@ export function World(max_units) {
       /* Update bubbles of ghost */
       if (b.ghost) {
 
-        var bubbles = b.bubbles;
-        var l = bubbles.length;
+        const bubbles = b.bubbles;
+        const l = bubbles.length;
 
         if (l === 0 || (l < SPRITE.GHOST_BUBBLES && bubbles[l - 1].life < 0.95))
           bubbles.push({
@@ -1541,10 +1574,10 @@ export function World(max_units) {
           });
 
         /* Decrease opacity of bubbles */
-        for (var j = 0; j < l; j++)
+        for (let j = 0; j < l; j++)
           bubbles[j].life = Math.max(0, bubbles[j].life - delta);
 
-        for (var j = 0; j < l; j++) {
+        for (let j = 0; j < l; j++) {
           if (bubbles[j].life === 0) {
             bubbles.splice(j, 1);
             break;
@@ -1552,11 +1585,11 @@ export function World(max_units) {
         }
       }
 
-      var has_swim = 0;
+      let has_swim = 0;
 
       if (b.move_effect && ui.quality) {
-        var swim = b.swim;
-        var l = swim.length;
+        const swim = b.swim;
+        let l = swim.length;
 
         if (b.dist_water > 0 && b.vehicle !== INV.BABY_DRAGON &&
           b.vehicle !== INV.BABY_LAVA && b.vehicle !== INV.PLANE &&
@@ -1564,9 +1597,9 @@ export function World(max_units) {
 
           has_swim = 1;
           if (l === 0 || dist(swim[l - 1], b) > SPRITE.SWIM_SPACE) {
-            var angle = -b.angle;
-            var x = Math.sin(angle) * 45 * scale;
-            var y = Math.cos(angle) * 45 * scale;
+            const angle = -b.angle;
+            const x = Math.sin(angle) * 45 * scale;
+            const y = Math.cos(angle) * 45 * scale;
             swim.push({ x: b.x + x, y: b.y + y, r: 8, alpha: 0.8 });
             swim.push({ x: b.x - x, y: b.y - y, r: 8, alpha: 0.8 });
             swim.push({ x: b.x, y: b.y, r: 24, alpha: 1 });
@@ -1574,7 +1607,7 @@ export function World(max_units) {
         }
 
         /* Decrease opacity and increase radius of swim effect */
-        for (var j = 0; j < l; j++) {
+        for (let j = 0; j < l; j++) {
           swim[j].alpha = Math.max(0, swim[j].alpha - delta / 2.2);
           swim[j].r += delta * 20;
         }
@@ -1582,52 +1615,54 @@ export function World(max_units) {
         if (swim.length > 0 && swim[0].alpha === 0) swim.splice(0, 1);
 
         /* Update foot print */
-        var foot = b.foot;
-        var l = foot.length;
+        const foot = b.foot;
+        l = foot.length;
 
-        var id = -1;
+        let id = -1;
 
-        var __s = Math.max(0, Math.sign(b.dist_sand));
-        var __w = Math.max(0, Math.sign(b.dist_winter));
-        var __r = Math.max(0, Math.sign(b.dist_desert));
-        var __l = Math.max(0, Math.sign(b.dist_lava));
-        var __d = Math.max(0, Math.sign(b.dist_dragon));
+        const __s = Math.max(0, Math.sign(b.dist_sand));
+        const __w = Math.max(0, Math.sign(b.dist_winter));
+        const __r = Math.max(0, Math.sign(b.dist_desert));
+        const __l = Math.max(0, Math.sign(b.dist_lava));
+        const __d = Math.max(0, Math.sign(b.dist_dragon));
 
         //if ((((__s ^ __w) ^ __l) ^ __d) === 0);
         if (b.dist_sand > 0 || b.dist_desert > 0)
-          var id = SPRITE.SAND_STEP;
+          id = SPRITE.SAND_STEP;
         else if (b.dist_dragon > 0)
-          var id = SPRITE.CAVE_STEP;
+          id = SPRITE.CAVE_STEP;
         else if (b.dist_winter > 0)
-          var id = SPRITE.SNOW_STEP;
+          id = SPRITE.SNOW_STEP;
         else if (b.dist_lava > 0)
-          var id = SPRITE.LAVA_STEP;
+          id = SPRITE.LAVA_STEP;
 
         // Set special foot step for mount
+        let footDist = 0, footRand = 0, footDist2 = 0, step_space = 0;
+
         if (b.vehicle === INV.MOUNT_BOAR && (__s | __w | __l | __d) === 1) {
           id = SPRITE.BOAR_STEP;
-          var footAngle = b.vehicle_fx2 - Math.PI / 2;
-          var footDist = 15;
-          var footDist2 = 11;
-          var step_space = SPRITE.STEP_SPACE;
+          const footAngle = b.vehicle_fx2 - Math.PI / 2;
+          footDist = 15;
+          footDist2 = 11;
+          step_space = SPRITE.STEP_SPACE;
         } else if (b.vehicle === INV.BABY_MAMMOTH && (__s | __w | __l | __d) === 1) {
           id = SPRITE.BABY_MAMMOTH_STEP;
-          var footAngle = b.vehicle_fx2 - Math.PI / 2;
-          var footDist = 21;
-          var footDist2 = 16;
-          var step_space = SPRITE.STEP_SPACE;
+          footAngle = b.vehicle_fx2 - Math.PI / 2;
+          footDist = 21;
+          footDist2 = 16;
+          step_space = SPRITE.STEP_SPACE;
         } else if (b.vehicle === INV.CRAB_BOSS && (__s | __w | __l | __d) === 1) {
           id = SPRITE.CRAB_STEP;
-          var footAngle = b.vehicle_fx2 - Math.PI / 2;
-          var footRand = Math.random() * 50;
-          var footDist = 10 + footRand;
-          var footDist2 = 0 + footRand;
-          var step_space = SPRITE.STEP_SPACE * 0.9;
+          footAngle = b.vehicle_fx2 - Math.PI / 2;
+          footRand = Math.random() * 50;
+          footDist = 10 + footRand;
+          footDist2 = 0 + footRand;
+          step_space = SPRITE.STEP_SPACE * 0.9;
         } else {
-          var footAngle = b.angle;
-          var footDist = 15;
-          var footDist2 = 11;
-          var step_space = SPRITE.STEP_SPACE;
+          footAngle = b.angle;
+          footDist = 15;
+          footDist2 = 11;
+          step_space = SPRITE.STEP_SPACE;
         }
 
         if (b.vehicle === INV.BABY_DRAGON || b.vehicle === INV.BABY_LAVA ||
@@ -1647,21 +1682,22 @@ export function World(max_units) {
             b.id_foot++
 
             if (Math.abs(b.x - b.r.x) > 1 && Math.abs(b.y - b.r.y) > 1) {
+              let x = 0, y = 0;
 
               if ((b.r.x > b.x && b.r.y < b.y) || (b.r.x < b.x && b.r.y > b.y)) {
-                if (b.id_foot % 2) { var x = -footDist2 * scale; var y = -footDist2 * scale; }
-                else { var y = footDist2 * scale; var x = footDist2 * scale; }
+                if (b.id_foot % 2) { x = -footDist2 * scale; y = -footDist2 * scale; }
+                else { y = footDist2 * scale; x = footDist2 * scale; }
               } else {
-                if (b.id_foot % 2) { var x = footDist2 * scale; var y = -footDist2 * scale; }
-                else { var y = footDist2 * scale; var x = -footDist2 * scale; }
+                if (b.id_foot % 2) { x = footDist2 * scale; y = -footDist2 * scale; }
+                else { y = footDist2 * scale; x = -footDist2 * scale; }
               }
 
             } else if (b.id_foot % 2) {
-              var x = Math.sin(footAngle) * footDist * scale;
-              var y = Math.cos(footAngle) * footDist * scale;
+              x = Math.sin(footAngle) * footDist * scale;
+              y = Math.cos(footAngle) * footDist * scale;
             } else {
-              var x = -Math.sin(footAngle) * footDist * scale;
-              var y = -Math.cos(footAngle) * footDist * scale;
+              x = -Math.sin(footAngle) * footDist * scale;
+              y = -Math.cos(footAngle) * footDist * scale;
             }
 
             foot.push({ x: b.x + x, y: b.y + y, angle: footAngle + Math.PI / 2, alpha: 1, id: id });
@@ -1669,7 +1705,7 @@ export function World(max_units) {
         }
 
         /* Decrease opacity of foot step */
-        for (var j = 0; j < l; j++) {
+        for (let j = 0; j < l; j++) {
           if (foot[j].id === SPRITE.SLED_WAVE)
             foot[j].alpha = Math.max(0, foot[j].alpha - delta * 1.5);
           else
@@ -1871,12 +1907,8 @@ export function Item(type, pid, id, x, y, angle, action, info, speed, extra) {
           this.hit.v = 0.6;
         }
 
-        if (action & STATE.ATTACK) {
+        if (action & STATE.ATTACK)
           this.slow_attack = CLIENT.SLOW_ATTACK;
-
-          if (audio.run && this.sid !== -1)
-            audio.players[this.sid].swing(SOUND[this.right]);
-        }
       }
 
       this.update();
@@ -1942,7 +1974,7 @@ export function Item(type, pid, id, x, y, angle, action, info, speed, extra) {
       }
 
       this.fruits = [];
-      for (var i = 0; i < 3; i++)
+      for (let i = 0; i < 3; i++)
         this.fruits.push({
           draw: draw_breath_2,
           breath: new LinearAnimation(false, 0.90 + Math.random() * 0.15,
@@ -1969,7 +2001,7 @@ export function Item(type, pid, id, x, y, angle, action, info, speed, extra) {
       }
 
       this.fruits = [];
-      for (var i = 0; i < 3; i++)
+      for (let i = 0; i < 3; i++)
         this.fruits.push({
           draw: draw_breath,
           breath: new LinearAnimation(false, 0.90 + Math.random() * 0.15,
@@ -2184,7 +2216,7 @@ export function Item(type, pid, id, x, y, angle, action, info, speed, extra) {
     case ITEMS.FRUIT:
 
       this.fruits = [];
-      for (var i = 0; i < 5; i++)
+      for (let i = 0; i < 5; i++)
         this.fruits.push({
           draw: draw_breath,
           breath: new LinearAnimation(false, 0.90 + Math.random() * 0.15,
@@ -2449,7 +2481,7 @@ export function Item(type, pid, id, x, y, angle, action, info, speed, extra) {
         update: false,
         angle: 0
       };
-      var rest = this.angle % (Math.PI / 2);
+      const rest = this.angle % (Math.PI / 2);
       if (rest < Math.PI / 4)
         this.angle -= rest;
       else

@@ -1,8 +1,13 @@
-import { MINIMAP_LIST, MINIMAP_UTILS, sprite, world, COSMETICS } from '../game';
-import { SPRITE, WORLD,  } from '../constants';
+import { MINIMAP_LIST, MINIMAP_UTILS, sprite, world, fake_world, user } from '../game';
+import { SPRITE, WORLD, ITEMS, COSMETICS } from '../constants';
+import { CTI, ctx, canw2, canh2 } from '../canvas';
+import { middle_point } from '../utils';
+import { IMAGES } from './images';
+import { Item } from '../world';
+import { render_inventory } from './loader';
 
-function find_cosmetics_per_id(cosmetics, id) {
-  for (var i = 0; i < cosmetics.length; i++) {
+export function find_cosmetics_per_id(cosmetics, id) {
+  for (let i = 0; i < cosmetics.length; i++) {
     if (cosmetics[i].id === id)
       return i;
 
@@ -10,8 +15,8 @@ function find_cosmetics_per_id(cosmetics, id) {
   return -1;
 };
 
-function render_type_resources_minimap(type, gap) {
-  for (var i = 0; i < MINIMAP_LIST.length; i += gap) {
+export function render_type_resources_minimap(type, gap) {
+  for (let i = 0; i < MINIMAP_LIST.length; i += gap) {
     var r = MINIMAP_LIST[i];
     if (r[0] === type)
       render_resource_minimap(r[0], r[1], r[2], r[3]);
@@ -19,7 +24,7 @@ function render_type_resources_minimap(type, gap) {
   }
 };;
 
-function render_all_resources_minimap() {
+export function render_all_resources_minimap() {
   render_type_resources_minimap("isl", 1);
   render_type_resources_minimap("wtb", 20);
   render_type_resources_minimap("la", 1);
@@ -33,19 +38,19 @@ function render_all_resources_minimap() {
   render_type_resources_minimap("re", 1);
   render_type_resources_minimap("m", 1);
   MINIMAP_LIST = [];
-};;
+};
 
-function add_resource_minimap(type, subtype, i, j) {
+export function add_resource_minimap(type, subtype, i, j) {
   MINIMAP_LIST.push([type, subtype, i, j]);
-};;
+};
 
-function render_resource_minimap(type, subtype, i, j) {
+export function render_resource_minimap(type, subtype, i, j) {
   var resource = MINIMAP_UTILS[type];
   if (resource === undefined)
     return;
 
   for (var k = 0; k < 2; k++) {
-    var img = resource[subtype][k];
+    let img = resource[subtype][k];
     var x = (193 * j) / world.nw;
     var y = (193 * i) / world.nh;
     var w = img.width / 3.5;
@@ -58,8 +63,8 @@ function render_resource_minimap(type, subtype, i, j) {
     sprite[SPRITE.BIGMAP_CTX][k].drawImage(img, x - (w / 2), y - (h / 2), w, h);
   }
 };
-function render_minimap() {
-  for (var i = 0; i < 2; i++) {
+export function render_minimap() {
+  for (let i = 0; i < 2; i++) {
     sprite[SPRITE.MINIMAP_CTX][i].clearRect(0, 0, 193, 193);
     sprite[SPRITE.MINIMAP_CTX][i].drawImage(MINIMAP_UTILS["MAP"][i], 0, 0, 193, 193);
     sprite[SPRITE.BIGMAP_CTX][i].clearRect(0, 0, 600, 600);
@@ -97,3575 +102,7 @@ function render_minimap() {
     }
   }
 };
-function render_cosmetics() {
-  COSMETICS = {
-    SKIN: [{
-      id: 0,
-      day: IMAGES.PLAYER0D,
-      night: IMAGES.PLAYER0N,
-      dayHand: IMAGES.HAND0D,
-      nightHand: IMAGES.HAND0N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Starver"
-    }, {
-      id: 3,
-      day: IMAGES.PLAYER3D,
-      night: IMAGES.PLAYER3N,
-      dayHand: IMAGES.HAND3D,
-      nightHand: IMAGES.HAND3N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Angry"
-    }, {
-      id: 2,
-      day: IMAGES.PLAYER2D,
-      night: IMAGES.PLAYER2N,
-      dayHand: IMAGES.HAND2D,
-      nightHand: IMAGES.HAND2N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Sad"
-    }, {
-      id: 9,
-      day: IMAGES.PLAYER9D,
-      night: IMAGES.PLAYER9N,
-      dayHand: IMAGES.HAND9D,
-      nightHand: IMAGES.HAND9N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Happy 1"
-    }, {
-      id: 1,
-      day: IMAGES.PLAYER1D,
-      night: IMAGES.PLAYER1N,
-      dayHand: IMAGES.HAND1D,
-      nightHand: IMAGES.HAND1N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "What?"
-    }, {
-      id: 4,
-      day: IMAGES.PLAYER4D,
-      night: IMAGES.PLAYER4N,
-      dayHand: IMAGES.HAND4D,
-      nightHand: IMAGES.HAND4N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Suspicious"
-    }, {
-      id: 5,
-      day: IMAGES.PLAYER5D,
-      night: IMAGES.PLAYER5N,
-      dayHand: IMAGES.HAND5D,
-      nightHand: IMAGES.HAND5N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Scar"
-    }, {
-      id: 6,
-      day: IMAGES.PLAYER6D,
-      night: IMAGES.PLAYER6N,
-      dayHand: IMAGES.HAND6D,
-      nightHand: IMAGES.HAND6N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "In Trouble"
-    }, {
-      id: 7,
-      day: IMAGES.PLAYER7D,
-      night: IMAGES.PLAYER7N,
-      dayHand: IMAGES.HAND7D,
-      nightHand: IMAGES.HAND7N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Cute"
-    }, {
-      id: 8,
-      day: IMAGES.PLAYER8D,
-      night: IMAGES.PLAYER8N,
-      dayHand: IMAGES.HAND8D,
-      nightHand: IMAGES.HAND8N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bored 1"
-    }, {
-      id: 10,
-      day: IMAGES.PLAYER10D,
-      night: IMAGES.PLAYER10N,
-      dayHand: IMAGES.HAND10D,
-      nightHand: IMAGES.HAND10N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Happy 2"
-    }, {
-      id: 11,
-      day: IMAGES.PLAYER11D,
-      night: IMAGES.PLAYER11N,
-      dayHand: IMAGES.HAND11D,
-      nightHand: IMAGES.HAND11N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Crazy"
-    }, {
-      id: 12,
-      day: IMAGES.PLAYER12D,
-      night: IMAGES.PLAYER12N,
-      dayHand: IMAGES.HAND12D,
-      nightHand: IMAGES.HAND12N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Happy 3"
-    }, {
-      id: 13,
-      day: IMAGES.PLAYER13D,
-      night: IMAGES.PLAYER13N,
-      dayHand: IMAGES.HAND13D,
-      nightHand: IMAGES.HAND13N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Very Cute"
-    }, {
-      id: 14,
-      day: IMAGES.PLAYER14D,
-      night: IMAGES.PLAYER14N,
-      dayHand: IMAGES.HAND14D,
-      nightHand: IMAGES.HAND14N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Curious"
-    }, {
-      id: 15,
-      day: IMAGES.PLAYER15D,
-      night: IMAGES.PLAYER15N,
-      dayHand: IMAGES.HAND15D,
-      nightHand: IMAGES.HAND15N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bored 2"
-    }, {
-      id: 16,
-      day: IMAGES.PLAYER16D,
-      night: IMAGES.PLAYER16N,
-      dayHand: IMAGES.HAND16D,
-      nightHand: IMAGES.HAND16N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Happy 4"
-    }, {
-      id: 17,
-      day: IMAGES.PLAYER17D,
-      night: IMAGES.PLAYER17N,
-      dayHand: IMAGES.HAND17D,
-      nightHand: IMAGES.HAND17N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Scar 2"
-    }, {
-      id: 18,
-      day: IMAGES.PLAYER18D,
-      night: IMAGES.PLAYER18N,
-      dayHand: IMAGES.HAND18D,
-      nightHand: IMAGES.HAND18N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Sick"
-    }, {
-      id: 19,
-      day: IMAGES.PLAYER19D,
-      night: IMAGES.PLAYER19N,
-      dayHand: IMAGES.HAND19D,
-      nightHand: IMAGES.HAND19N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Somnambule"
-    }, {
-      id: 24,
-      day: IMAGES.SKIN7D,
-      night: IMAGES.SKIN7N,
-      dayHand: IMAGES.HAND_SKIN7D,
-      nightHand: IMAGES.HAND_SKIN7N,
-      rarity: RARITY.WOOD,
-      author: "Pixelbitie",
-      name: "Feel Bad"
-    }, {
-      id: 23,
-      day: IMAGES.SKIN0D,
-      night: IMAGES.SKIN0N,
-      dayHand: IMAGES.HAND_SKIN0D,
-      nightHand: IMAGES.HAND_SKIN0N,
-      rarity: RARITY.WOOD,
-      author: "Pixelbitie",
-      name: "Mmmh."
-    }, {
-      id: 103,
-      day: IMAGES.SKIN78D,
-      night: IMAGES.SKIN78N,
-      dayHand: IMAGES.HAND_SKIN78D,
-      nightHand: IMAGES.HAND_SKIN78N,
-      rarity: RARITY.WOOD,
-      author: "pizza wa",
-      name: "Panic"
-    }, {
-      id: 105,
-      day: IMAGES.SKIN80D,
-      night: IMAGES.SKIN80N,
-      dayHand: IMAGES.HAND_SKIN80D,
-      nightHand: IMAGES.HAND_SKIN80N,
-      rarity: RARITY.WOOD,
-      author: "pizza wa",
-      name: "Hypnotic"
-    }, {
-      id: 106,
-      day: IMAGES.SKIN81D,
-      night: IMAGES.SKIN81N,
-      dayHand: IMAGES.HAND_SKIN81D,
-      nightHand: IMAGES.HAND_SKIN81N,
-      rarity: RARITY.WOOD,
-      author: "pizza wa",
-      name: "Stars in the eyes"
-    }, {
-      id: 104,
-      day: IMAGES.SKIN79D,
-      night: IMAGES.SKIN79N,
-      dayHand: IMAGES.HAND_SKIN79D,
-      nightHand: IMAGES.HAND_SKIN79N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Scared at night"
-    }, {
-      id: 20,
-      day: IMAGES.SKIN_VAMPIRED,
-      night: IMAGES.SKIN_VAMPIREN,
-      dayHand: IMAGES.HAND_VAMPIRED,
-      nightHand: IMAGES.HAND_VAMPIREN,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Vampire"
-    }, {
-      id: 21,
-      day: IMAGES.SKIN_ZOMBIED,
-      night: IMAGES.SKIN_ZOMBIEN,
-      dayHand: IMAGES.HAND_ZOMBIED,
-      nightHand: IMAGES.HAND_ZOMBIEN,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Zombie"
-    }, {
-      id: 22,
-      day: IMAGES.SKIN_DEVASTD,
-      night: IMAGES.SKIN_DEVASTN,
-      dayHand: IMAGES.HAND_DEVASTD,
-      nightHand: IMAGES.HAND_DEVASTN,
-      rarity: RARITY.STONE,
-      author: "Pixelbitie",
-      name: "Devaster"
-    }, {
-      id: 116,
-      day: IMAGES.SKIN91D,
-      night: IMAGES.SKIN91N,
-      dayHand: IMAGES.HAND_SKIN91D,
-      nightHand: IMAGES.HAND_SKIN91N,
-      rarity: RARITY.STONE,
-      author: "Fukss",
-      name: "Dead Devaster"
-    }, {
-      id: 27,
-      day: IMAGES.SKIN19D,
-      night: IMAGES.SKIN19N,
-      dayHand: IMAGES.HAND_SKIN19D,
-      nightHand: IMAGES.HAND_SKIN19N,
-      rarity: RARITY.STONE,
-      author: "Winter",
-      name: "Cactus"
-    }, {
-      id: 28,
-      day: IMAGES.SKIN20D,
-      night: IMAGES.SKIN20N,
-      dayHand: IMAGES.HAND_SKIN20D,
-      nightHand: IMAGES.HAND_SKIN20N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Bee"
-    }, {
-      id: 49,
-      day: IMAGES.SKIN24D,
-      night: IMAGES.SKIN24N,
-      dayHand: IMAGES.HAND_SKIN24D,
-      nightHand: IMAGES.HAND_SKIN24N,
-      rarity: RARITY.STONE,
-      author: "Taco4Life",
-      name: "Camo Skin"
-    }, {
-      id: 58,
-      day: IMAGES.SKIN34D,
-      night: IMAGES.SKIN34N,
-      dayHand: IMAGES.HAND_SKIN34D,
-      nightHand: IMAGES.HAND_SKIN34N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Blue Limax Skin"
-    }, {
-      id: 59,
-      day: IMAGES.SKIN33D,
-      night: IMAGES.SKIN33N,
-      dayHand: IMAGES.HAND_SKIN33D,
-      nightHand: IMAGES.HAND_SKIN33N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Red Limax Skin"
-    }, {
-      id: 94,
-      day: IMAGES.SKIN69D,
-      night: IMAGES.SKIN69N,
-      dayHand: IMAGES.HAND_SKIN69D,
-      nightHand: IMAGES.HAND_SKIN69N,
-      rarity: RARITY.STONE,
-      author: "Taco4Life",
-      name: "Mr. Pumpkin"
-    }, {
-      id: 109,
-      day: IMAGES.SKIN84D,
-      night: IMAGES.SKIN84N,
-      dayHand: IMAGES.HAND_SKIN84D,
-      nightHand: IMAGES.HAND_SKIN84N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Wood"
-    }, {
-      id: 114,
-      day: IMAGES.SKIN89D,
-      night: IMAGES.SKIN89N,
-      dayHand: IMAGES.HAND_SKIN89D,
-      nightHand: IMAGES.HAND_SKIN89N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Zebra"
-    }, {
-      id: 120,
-      day: IMAGES.SKIN95D,
-      night: IMAGES.SKIN95N,
-      dayHand: IMAGES.HAND_SKIN95D,
-      nightHand: IMAGES.HAND_SKIN95N,
-      rarity: RARITY.STONE,
-      author: "CrysTal",
-      name: "Tiger"
-    }, {
-      id: 134,
-      day: IMAGES.SKIN109D,
-      night: IMAGES.SKIN109N,
-      dayHand: IMAGES.HAND_SKIN109D,
-      nightHand: IMAGES.HAND_SKIN109N,
-      rarity: RARITY.STONE,
-      author: "Franchestcreator",
-      name: "Day or Night"
-    }, {
-      id: 135,
-      day: IMAGES.SKIN110D,
-      night: IMAGES.SKIN110N,
-      dayHand: IMAGES.HAND_SKIN110D,
-      nightHand: IMAGES.HAND_SKIN110N,
-      rarity: RARITY.STONE,
-      author: "Poinet",
-      name: "Square Starver"
-    }, {
-      id: 136,
-      day: IMAGES.SKIN111D,
-      night: IMAGES.SKIN111N,
-      dayHand: IMAGES.HAND_SKIN111D,
-      nightHand: IMAGES.HAND_SKIN111N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Voodoo Doll"
-    }, {
-      id: 137,
-      day: IMAGES.SKIN112D,
-      night: IMAGES.SKIN112N,
-      dayHand: IMAGES.HAND_SKIN112D,
-      nightHand: IMAGES.HAND_SKIN112N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Frankenstein"
-    }, {
-      id: 138,
-      day: IMAGES.SKIN114D,
-      night: IMAGES.SKIN114N,
-      dayHand: IMAGES.HAND_SKIN114D,
-      nightHand: IMAGES.HAND_SKIN114N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Mummy"
-    }, {
-      id: 139,
-      day: IMAGES.SKIN115D,
-      night: IMAGES.SKIN115N,
-      dayHand: IMAGES.HAND_SKIN115D,
-      nightHand: IMAGES.HAND_SKIN115N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Werewolf"
-    }, {
-      id: 140,
-      day: IMAGES.SKIN116D,
-      night: IMAGES.SKIN116N,
-      dayHand: IMAGES.HAND_SKIN116D,
-      nightHand: IMAGES.HAND_SKIN116N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Cthulhu"
-    }, {
-      id: 141,
-      day: IMAGES.SKIN117D,
-      night: IMAGES.SKIN117N,
-      dayHand: IMAGES.HAND_SKIN117D,
-      nightHand: IMAGES.HAND_SKIN117N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Sea Man"
-    }, {
-      id: 142,
-      day: IMAGES.SKIN118D,
-      night: IMAGES.SKIN118N,
-      dayHand: IMAGES.HAND_SKIN118D,
-      nightHand: IMAGES.HAND_SKIN118N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Pumpkin"
-    }, {
-      id: 148,
-      day: IMAGES.SKIN124D,
-      night: IMAGES.SKIN124N,
-      dayHand: IMAGES.HAND_SKIN124D,
-      nightHand: IMAGES.HAND_SKIN124N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Snowman"
-    }, {
-      id: 149,
-      day: IMAGES.SKIN125D,
-      night: IMAGES.SKIN125N,
-      dayHand: IMAGES.HAND_SKIN125D,
-      nightHand: IMAGES.HAND_SKIN125N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Christmas Tree Man"
-    }, {
-      id: 150,
-      day: IMAGES.SKIN126D,
-      night: IMAGES.SKIN126N,
-      dayHand: IMAGES.HAND_SKIN126D,
-      nightHand: IMAGES.HAND_SKIN126N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Mrs Bell"
-    }, {
-      id: 151,
-      day: IMAGES.SKIN127D,
-      night: IMAGES.SKIN127N,
-      dayHand: IMAGES.HAND_SKIN127D,
-      nightHand: IMAGES.HAND_SKIN127N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Elfy"
-    }, {
-      id: 152,
-      day: IMAGES.SKIN128D,
-      night: IMAGES.SKIN128N,
-      dayHand: IMAGES.HAND_SKIN128D,
-      nightHand: IMAGES.HAND_SKIN128N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Old Mr Present"
-    }, {
-      id: 153,
-      day: IMAGES.SKIN129D,
-      night: IMAGES.SKIN129N,
-      dayHand: IMAGES.HAND_SKIN129D,
-      nightHand: IMAGES.HAND_SKIN129N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "My Dear Old Deer"
-    }, {
-      id: 154,
-      day: IMAGES.SKIN130D,
-      night: IMAGES.SKIN130N,
-      dayHand: IMAGES.HAND_SKIN130D,
-      nightHand: IMAGES.HAND_SKIN130N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Mr Angel"
-    }, {
-      id: 155,
-      day: IMAGES.SKIN131D,
-      night: IMAGES.SKIN131N,
-      dayHand: IMAGES.HAND_SKIN131D,
-      nightHand: IMAGES.HAND_SKIN131N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Mr Ice Cube"
-    }, {
-      id: 156,
-      day: IMAGES.SKIN132D,
-      night: IMAGES.SKIN132N,
-      dayHand: IMAGES.HAND_SKIN132D,
-      nightHand: IMAGES.HAND_SKIN132N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Mr Snowman"
-    }, {
-      id: 159,
-      day: IMAGES.SKIN135D,
-      night: IMAGES.SKIN135N,
-      dayHand: IMAGES.HAND_SKIN135D,
-      nightHand: IMAGES.HAND_SKIN135N,
-      rarity: RARITY.STONE,
-      author: "CrysTal",
-      name: "Crystal Sky Skin"
-    }, {
-      id: 167,
-      day: IMAGES.SKIN143D,
-      night: IMAGES.SKIN143N,
-      dayHand: IMAGES.HAND_SKIN143D,
-      nightHand: IMAGES.HAND_SKIN143N,
-      rarity: RARITY.STONE,
-      author: "Franchestcreator",
-      name: "Radioactive Starver"
-    }, {
-      id: 169,
-      day: IMAGES.SKIN146D,
-      night: IMAGES.SKIN146N,
-      dayHand: IMAGES.HAND_SKIN146D,
-      nightHand: IMAGES.HAND_SKIN146N,
-      rarity: RARITY.STONE,
-      author: "TheScaryBlaze",
-      name: "Eaten Cookie"
-    }, {
-      id: 170,
-      day: IMAGES.SKIN147D,
-      night: IMAGES.SKIN147N,
-      dayHand: IMAGES.HAND_SKIN147D,
-      nightHand: IMAGES.HAND_SKIN147N,
-      rarity: RARITY.STONE,
-      author: "aloner",
-      name: "Blob Thing"
-    }, {
-      id: 172,
-      day: IMAGES.SKIN149D,
-      night: IMAGES.SKIN149N,
-      dayHand: IMAGES.HAND_SKIN149D,
-      nightHand: IMAGES.HAND_SKIN149N,
-      rarity: RARITY.STONE,
-      author: "aloner",
-      name: "Machine Mask"
-    }, {
-      id: 29,
-      day: IMAGES.SKIN2D,
-      night: IMAGES.SKIN2N,
-      dayHand: IMAGES.HAND_SKIN2D,
-      nightHand: IMAGES.HAND_SKIN2N,
-      rarity: RARITY.GOLD,
-      author: "Pixelbitie",
-      name: "Lollipop 1"
-    }, {
-      id: 30,
-      day: IMAGES.SKIN3D,
-      night: IMAGES.SKIN3N,
-      dayHand: IMAGES.HAND_SKIN3D,
-      nightHand: IMAGES.HAND_SKIN3N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Lollipop 2"
-    }, {
-      id: 31,
-      day: IMAGES.SKIN4D,
-      night: IMAGES.SKIN4N,
-      dayHand: IMAGES.HAND_SKIN4D,
-      nightHand: IMAGES.HAND_SKIN4N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Lollipop 3"
-    }, {
-      id: 32,
-      day: IMAGES.SKIN5D,
-      night: IMAGES.SKIN5N,
-      dayHand: IMAGES.HAND_SKIN5D,
-      nightHand: IMAGES.HAND_SKIN5N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Lollipop 4"
-    }, {
-      id: 33,
-      day: IMAGES.SKIN8D,
-      night: IMAGES.SKIN8N,
-      dayHand: IMAGES.HAND_SKIN8D,
-      nightHand: IMAGES.HAND_SKIN8N,
-      rarity: RARITY.GOLD,
-      author: "Sushui",
-      name: "Yellow Bird"
-    }, {
-      id: 34,
-      day: IMAGES.SKIN9D,
-      night: IMAGES.SKIN9N,
-      dayHand: IMAGES.HAND_SKIN9D,
-      nightHand: IMAGES.HAND_SKIN9N,
-      rarity: RARITY.GOLD,
-      author: "Sushui",
-      name: "Red Bird"
-    }, {
-      id: 35,
-      day: IMAGES.SKIN10D,
-      night: IMAGES.SKIN10N,
-      dayHand: IMAGES.HAND_SKIN10D,
-      nightHand: IMAGES.HAND_SKIN10N,
-      rarity: RARITY.GOLD,
-      author: "Sushui",
-      name: "Blue Bird"
-    }, {
-      id: 37,
-      day: IMAGES.SKIN17D,
-      night: IMAGES.SKIN17N,
-      dayHand: IMAGES.HAND_SKIN17D,
-      nightHand: IMAGES.HAND_SKIN17N,
-      rarity: RARITY.GOLD,
-      author: "Winter",
-      name: "Owl"
-    }, {
-      id: 52,
-      day: IMAGES.SKIN27D,
-      night: IMAGES.SKIN27N,
-      dayHand: IMAGES.HAND_SKIN27D,
-      nightHand: IMAGES.HAND_SKIN27N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Nemo"
-    }, {
-      id: 53,
-      day: IMAGES.SKIN28D,
-      night: IMAGES.SKIN28N,
-      dayHand: IMAGES.HAND_SKIN28D,
-      nightHand: IMAGES.HAND_SKIN28N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Mr. Bread"
-    }, {
-      id: 74,
-      day: IMAGES.SKIN49D,
-      night: IMAGES.SKIN49N,
-      dayHand: IMAGES.HAND_SKIN49D,
-      nightHand: IMAGES.HAND_SKIN49N,
-      rarity: RARITY.GOLD,
-      author: "Communist & Taco4Life",
-      name: "Mr. Bread 2"
-    }, {
-      id: 75,
-      day: IMAGES.SKIN50D,
-      night: IMAGES.SKIN50N,
-      dayHand: IMAGES.HAND_SKIN50D,
-      nightHand: IMAGES.HAND_SKIN50N,
-      rarity: RARITY.GOLD,
-      author: "Communist & Taco4Life",
-      name: "Mr. Bread 3"
-    }, {
-      id: 60,
-      day: IMAGES.SKIN35D,
-      night: IMAGES.SKIN35N,
-      dayHand: IMAGES.HAND_SKIN35D,
-      nightHand: IMAGES.HAND_SKIN35N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Red Berry"
-    }, {
-      id: 61,
-      day: IMAGES.SKIN36D,
-      night: IMAGES.SKIN36N,
-      dayHand: IMAGES.HAND_SKIN36D,
-      nightHand: IMAGES.HAND_SKIN36N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Old Berry"
-    }, {
-      id: 70,
-      day: IMAGES.SKIN45D,
-      night: IMAGES.SKIN45N,
-      dayHand: IMAGES.HAND_SKIN45D,
-      nightHand: IMAGES.HAND_SKIN45N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Cake"
-    }, {
-      id: 71,
-      day: IMAGES.SKIN46D,
-      night: IMAGES.SKIN46N,
-      dayHand: IMAGES.HAND_SKIN46D,
-      nightHand: IMAGES.HAND_SKIN46N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Christmas Cake"
-    }, {
-      id: 77,
-      day: IMAGES.SKIN52D,
-      night: IMAGES.SKIN52N,
-      dayHand: IMAGES.HAND_SKIN52D,
-      nightHand: IMAGES.HAND_SKIN52N,
-      rarity: RARITY.GOLD,
-      author: "Pancakez",
-      name: "Mr. Pancake"
-    }, {
-      id: 87,
-      day: IMAGES.SKIN62D,
-      night: IMAGES.SKIN62N,
-      dayHand: IMAGES.HAND_SKIN62D,
-      nightHand: IMAGES.HAND_SKIN62N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Mr. Taco"
-    }, {
-      id: 78,
-      day: IMAGES.SKIN53D,
-      night: IMAGES.SKIN53N,
-      dayHand: IMAGES.HAND_SKIN53D,
-      nightHand: IMAGES.HAND_SKIN53N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Mr. Bottle"
-    }, {
-      id: 79,
-      day: IMAGES.SKIN54D,
-      night: IMAGES.SKIN54N,
-      dayHand: IMAGES.HAND_SKIN54D,
-      nightHand: IMAGES.HAND_SKIN54N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Mr. Bottle 2"
-    }, {
-      id: 97,
-      day: IMAGES.SKIN71D,
-      night: IMAGES.SKIN71N,
-      dayHand: IMAGES.HAND_SKIN71D,
-      nightHand: IMAGES.HAND_SKIN71N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Pink Rabbit"
-    }, {
-      id: 102,
-      day: IMAGES.SKIN77D,
-      night: IMAGES.SKIN77N,
-      dayHand: IMAGES.HAND_SKIN77D,
-      nightHand: IMAGES.HAND_SKIN77N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Marshmallow"
-    }, {
-      id: 107,
-      day: IMAGES.SKIN82D,
-      night: IMAGES.SKIN82N,
-      dayHand: IMAGES.HAND_SKIN82D,
-      nightHand: IMAGES.HAND_SKIN82N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Fox"
-    }, {
-      id: 132,
-      day: IMAGES.SKIN107D,
-      night: IMAGES.SKIN107N,
-      dayHand: IMAGES.HAND_SKIN107D,
-      nightHand: IMAGES.HAND_SKIN107N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Raccoon"
-    }, {
-      id: 111,
-      day: IMAGES.SKIN86D,
-      night: IMAGES.SKIN86N,
-      dayHand: IMAGES.HAND_SKIN86D,
-      nightHand: IMAGES.HAND_SKIN86N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Cloud"
-    }, {
-      id: 113,
-      day: IMAGES.SKIN88D,
-      night: IMAGES.SKIN88N,
-      dayHand: IMAGES.HAND_SKIN88D,
-      nightHand: IMAGES.HAND_SKIN88N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Moon"
-    }, {
-      id: 117,
-      day: IMAGES.SKIN92D,
-      night: IMAGES.SKIN92N,
-      dayHand: IMAGES.HAND_SKIN92D,
-      nightHand: IMAGES.HAND_SKIN92N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Mr. Panda"
-    }, {
-      id: 118,
-      day: IMAGES.SKIN93D,
-      night: IMAGES.SKIN93N,
-      dayHand: IMAGES.HAND_SKIN93D,
-      nightHand: IMAGES.HAND_SKIN93N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Mr. Strawberry"
-    }, {
-      id: 119,
-      day: IMAGES.SKIN94D,
-      night: IMAGES.SKIN94N,
-      dayHand: IMAGES.HAND_SKIN94D,
-      nightHand: IMAGES.HAND_SKIN94N,
-      rarity: RARITY.GOLD,
-      author: "eogito & Sushuui",
-      name: "Mummy"
-    }, {
-      id: 122,
-      day: IMAGES.SKIN97D,
-      night: IMAGES.SKIN97N,
-      dayHand: IMAGES.HAND_SKIN97D,
-      nightHand: IMAGES.HAND_SKIN97N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Dino"
-    }, {
-      id: 127,
-      day: IMAGES.SKIN102D,
-      night: IMAGES.SKIN102N,
-      dayHand: IMAGES.HAND_SKIN102D,
-      nightHand: IMAGES.HAND_SKIN102N,
-      rarity: RARITY.GOLD,
-      author: "MADBalgouthi",
-      name: "Mr. Koala"
-    }, {
-      id: 160,
-      day: IMAGES.SKIN136D,
-      night: IMAGES.SKIN136N,
-      dayHand: IMAGES.HAND_SKIN136D,
-      nightHand: IMAGES.HAND_SKIN136N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Bottle Protection"
-    }, {
-      id: 162,
-      day: IMAGES.SKIN138D,
-      night: IMAGES.SKIN138N,
-      dayHand: IMAGES.HAND_SKIN138D,
-      nightHand: IMAGES.HAND_SKIN138N,
-      rarity: RARITY.GOLD,
-      author: "CrysTal",
-      name: "Leaf Man"
-    }, {
-      id: 166,
-      day: IMAGES.SKIN142D,
-      night: IMAGES.SKIN142N,
-      dayHand: IMAGES.HAND_SKIN142D,
-      nightHand: IMAGES.HAND_SKIN142N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Bubble"
-    }, {
-      id: 174,
-      day: IMAGES.SKIN145D,
-      night: IMAGES.SKIN145N,
-      dayHand: IMAGES.HAND_SKIN145D,
-      nightHand: IMAGES.HAND_SKIN145N,
-      rarity: RARITY.GOLD,
-      author: "upfiz",
-      name: "Potato"
-    }, {
-      id: 171,
-      day: IMAGES.SKIN148D,
-      night: IMAGES.SKIN148N,
-      dayHand: IMAGES.HAND_SKIN148D,
-      nightHand: IMAGES.HAND_SKIN148N,
-      rarity: RARITY.GOLD,
-      author: "aloner",
-      name: "Axolotl"
-    }, {
-      id: 25,
-      day: IMAGES.SKIN6D,
-      night: IMAGES.SKIN6N,
-      dayHand: IMAGES.HAND_SKIN6D,
-      nightHand: IMAGES.HAND_SKIN0N,
-      rarity: RARITY.DIAMOND,
-      author: "Pixelbitie",
-      name: "Test Dummy"
-    }, {
-      id: 41,
-      day: IMAGES.SKIN_STARD,
-      night: IMAGES.SKIN_STARN,
-      dayHand: IMAGES.HAND_STARD,
-      nightHand: IMAGES.HAND_STARN,
-      rarity: RARITY.DIAMOND,
-      author: "pizza wa",
-      name: "Star-ver"
-    }, {
-      id: 43,
-      day: IMAGES.SKIN11D,
-      night: IMAGES.SKIN11N,
-      dayHand: IMAGES.HAND_SKIN11D,
-      nightHand: IMAGES.HAND_SKIN11N,
-      rarity: RARITY.DIAMOND,
-      author: "Communist",
-      name: "Starver Chest"
-    }, {
-      id: 88,
-      day: IMAGES.SKIN63D,
-      night: IMAGES.SKIN63N,
-      dayHand: IMAGES.HAND_SKIN63D,
-      nightHand: IMAGES.HAND_SKIN63N,
-      rarity: RARITY.DIAMOND,
-      author: "Communist",
-      name: "Starver Workbench"
-    }, {
-      id: 121,
-      day: IMAGES.SKIN96D,
-      night: IMAGES.SKIN96N,
-      dayHand: IMAGES.HAND_SKIN96D,
-      nightHand: IMAGES.HAND_SKIN96N,
-      rarity: RARITY.DIAMOND,
-      author: "MADBalgouthi",
-      name: "Fish"
-    }, {
-      id: 39,
-      day: IMAGES.SKIN22D,
-      night: IMAGES.SKIN22N,
-      dayHand: IMAGES.HAND_SKIN22D,
-      nightHand: IMAGES.HAND_SKIN22N,
-      rarity: RARITY.DIAMOND,
-      author: "Negligent4Dia",
-      name: "Crab"
-    }, {
-      id: 40,
-      day: IMAGES.SKIN23D,
-      night: IMAGES.SKIN23N,
-      dayHand: IMAGES.HAND_SKIN23D,
-      nightHand: IMAGES.HAND_SKIN23N,
-      rarity: RARITY.DIAMOND,
-      author: "Negligent4Dia",
-      name: "Piranha"
-    }, {
-      id: 36,
-      day: IMAGES.SKIN16D,
-      night: IMAGES.SKIN16N,
-      dayHand: IMAGES.HAND_SKIN16D,
-      nightHand: IMAGES.HAND_SKIN16N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Winter Fox"
-    }, {
-      id: 69,
-      day: IMAGES.SKIN44D,
-      night: IMAGES.SKIN44N,
-      dayHand: IMAGES.HAND_SKIN44D,
-      nightHand: IMAGES.HAND_SKIN44N,
-      rarity: RARITY.DIAMOND,
-      author: "Zed",
-      name: "Baby Foxy"
-    }, {
-      id: 51,
-      day: IMAGES.SKIN26D,
-      night: IMAGES.SKIN26N,
-      dayHand: IMAGES.HAND_SKIN26D,
-      nightHand: IMAGES.HAND_SKIN26N,
-      rarity: RARITY.DIAMOND,
-      author: "HOWI",
-      name: "Winter Bear"
-    }, {
-      id: 133,
-      day: IMAGES.SKIN108D,
-      night: IMAGES.SKIN108N,
-      dayHand: IMAGES.HAND_SKIN108D,
-      nightHand: IMAGES.HAND_SKIN108N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Hawk"
-    }, {
-      id: 55,
-      day: IMAGES.SKIN30D,
-      night: IMAGES.SKIN30N,
-      dayHand: IMAGES.HAND_SKIN30D,
-      nightHand: IMAGES.HAND_SKIN30N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Nice Little Yuki"
-    }, {
-      id: 68,
-      day: IMAGES.SKIN43D,
-      night: IMAGES.SKIN43N,
-      dayHand: IMAGES.HAND_SKIN43D,
-      nightHand: IMAGES.HAND_SKIN43N,
-      rarity: RARITY.DIAMOND,
-      author: "Taco4Life",
-      name: "Baby Yuki"
-    }, {
-      id: 62,
-      day: IMAGES.SKIN37D,
-      night: IMAGES.SKIN37N,
-      dayHand: IMAGES.HAND_SKIN37D,
-      nightHand: IMAGES.HAND_SKIN37N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. Carrot"
-    }, {
-      id: 56,
-      day: IMAGES.SKIN31D,
-      night: IMAGES.SKIN31N,
-      dayHand: IMAGES.HAND_SKIN31D,
-      nightHand: IMAGES.HAND_SKIN31N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Bat Limax"
-    }, {
-      id: 72,
-      day: IMAGES.SKIN47D,
-      night: IMAGES.SKIN47N,
-      dayHand: IMAGES.HAND_SKIN47D,
-      nightHand: IMAGES.HAND_SKIN47N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Mr. Crate"
-    }, {
-      id: 73,
-      day: IMAGES.SKIN48D,
-      night: IMAGES.SKIN48N,
-      dayHand: IMAGES.HAND_SKIN48D,
-      nightHand: IMAGES.HAND_SKIN48N,
-      rarity: RARITY.DIAMOND,
-      author: "Taco4Life & eogito",
-      name: "Mr. Spider"
-    }, {
-      id: 93,
-      day: IMAGES.SKIN68D,
-      night: IMAGES.SKIN68N,
-      dayHand: IMAGES.HAND_SKIN68D,
-      nightHand: IMAGES.HAND_SKIN68N,
-      rarity: RARITY.DIAMOND,
-      author: "Anyone want to play?",
-      name: "Mr. Spider 2"
-    }, {
-      id: 82,
-      day: IMAGES.SKIN57D,
-      night: IMAGES.SKIN57N,
-      dayHand: IMAGES.HAND_SKIN57D,
-      nightHand: IMAGES.HAND_SKIN57N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. Blue Starfish"
-    }, {
-      id: 83,
-      day: IMAGES.SKIN58D,
-      night: IMAGES.SKIN58N,
-      dayHand: IMAGES.HAND_SKIN58D,
-      nightHand: IMAGES.HAND_SKIN58N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. Orange Starfish"
-    }, {
-      id: 84,
-      day: IMAGES.SKIN59D,
-      night: IMAGES.SKIN59N,
-      dayHand: IMAGES.HAND_SKIN59D,
-      nightHand: IMAGES.HAND_SKIN59N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. Pink Starfish"
-    }, {
-      id: 85,
-      day: IMAGES.SKIN60D,
-      night: IMAGES.SKIN60N,
-      dayHand: IMAGES.HAND_SKIN60D,
-      nightHand: IMAGES.HAND_SKIN60N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. ShellMauve"
-    }, {
-      id: 86,
-      day: IMAGES.SKIN61D,
-      night: IMAGES.SKIN61N,
-      dayHand: IMAGES.HAND_SKIN61D,
-      nightHand: IMAGES.HAND_SKIN61N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. Shell Bead"
-    }, {
-      id: 96,
-      day: IMAGES.SKIN72D,
-      night: IMAGES.SKIN72N,
-      dayHand: IMAGES.HAND_SKIN72D,
-      nightHand: IMAGES.HAND_SKIN72N,
-      rarity: RARITY.DIAMOND,
-      author: "Fukss",
-      name: "Angry Crab"
-    }, {
-      id: 98,
-      day: IMAGES.SKIN73D,
-      night: IMAGES.SKIN73N,
-      dayHand: IMAGES.HAND_SKIN73D,
-      nightHand: IMAGES.HAND_SKIN73N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Penguin"
-    }, {
-      id: 126,
-      day: IMAGES.SKIN101D,
-      night: IMAGES.SKIN101N,
-      dayHand: IMAGES.HAND_SKIN101D,
-      nightHand: IMAGES.HAND_SKIN101N,
-      rarity: RARITY.DIAMOND,
-      author: "Anyone want to play?",
-      name: "Mr. Boar"
-    }, {
-      id: 145,
-      day: IMAGES.SKIN121D,
-      night: IMAGES.SKIN121N,
-      dayHand: IMAGES.HAND_SKIN121D,
-      nightHand: IMAGES.HAND_SKIN121N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "I saw you"
-    }, {
-      id: 146,
-      day: IMAGES.SKIN122D,
-      night: IMAGES.SKIN122N,
-      dayHand: IMAGES.HAND_SKIN122D,
-      nightHand: IMAGES.HAND_SKIN122N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "It was funny"
-    }, {
-      id: 147,
-      day: IMAGES.SKIN123D,
-      night: IMAGES.SKIN123N,
-      dayHand: IMAGES.HAND_SKIN123D,
-      nightHand: IMAGES.HAND_SKIN123N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "You can scream"
-    }, {
-      id: 158,
-      day: IMAGES.SKIN134D,
-      night: IMAGES.SKIN134N,
-      dayHand: IMAGES.HAND_SKIN134D,
-      nightHand: IMAGES.HAND_SKIN134N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Mr. Book"
-    }, {
-      id: 163,
-      day: IMAGES.SKIN139D,
-      night: IMAGES.SKIN139N,
-      dayHand: IMAGES.HAND_SKIN139D,
-      nightHand: IMAGES.HAND_SKIN139N,
-      rarity: RARITY.DIAMOND,
-      author: "Anyone want to play?",
-      name: "Mr. Mammoth"
-    }, {
-      id: 164,
-      day: IMAGES.SKIN140D,
-      night: IMAGES.SKIN140N,
-      dayHand: IMAGES.HAND_SKIN140D,
-      nightHand: IMAGES.HAND_SKIN140N,
-      rarity: RARITY.DIAMOND,
-      author: "SoOw",
-      name: "Mr. Mammoth 2"
-    }, {
-      id: 161,
-      day: IMAGES.SKIN137D,
-      night: IMAGES.SKIN137N,
-      dayHand: IMAGES.HAND_SKIN137D,
-      nightHand: IMAGES.HAND_SKIN137N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Nightmare"
-    }, {
-      id: 168,
-      day: IMAGES.SKIN144D,
-      night: IMAGES.SKIN144N,
-      dayHand: IMAGES.HAND_SKIN144D,
-      nightHand: IMAGES.HAND_SKIN144N,
-      rarity: RARITY.DIAMOND,
-      author: "pizza wa",
-      name: "Shiny Crystal"
-    }, {
-      id: 173,
-      day: IMAGES.SKIN150D,
-      night: IMAGES.SKIN150N,
-      dayHand: IMAGES.HAND_SKIN150D,
-      nightHand: IMAGES.HAND_SKIN150N,
-      rarity: RARITY.DIAMOND,
-      author: "pizza wa",
-      name: "Water skin"
-    }, {
-      id: 42,
-      day: IMAGES.SKIN14D,
-      night: IMAGES.SKIN14N,
-      dayHand: IMAGES.HAND_SKIN14D,
-      nightHand: IMAGES.HAND_SKIN14N,
-      rarity: RARITY.AMETHYST,
-      author: "Winter",
-      name: "Will-O\'-The-Wisp"
-    }, {
-      id: 91,
-      day: IMAGES.SKIN66D,
-      night: IMAGES.SKIN66N,
-      dayHand: IMAGES.HAND_SKIN66D,
-      nightHand: IMAGES.HAND_SKIN66N,
-      rarity: RARITY.AMETHYST,
-      author: "ExpertyAnimations",
-      name: "Flame"
-    }, {
-      id: 26,
-      day: IMAGES.SKIN15D,
-      night: IMAGES.SKIN15N,
-      dayHand: IMAGES.HAND_SKIN15D,
-      nightHand: IMAGES.HAND_SKIN15N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Be a Tree"
-    }, {
-      id: 38,
-      day: IMAGES.SKIN18D,
-      night: IMAGES.SKIN18N,
-      dayHand: IMAGES.HAND_SKIN18D,
-      nightHand: IMAGES.HAND_SKIN18N,
-      rarity: RARITY.AMETHYST,
-      author: "Winter",
-      name: "Toxic Mutant"
-    }, {
-      id: 50,
-      day: IMAGES.SKIN25D,
-      night: IMAGES.SKIN25N,
-      dayHand: IMAGES.HAND_SKIN25D,
-      nightHand: IMAGES.HAND_SKIN25N,
-      rarity: RARITY.AMETHYST,
-      author: "Communist",
-      name: "Mr. Tomato"
-    }, {
-      id: 54,
-      day: IMAGES.SKIN29D,
-      night: IMAGES.SKIN29N,
-      dayHand: IMAGES.HAND_SKIN29D,
-      nightHand: IMAGES.HAND_SKIN29N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Mr. Mauve, the Lapa"
-    }, {
-      id: 57,
-      day: IMAGES.SKIN32D,
-      night: IMAGES.SKIN32N,
-      dayHand: IMAGES.HAND_SKIN32D,
-      nightHand: IMAGES.HAND_SKIN32N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Golden Fish"
-    }, {
-      id: 64,
-      day: IMAGES.SKIN39D,
-      night: IMAGES.SKIN39N,
-      dayHand: IMAGES.HAND_SKIN39D,
-      nightHand: IMAGES.HAND_SKIN39N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "LapaMauve"
-    }, {
-      id: 65,
-      day: IMAGES.SKIN40D,
-      night: IMAGES.SKIN40N,
-      dayHand: IMAGES.HAND_SKIN40D,
-      nightHand: IMAGES.HAND_SKIN40N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "LapaMauve "
-    }, {
-      id: 92,
-      day: IMAGES.SKIN67D,
-      night: IMAGES.SKIN67N,
-      dayHand: IMAGES.HAND_SKIN67D,
-      nightHand: IMAGES.HAND_SKIN67N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Mr. Burger"
-    }, {
-      id: 66,
-      day: IMAGES.SKIN41D,
-      night: IMAGES.SKIN41N,
-      dayHand: IMAGES.HAND_SKIN41D,
-      nightHand: IMAGES.HAND_SKIN41N,
-      rarity: RARITY.AMETHYST,
-      author: "pizza wa",
-      name: "Tropical Starver"
-    }, {
-      id: 80,
-      day: IMAGES.SKIN55D,
-      night: IMAGES.SKIN55N,
-      dayHand: IMAGES.HAND_SKIN55D,
-      nightHand: IMAGES.HAND_SKIN55N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Mr. ShellPink"
-    }, {
-      id: 81,
-      day: IMAGES.SKIN56D,
-      night: IMAGES.SKIN56N,
-      dayHand: IMAGES.HAND_SKIN56D,
-      nightHand: IMAGES.HAND_SKIN56N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Mr. OranShell"
-    }, {
-      id: 99,
-      day: IMAGES.SKIN74D,
-      night: IMAGES.SKIN74N,
-      dayHand: IMAGES.HAND_SKIN74D,
-      nightHand: IMAGES.HAND_SKIN74N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Pepe"
-    }, {
-      id: 100,
-      day: IMAGES.SKIN75D,
-      night: IMAGES.SKIN75N,
-      dayHand: IMAGES.HAND_SKIN75D,
-      nightHand: IMAGES.HAND_SKIN75N,
-      rarity: RARITY.AMETHYST,
-      author: "fatant",
-      name: "Mr. Ant"
-    }, {
-      id: 115,
-      day: IMAGES.SKIN90D,
-      night: IMAGES.SKIN90N,
-      dayHand: IMAGES.HAND_SKIN90D,
-      nightHand: IMAGES.HAND_SKIN90N,
-      rarity: RARITY.AMETHYST,
-      author: "MADBalgouthi",
-      name: "Mr. Watermelon"
-    }, {
-      id: 101,
-      day: IMAGES.SKIN76D,
-      night: IMAGES.SKIN76N,
-      dayHand: IMAGES.HAND_SKIN76D,
-      nightHand: IMAGES.HAND_SKIN76N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Mr. Thornbush"
-    }, {
-      id: 131,
-      day: IMAGES.SKIN106D,
-      night: IMAGES.SKIN106N,
-      dayHand: IMAGES.HAND_SKIN106D,
-      nightHand: IMAGES.HAND_SKIN106N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Cthulhu"
-    }, {
-      id: 143,
-      day: IMAGES.SKIN119D,
-      night: IMAGES.SKIN119N,
-      dayHand: IMAGES.HAND_SKIN119D,
-      nightHand: IMAGES.HAND_SKIN119N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Mr. Cactus"
-    }, {
-      id: 144,
-      day: IMAGES.SKIN120D,
-      night: IMAGES.SKIN120N,
-      dayHand: IMAGES.HAND_SKIN120D,
-      nightHand: IMAGES.HAND_SKIN120N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Momo"
-    }, {
-      id: 95,
-      day: IMAGES.SKIN70D,
-      night: IMAGES.SKIN70N,
-      dayHand: IMAGES.HAND_SKIN70D,
-      nightHand: IMAGES.HAND_SKIN70N,
-      rarity: RARITY.REIDITE,
-      author: "Taco4Life",
-      name: "Mr. Garlic"
-    }, {
-      id: 76,
-      day: IMAGES.SKIN51D,
-      night: IMAGES.SKIN51N,
-      dayHand: IMAGES.HAND_SKIN51D,
-      nightHand: IMAGES.HAND_SKIN51N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Robot Dragon"
-    }, {
-      id: 44,
-      day: IMAGES.SKIN1D,
-      night: IMAGES.SKIN1N,
-      dayHand: IMAGES.HAND_SKIN1D,
-      nightHand: IMAGES.HAND_SKIN1N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Lava Dragon Version 1"
-    }, {
-      id: 90,
-      day: IMAGES.SKIN65D,
-      night: IMAGES.SKIN65N,
-      dayHand: IMAGES.HAND_SKIN65D,
-      nightHand: IMAGES.HAND_SKIN65N,
-      rarity: RARITY.REIDITE,
-      author: "ExpertyAnimations",
-      name: "Lava Dragon Version 2"
-    }, {
-      id: 124,
-      day: IMAGES.SKIN99D,
-      night: IMAGES.SKIN99N,
-      dayHand: IMAGES.HAND_SKIN99D,
-      nightHand: IMAGES.HAND_SKIN99N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Lava Dragon Version 3"
-    }, {
-      id: 45,
-      day: IMAGES.SKIN12D,
-      night: IMAGES.SKIN12N,
-      dayHand: IMAGES.HAND_SKIN12D,
-      nightHand: IMAGES.HAND_SKIN12N,
-      rarity: RARITY.REIDITE,
-      author: "Sushui",
-      name: "Ice Dragon Version 1"
-    }, {
-      id: 46,
-      day: IMAGES.SKIN13D,
-      night: IMAGES.SKIN13N,
-      dayHand: IMAGES.HAND_SKIN13D,
-      nightHand: IMAGES.HAND_SKIN13N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Ice Dragon Version 2"
-    }, {
-      id: 108,
-      day: IMAGES.SKIN83D,
-      night: IMAGES.SKIN83N,
-      dayHand: IMAGES.HAND_SKIN83D,
-      nightHand: IMAGES.HAND_SKIN83N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Ice Dragon Version 3"
-    }, {
-      id: 123,
-      day: IMAGES.SKIN98D,
-      night: IMAGES.SKIN98N,
-      dayHand: IMAGES.HAND_SKIN98D,
-      nightHand: IMAGES.HAND_SKIN98N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Baby Dragon Version 1"
-    }, {
-      id: 128,
-      day: IMAGES.SKIN103D,
-      night: IMAGES.SKIN103N,
-      dayHand: IMAGES.HAND_SKIN103D,
-      nightHand: IMAGES.HAND_SKIN103N,
-      rarity: RARITY.REIDITE,
-      author: "MADBalgouthi",
-      name: "Baby Dragon Version 2"
-    }, {
-      id: 125,
-      day: IMAGES.SKIN100D,
-      night: IMAGES.SKIN100N,
-      dayHand: IMAGES.HAND_SKIN100D,
-      nightHand: IMAGES.HAND_SKIN100N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Baby Lava"
-    }, {
-      id: 47,
-      day: IMAGES.SKIN21D,
-      night: IMAGES.SKIN21N,
-      dayHand: IMAGES.HAND_SKIN21D,
-      nightHand: IMAGES.HAND_SKIN21N,
-      rarity: RARITY.REIDITE,
-      author: "Taco4Life",
-      name: "Kraken"
-    }, {
-      id: 129,
-      day: IMAGES.SKIN104D,
-      night: IMAGES.SKIN104N,
-      dayHand: IMAGES.HAND_SKIN104D,
-      nightHand: IMAGES.HAND_SKIN104N,
-      rarity: RARITY.REIDITE,
-      author: "Taco4Life",
-      name: "Sandworm"
-    }, {
-      id: 63,
-      day: IMAGES.SKIN38D,
-      night: IMAGES.SKIN38N,
-      dayHand: IMAGES.HAND_SKIN38D,
-      nightHand: IMAGES.HAND_SKIN38N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Mr. Golden Bread"
-    }, {
-      id: 67,
-      day: IMAGES.SKIN42D,
-      night: IMAGES.SKIN42N,
-      dayHand: IMAGES.HAND_SKIN42D,
-      nightHand: IMAGES.HAND_SKIN42N,
-      rarity: RARITY.REIDITE,
-      author: "ForgottenHeroe",
-      name: "Starver Ores"
-    }, {
-      id: 130,
-      day: IMAGES.SKIN105D,
-      night: IMAGES.SKIN105N,
-      dayHand: IMAGES.HAND_SKIN105D,
-      nightHand: IMAGES.HAND_SKIN105N,
-      rarity: RARITY.REIDITE,
-      author: "Taco4Life",
-      name: "Poo"
-    }, {
-      id: 89,
-      day: IMAGES.SKIN64D,
-      night: IMAGES.SKIN64N,
-      dayHand: IMAGES.HAND_SKIN64D,
-      nightHand: IMAGES.HAND_SKIN64N,
-      rarity: RARITY.REIDITE,
-      author: "Poinet",
-      name: "Volcano Starver"
-    }, {
-      id: 112,
-      day: IMAGES.SKIN87D,
-      night: IMAGES.SKIN87N,
-      dayHand: IMAGES.HAND_SKIN87D,
-      nightHand: IMAGES.HAND_SKIN87N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Lava Starver"
-    }, {
-      id: 48,
-      day: IMAGES.SKIN_ROBOTD,
-      night: IMAGES.SKIN_ROBOTN,
-      dayHand: IMAGES.HAND_ROBOTD,
-      nightHand: IMAGES.HAND_ROBOTN,
-      rarity: RARITY.SPECIAL,
-      author: "eogito",
-      name: "Robot"
-    }, {
-      id: 110,
-      day: IMAGES.SKIN85D,
-      night: IMAGES.SKIN85N,
-      dayHand: IMAGES.HAND_SKIN85D,
-      nightHand: IMAGES.HAND_SKIN85N,
-      rarity: RARITY.SPECIAL,
-      author: "pizza wa",
-      name: "Blue Butterfly"
-    }, {
-      id: 157,
-      day: IMAGES.SKIN133D,
-      night: IMAGES.SKIN133N,
-      dayHand: IMAGES.HAND_SKIN133D,
-      nightHand: IMAGES.HAND_SKIN133N,
-      rarity: RARITY.SPECIAL,
-      author: "eogito",
-      name: "Yrifox"
-    }, {
-      id: 165,
-      day: IMAGES.SKIN141D,
-      night: IMAGES.SKIN141N,
-      dayHand: IMAGES.HAND_SKIN141D,
-      nightHand: IMAGES.HAND_SKIN141N,
-      rarity: RARITY.SPECIAL,
-      author: "OmarJr13",
-      name: "Blob Skin"
-    }],
-    BAG: [{
-      id: 0,
-      day: IMAGES.BAGD,
-      night: IMAGES.BAGN,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Bag 1"
-    }, {
-      id: 1,
-      day: IMAGES.BAG0D,
-      night: IMAGES.BAG0N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Old Bag"
-    }, {
-      id: 2,
-      day: IMAGES.BAG4D,
-      night: IMAGES.BAG4N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bag 2"
-    }, {
-      id: 3,
-      day: IMAGES.BAG5D,
-      night: IMAGES.BAG5N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bag 3"
-    }, {
-      id: 4,
-      day: IMAGES.BAG6D,
-      night: IMAGES.BAG6N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bag 4"
-    }, {
-      id: 5,
-      day: IMAGES.BAG7D,
-      night: IMAGES.BAG7N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bag 5"
-    }, {
-      id: 11,
-      day: IMAGES.BAG23D,
-      night: IMAGES.BAG23N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wood Pickaxe Bag"
-    }, {
-      id: 19,
-      day: IMAGES.BAG16D,
-      night: IMAGES.BAG16N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io ",
-      name: "Wood Carrier"
-    }, {
-      id: 37,
-      day: IMAGES.BAG36D,
-      night: IMAGES.BAG36N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Bag 6"
-    }, {
-      id: 39,
-      day: IMAGES.BAG38D,
-      night: IMAGES.BAG38N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Bag with Wooden Swords"
-    }, {
-      id: 44,
-      day: IMAGES.BAG43D,
-      night: IMAGES.BAG43N,
-      rarity: RARITY.WOOD,
-      author: "Communist",
-      name: "Big Bag"
-    }, {
-      id: 7,
-      day: IMAGES.BAG14D,
-      night: IMAGES.BAG14N,
-      rarity: RARITY.STONE,
-      author: "Communist",
-      name: "Bag 6"
-    }, {
-      id: 8,
-      day: IMAGES.BAG_EASTERD,
-      night: IMAGES.BAG_EASTERN,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Easter Bag"
-    }, {
-      id: 9,
-      day: IMAGES.BAG_STARD,
-      night: IMAGES.BAG_STARN,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Star Bag"
-    }, {
-      id: 10,
-      day: IMAGES.BAG9D,
-      night: IMAGES.BAG9N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Winter Bag"
-    }, {
-      id: 20,
-      day: IMAGES.BAG17D,
-      night: IMAGES.BAG17N,
-      rarity: RARITY.STONE,
-      author: "Starve.io ",
-      name: "Stone Carrier"
-    }, {
-      id: 24,
-      day: IMAGES.BAG24D,
-      night: IMAGES.BAG24N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Stone Pickaxe Bag"
-    }, {
-      id: 6,
-      day: IMAGES.BAG13D,
-      night: IMAGES.BAG13N,
-      rarity: RARITY.STONE,
-      author: "Communist",
-      name: "Bag Camouflage"
-    }, {
-      id: 38,
-      day: IMAGES.BAG37D,
-      night: IMAGES.BAG37N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Bag with Stone Swords"
-    }, {
-      id: 54,
-      day: IMAGES.BAG53D,
-      night: IMAGES.BAG53N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Cow Bag"
-    }, {
-      id: 59,
-      day: IMAGES.BAG58D,
-      night: IMAGES.BAG58N,
-      rarity: RARITY.STONE,
-      author: "CrysTal",
-      name: "Starver Bag"
-    }, {
-      id: 62,
-      day: IMAGES.BAG61D,
-      night: IMAGES.BAG61N,
-      rarity: RARITY.STONE,
-      author: "CrysTal",
-      name: "Crystal Sky Bag"
-    }, {
-      id: 13,
-      day: IMAGES.BAG10D,
-      night: IMAGES.BAG10N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Honey Pot"
-    }, {
-      id: 21,
-      day: IMAGES.BAG18D,
-      night: IMAGES.BAG18N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io ",
-      name: "Gold Carrier"
-    }, {
-      id: 30,
-      day: IMAGES.BAG25D,
-      night: IMAGES.BAG25N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Gold Pickaxe Bag"
-    }, {
-      id: 29,
-      day: IMAGES.BAG31D,
-      night: IMAGES.BAG31N,
-      rarity: RARITY.GOLD,
-      author: "Ariel",
-      name: "Mr and Mrs Bakers"
-    }, {
-      id: 41,
-      day: IMAGES.BAG40D,
-      night: IMAGES.BAG40N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Bag with Golden Swords"
-    }, {
-      id: 47,
-      day: IMAGES.BAG46D,
-      night: IMAGES.BAG46N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Explorer Bag"
-    }, {
-      id: 51,
-      day: IMAGES.BAG50D,
-      night: IMAGES.BAG50N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Bamboo Bag"
-    }, {
-      id: 53,
-      day: IMAGES.BAG52D,
-      night: IMAGES.BAG52N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Mummy Bag"
-    }, {
-      id: 58,
-      day: IMAGES.BAG57D,
-      night: IMAGES.BAG57N,
-      rarity: RARITY.GOLD,
-      author: "MADBalgouthi",
-      name: "Watermelon Bag"
-    }, {
-      id: 60,
-      day: IMAGES.BAG59D,
-      night: IMAGES.BAG60N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Garlic Bag"
-    }, {
-      id: 61,
-      day: IMAGES.BAG60D,
-      night: IMAGES.BAG59N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Pumpkin Bag"
-    }, {
-      id: 64,
-      day: IMAGES.BAG63D,
-      night: IMAGES.BAG63N,
-      rarity: RARITY.GOLD,
-      author: "upfiz",
-      name: "Oil Barel bag"
-    }, {
-      id: 67,
-      day: IMAGES.BAG68D,
-      night: IMAGES.BAG68N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Tree Bag"
-    }, {
-      id: 14,
-      day: IMAGES.BAG1D,
-      night: IMAGES.BAG1N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "a Rabbit in my Bag"
-    }, {
-      id: 15,
-      day: IMAGES.BAG2D,
-      night: IMAGES.BAG2N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Bird\'s nest"
-    }, {
-      id: 16,
-      day: IMAGES.BAG3D,
-      night: IMAGES.BAG3N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "a Fish on your Back"
-    }, {
-      id: 17,
-      day: IMAGES.BAG8D,
-      night: IMAGES.BAG8N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "a Squirrel in my Bag"
-    }, {
-      id: 22,
-      day: IMAGES.BAG19D,
-      night: IMAGES.BAG19N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io ",
-      name: "Diamond Carrier"
-    }, {
-      id: 12,
-      day: IMAGES.BAG22D,
-      night: IMAGES.BAG22N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Resources Bag"
-    }, {
-      id: 32,
-      day: IMAGES.BAG26D,
-      night: IMAGES.BAG26N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Diamond Pickaxe Bag"
-    }, {
-      id: 40,
-      day: IMAGES.BAG39D,
-      night: IMAGES.BAG39N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Bag with Diamond Swords"
-    }, {
-      id: 45,
-      day: IMAGES.BAG44D,
-      night: IMAGES.BAG44N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "My Cake Bag"
-    }, {
-      id: 46,
-      day: IMAGES.BAG45D,
-      night: IMAGES.BAG45N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "My Christmas Cake Bag"
-    }, {
-      id: 52,
-      day: IMAGES.BAG51D,
-      night: IMAGES.BAG51N,
-      rarity: RARITY.DIAMOND,
-      author: "MADBalgouthi",
-      name: "Fish Bag"
-    }, {
-      id: 65,
-      day: IMAGES.BAG64D,
-      night: IMAGES.BAG64N,
-      rarity: RARITY.DIAMOND,
-      author: "pizza wa",
-      name: "Cloud Bag"
-    }, {
-      id: 68,
-      day: IMAGES.BAG66D,
-      night: IMAGES.BAG66N,
-      rarity: RARITY.DIAMOND,
-      author: "pizza wa",
-      name: "Bee Bag"
-    }, {
-      id: 48,
-      day: IMAGES.BAG47D,
-      night: IMAGES.BAG47N,
-      rarity: RARITY.AMETHYST,
-      author: "fatant",
-      name: "Natural Bag"
-    }, {
-      id: 23,
-      day: IMAGES.BAG20D,
-      night: IMAGES.BAG20N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io ",
-      name: "Amethyst Carrier"
-    }, {
-      id: 25,
-      day: IMAGES.BAG27D,
-      night: IMAGES.BAG27N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Amethyst Pickaxe Bag"
-    }, {
-      id: 28,
-      day: IMAGES.BAG30D,
-      night: IMAGES.BAG30N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Your Baby"
-    }, {
-      id: 33,
-      day: IMAGES.BAG32D,
-      night: IMAGES.BAG32N,
-      rarity: RARITY.AMETHYST,
-      author: "pizza wa",
-      name: "Tropical Bag"
-    }, {
-      id: 43,
-      day: IMAGES.BAG42D,
-      night: IMAGES.BAG42N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Bag with Amethyst Swords"
-    }, {
-      id: 35,
-      day: IMAGES.BAG34D,
-      night: IMAGES.BAG34N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Ice Bag"
-    }, {
-      id: 50,
-      day: IMAGES.BAG49D,
-      night: IMAGES.BAG49N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Thornbush Bag"
-    }, {
-      id: 56,
-      day: IMAGES.BAG55D,
-      night: IMAGES.BAG55N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Autumn Bag"
-    }, {
-      id: 57,
-      day: IMAGES.BAG56D,
-      night: IMAGES.BAG56N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Dino Egg Bag"
-    }, {
-      id: 66,
-      day: IMAGES.BAG65D,
-      night: IMAGES.BAG65N,
-      rarity: RARITY.AMETHYST,
-      author: "pizza wa",
-      name: "Magic Cloud Bag"
-    }, {
-      id: 69,
-      day: IMAGES.BAG67D,
-      night: IMAGES.BAG67N,
-      rarity: RARITY.AMETHYST,
-      author: "pizza wa",
-      name: "Chest Bag"
-    }, {
-      id: 31,
-      day: IMAGES.BAG21D,
-      night: IMAGES.BAG21N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io ",
-      name: "Reidite Carrier"
-    }, {
-      id: 18,
-      day: IMAGES.BAG11D,
-      night: IMAGES.BAG11N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Lava Bag"
-    }, {
-      id: 49,
-      day: IMAGES.BAG48D,
-      night: IMAGES.BAG48N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Lava Bag 2"
-    }, {
-      id: 36,
-      day: IMAGES.BAG35D,
-      night: IMAGES.BAG35N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Dragon Bag"
-    }, {
-      id: 55,
-      day: IMAGES.BAG54D,
-      night: IMAGES.BAG54N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Winter Ice Bag"
-    }, {
-      id: 26,
-      day: IMAGES.BAG28D,
-      night: IMAGES.BAG28N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Reidite Pickaxe Bag"
-    }, {
-      id: 27,
-      day: IMAGES.BAG29D,
-      night: IMAGES.BAG29N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Octopus Bowl"
-    }, {
-      id: 34,
-      day: IMAGES.BAG33D,
-      night: IMAGES.BAG33N,
-      rarity: RARITY.REIDITE,
-      author: "Taco4Life",
-      name: "Cave Bag"
-    }, {
-      id: 42,
-      day: IMAGES.BAG41D,
-      night: IMAGES.BAG41N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Bag with Reidite Swords"
-    }, {
-      id: 63,
-      day: IMAGES.BAG62D,
-      night: IMAGES.BAG62N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Engineer Bag"
-    }],
-    CRATE: [{
-      id: 0,
-      day: IMAGES.CRATE7D,
-      night: IMAGES.CRATE7N,
-      rarity: RARITY.FREE,
-      author: "eogito",
-      name: "Wooden Dead Box"
-    }, {
-      id: 1,
-      day: IMAGES.CRATE6D,
-      night: IMAGES.CRATE6N,
-      rarity: RARITY.FREE,
-      author: "eogito",
-      name: "Hidden item"
-    }, {
-      id: 2,
-      day: IMAGES.CRATE1D,
-      night: IMAGES.CRATE1N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box 1"
-    }, {
-      id: 3,
-      day: IMAGES.CRATE2D,
-      night: IMAGES.CRATE2N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box 2"
-    }, {
-      id: 4,
-      day: IMAGES.CRATE3D,
-      night: IMAGES.CRATE3N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box 3"
-    }, {
-      id: 5,
-      day: IMAGES.CRATE4D,
-      night: IMAGES.CRATE4N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Broken Wooden Box"
-    }, {
-      id: 6,
-      day: IMAGES.CRATE5D,
-      night: IMAGES.CRATE5N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box"
-    }, {
-      id: 7,
-      day: IMAGES.CRATE8D,
-      night: IMAGES.CRATE8N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Battle Box"
-    }, {
-      id: 8,
-      day: IMAGES.CRATE9D,
-      night: IMAGES.CRATE9N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box with a Cross"
-    }, {
-      id: 9,
-      day: IMAGES.CRATE10D,
-      night: IMAGES.CRATE10N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box with Bubbles"
-    }, {
-      id: 10,
-      day: IMAGES.CRATE11D,
-      night: IMAGES.CRATE11N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Wooden Box with Eyes"
-    }, {
-      id: 11,
-      day: IMAGES.CRATE12D,
-      night: IMAGES.CRATE12N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Dark Wooden Box"
-    }, {
-      id: 38,
-      day: IMAGES.CRATE39D,
-      night: IMAGES.CRATE39N,
-      rarity: RARITY.WOOD,
-      author: "Weddlz",
-      name: "Noob Box"
-    }, {
-      id: 12,
-      day: IMAGES.CRATE13D,
-      night: IMAGES.CRATE13N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Wooden and Stone Box"
-    }, {
-      id: 14,
-      day: IMAGES.CRATE19D,
-      night: IMAGES.CRATE19N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Star Box 1"
-    }, {
-      id: 15,
-      day: IMAGES.CRATE20D,
-      night: IMAGES.CRATE20N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Star Box 2"
-    }, {
-      id: 27,
-      day: IMAGES.CRATE29D,
-      night: IMAGES.CRATE29N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Flower Box"
-    }, {
-      id: 46,
-      day: IMAGES.CRATE47D,
-      night: IMAGES.CRATE47N,
-      rarity: RARITY.STONE,
-      author: "MADBalgouthi",
-      name: "Blue Box"
-    }, {
-      id: 19,
-      day: IMAGES.CRATE21D,
-      night: IMAGES.CRATE21N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Beehive"
-    }, {
-      id: 13,
-      day: IMAGES.CRATE14D,
-      night: IMAGES.CRATE14N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Wooden and Golden Box"
-    }, {
-      id: 21,
-      day: IMAGES.CRATE22D,
-      night: IMAGES.CRATE22N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Gravestone"
-    }, {
-      id: 25,
-      day: IMAGES.CRATE26D,
-      night: IMAGES.CRATE26N,
-      rarity: RARITY.GOLD,
-      author: "Communist",
-      name: "Sky Box"
-    }, {
-      id: 29,
-      day: IMAGES.CRATE30D,
-      night: IMAGES.CRATE30N,
-      rarity: RARITY.GOLD,
-      author: "Winter",
-      name: "Golden Box"
-    }, {
-      id: 34,
-      day: IMAGES.CRATE35D,
-      night: IMAGES.CRATE35N,
-      rarity: RARITY.GOLD,
-      author: "Communist",
-      name: "Water Crate"
-    }, {
-      id: 35,
-      day: IMAGES.CRATE36D,
-      night: IMAGES.CRATE36N,
-      rarity: RARITY.GOLD,
-      author: "Communist",
-      name: "Glass Crate"
-    }, {
-      id: 16,
-      day: IMAGES.CRATE15D,
-      night: IMAGES.CRATE15N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Wooden and Diamond Box"
-    }, {
-      id: 18,
-      day: IMAGES.CRATE18D,
-      night: IMAGES.CRATE18N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Don\'t Hit Me"
-    }, {
-      id: 26,
-      day: IMAGES.CRATE27D,
-      night: IMAGES.CRATE27N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Underwater Box"
-    }, {
-      id: 31,
-      day: IMAGES.CRATE32D,
-      night: IMAGES.CRATE32N,
-      rarity: RARITY.DIAMOND,
-      author: "Communist",
-      name: "Items Pile"
-    }, {
-      id: 32,
-      day: IMAGES.CRATE33D,
-      night: IMAGES.CRATE33N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Cake Box"
-    }, {
-      id: 33,
-      day: IMAGES.CRATE34D,
-      night: IMAGES.CRATE34N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Christmas Cake Box"
-    }, {
-      id: 36,
-      day: IMAGES.CRATE37D,
-      night: IMAGES.CRATE37N,
-      rarity: RARITY.DIAMOND,
-      author: "Fukss",
-      name: "Crab Box"
-    }, {
-      id: 42,
-      day: IMAGES.CRATE43D,
-      night: IMAGES.CRATE43N,
-      rarity: RARITY.DIAMOND,
-      author: "MADBalgouthi",
-      name: "Fishing Box"
-    }, {
-      id: 22,
-      day: IMAGES.CRATE23D,
-      night: IMAGES.CRATE23N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Let me out of here"
-    }, {
-      id: 17,
-      day: IMAGES.CRATE16D,
-      night: IMAGES.CRATE16N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Wooden and Amethyst Box"
-    }, {
-      id: 24,
-      day: IMAGES.CRATE25D,
-      night: IMAGES.CRATE25N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Aquarium"
-    }, {
-      id: 28,
-      day: IMAGES.CRATE28D,
-      night: IMAGES.CRATE28N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Gift Box"
-    }, {
-      id: 40,
-      day: IMAGES.CRATE41D,
-      night: IMAGES.CRATE41N,
-      rarity: RARITY.AMETHYST,
-      author: "MADBalgouthi",
-      name: "Open Watermelon Box"
-    }, {
-      id: 41,
-      day: IMAGES.CRATE42D,
-      night: IMAGES.CRATE42N,
-      rarity: RARITY.AMETHYST,
-      author: "MADBalgouthi",
-      name: "Watermelon Box"
-    }, {
-      id: 39,
-      day: IMAGES.CRATE40D,
-      night: IMAGES.CRATE40N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Thornbush Box"
-    }, {
-      id: 43,
-      day: IMAGES.CRATE44D,
-      night: IMAGES.CRATE44N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Rabbit in the Box"
-    }, {
-      id: 47,
-      day: IMAGES.CRATE48D,
-      night: IMAGES.CRATE48N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Garlic Plot"
-    }, {
-      id: 48,
-      day: IMAGES.CRATE49D,
-      night: IMAGES.CRATE49N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Pumpkin Plot"
-    }, {
-      id: 45,
-      day: IMAGES.CRATE46D,
-      night: IMAGES.CRATE46N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Autumn Box"
-    }, {
-      id: 44,
-      day: IMAGES.CRATE45D,
-      night: IMAGES.CRATE45N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Winter Box"
-    }, {
-      id: 20,
-      day: IMAGES.CRATE17D,
-      night: IMAGES.CRATE17N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Metal and Reidite Box"
-    }, {
-      id: 23,
-      day: IMAGES.CRATE24D,
-      night: IMAGES.CRATE24N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Kraken Box"
-    }, {
-      id: 30,
-      day: IMAGES.CRATE31D,
-      night: IMAGES.CRATE31N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Lava Box"
-    }, {
-      id: 37,
-      day: IMAGES.CRATE38D,
-      night: IMAGES.CRATE38N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Lava Box 2"
-    }, {
-      id: 49,
-      day: IMAGES.CRATE50D,
-      night: IMAGES.CRATE50N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Rabbit"
-    }, {
-      id: 50,
-      day: IMAGES.CRATE51D,
-      night: IMAGES.CRATE51N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Wolf"
-    }, {
-      id: 51,
-      day: IMAGES.CRATE52D,
-      night: IMAGES.CRATE52N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Spider"
-    }, {
-      id: 52,
-      day: IMAGES.CRATE53D,
-      night: IMAGES.CRATE53N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Hawk"
-    }, {
-      id: 53,
-      day: IMAGES.CRATE54D,
-      night: IMAGES.CRATE54N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Bear"
-    }, {
-      id: 54,
-      day: IMAGES.CRATE55D,
-      night: IMAGES.CRATE55N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Fox"
-    }, {
-      id: 55,
-      day: IMAGES.CRATE56D,
-      night: IMAGES.CRATE56N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Baby Mammoth"
-    }, {
-      id: 56,
-      day: IMAGES.CRATE57D,
-      night: IMAGES.CRATE57N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Mammoth"
-    }, {
-      id: 57,
-      day: IMAGES.CRATE58D,
-      night: IMAGES.CRATE58N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Sandworm"
-    }, {
-      id: 58,
-      day: IMAGES.CRATE59D,
-      night: IMAGES.CRATE59N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Vulture"
-    }, {
-      id: 59,
-      day: IMAGES.CRATE60D,
-      night: IMAGES.CRATE60N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Kraken"
-    }, {
-      id: 60,
-      day: IMAGES.CRATE61D,
-      night: IMAGES.CRATE61N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Piranha"
-    }, {
-      id: 61,
-      day: IMAGES.CRATE62D,
-      night: IMAGES.CRATE62N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Baby Dragon"
-    }, {
-      id: 62,
-      day: IMAGES.CRATE63D,
-      night: IMAGES.CRATE63N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Baby Lava"
-    }, {
-      id: 63,
-      day: IMAGES.CRATE64D,
-      night: IMAGES.CRATE64N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Dragon"
-    }, {
-      id: 64,
-      day: IMAGES.CRATE65D,
-      night: IMAGES.CRATE65N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Penguin"
-    }, {
-      id: 65,
-      day: IMAGES.CRATE66D,
-      night: IMAGES.CRATE66N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Lava Dragon"
-    }, {
-      id: 66,
-      day: IMAGES.CRATE67D,
-      night: IMAGES.CRATE67N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Boar"
-    }, {
-      id: 67,
-      day: IMAGES.CRATE68D,
-      night: IMAGES.CRATE68N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Fire mob"
-    }, {
-      id: 68,
-      day: IMAGES.CRATE69D,
-      night: IMAGES.CRATE69N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the Crab"
-    }, {
-      id: 69,
-      day: IMAGES.CRATE70D,
-      night: IMAGES.CRATE70N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Box of the King Crab"
-    }, {
-      id: 70,
-      day: IMAGES.CRATE71D,
-      night: IMAGES.CRATE71N,
-      rarity: RARITY.GOLD,
-      author: "CrysTal",
-      name: "Crystal Sky Box"
-    }, {
-      id: 71,
-      day: IMAGES.CRATE72D,
-      night: IMAGES.CRATE72N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Dragon Box"
-    }],
-    BOOK: [{
-      id: 0,
-      day: IMAGES.BOOK0D,
-      night: IMAGES.BOOK0N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Book 1"
-    }, {
-      id: 1,
-      day: IMAGES.BOOK3D,
-      night: IMAGES.BOOK3N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Book 2"
-    }, {
-      id: 2,
-      day: IMAGES.BOOK4D,
-      night: IMAGES.BOOK4N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Book 3"
-    }, {
-      id: 3,
-      day: IMAGES.BOOK5D,
-      night: IMAGES.BOOK5N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Book 4"
-    }, {
-      id: 4,
-      day: IMAGES.BOOK6D,
-      night: IMAGES.BOOK6N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Damaged Book 1"
-    }, {
-      id: 18,
-      day: IMAGES.BOOK18D,
-      night: IMAGES.BOOK18N,
-      rarity: RARITY.WOOD,
-      author: "SeveR",
-      name: "Damaged Book 2"
-    }, {
-      id: 5,
-      day: IMAGES.BOOK1D,
-      night: IMAGES.BOOK1N,
-      rarity: RARITY.STONE,
-      author: "Doctorpus",
-      name: "Scroll"
-    }, {
-      id: 6,
-      day: IMAGES.BOOK2D,
-      night: IMAGES.BOOK2N,
-      rarity: RARITY.STONE,
-      author: "Doctorpus",
-      name: "Clipboard"
-    }, {
-      id: 7,
-      day: IMAGES.BOOK7D,
-      night: IMAGES.BOOK7N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Seed Book"
-    }, {
-      id: 20,
-      day: IMAGES.BOOK20D,
-      night: IMAGES.BOOK20N,
-      rarity: RARITY.STONE,
-      author: "Taco4Life",
-      name: "Camo Book"
-    }, {
-      id: 24,
-      day: IMAGES.BOOK24D,
-      night: IMAGES.BOOK24N,
-      rarity: RARITY.STONE,
-      author: "Communist",
-      name: "Stone Tablet"
-    }, {
-      id: 10,
-      day: IMAGES.BOOK13D,
-      night: IMAGES.BOOK13N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Star Book"
-    }, {
-      id: 8,
-      day: IMAGES.BOOK9D,
-      night: IMAGES.BOOK9N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Gold Book"
-    }, {
-      id: 15,
-      day: IMAGES.BOOK15D,
-      night: IMAGES.BOOK15N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Old Mysterious Paper"
-    }, {
-      id: 17,
-      day: IMAGES.BOOK17D,
-      night: IMAGES.BOOK17N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Gold Engraving"
-    }, {
-      id: 25,
-      day: IMAGES.BOOK25D,
-      night: IMAGES.BOOK25N,
-      rarity: RARITY.GOLD,
-      author: "fatant",
-      name: "Ant Book"
-    }, {
-      id: 32,
-      day: IMAGES.BOOK32D,
-      night: IMAGES.BOOK32N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Mummy Book"
-    }, {
-      id: 37,
-      day: IMAGES.BOOK39D,
-      night: IMAGES.BOOK39N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Garlic Book"
-    }, {
-      id: 38,
-      day: IMAGES.BOOK38D,
-      night: IMAGES.BOOK38N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Pumpkin Book"
-    }, {
-      id: 39,
-      day: IMAGES.BOOK40D,
-      night: IMAGES.BOOK40N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Christmas Tree Book"
-    }, {
-      id: 11,
-      day: IMAGES.BOOK10D,
-      night: IMAGES.BOOK10N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Diamond Book"
-    }, {
-      id: 9,
-      day: IMAGES.BOOK8D,
-      night: IMAGES.BOOK8N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Obscure Book"
-    }, {
-      id: 16,
-      day: IMAGES.BOOK16D,
-      night: IMAGES.BOOK16N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Rolled Parchment"
-    }, {
-      id: 22,
-      day: IMAGES.BOOK22D,
-      night: IMAGES.BOOK22N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Cake Book"
-    }, {
-      id: 23,
-      day: IMAGES.BOOK23D,
-      night: IMAGES.BOOK23N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Christmas Cake Book"
-    }, {
-      id: 30,
-      day: IMAGES.BOOK30D,
-      night: IMAGES.BOOK30N,
-      rarity: RARITY.DIAMOND,
-      author: "MADBalgouthi",
-      name: "Fish Book"
-    }, {
-      id: 31,
-      day: IMAGES.BOOK31D,
-      night: IMAGES.BOOK31N,
-      rarity: RARITY.DIAMOND,
-      author: "CrysTal",
-      name: "Once upon a time"
-    }, {
-      id: 13,
-      day: IMAGES.BOOK11D,
-      night: IMAGES.BOOK11N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Amethyst Book"
-    }, {
-      id: 28,
-      day: IMAGES.BOOK28D,
-      night: IMAGES.BOOK28N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Paint Pallet"
-    }, {
-      id: 29,
-      day: IMAGES.BOOK29D,
-      night: IMAGES.BOOK29N,
-      rarity: RARITY.AMETHYST,
-      author: "CrysTal",
-      name: "Watermelon Book"
-    }, {
-      id: 27,
-      day: IMAGES.BOOK27D,
-      night: IMAGES.BOOK27N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Thornbush Book"
-    }, {
-      id: 35,
-      day: IMAGES.BOOK35D,
-      night: IMAGES.BOOK35N,
-      rarity: RARITY.AMETHYST,
-      author: "Taco4Life",
-      name: "Menu"
-    }, {
-      id: 36,
-      day: IMAGES.BOOK36D,
-      night: IMAGES.BOOK36N,
-      rarity: RARITY.AMETHYST,
-      author: "CrysTal",
-      name: "Lover Letter"
-    }, {
-      id: 40,
-      day: IMAGES.BOOK41D,
-      night: IMAGES.BOOK41N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Fresh-Baked Cookies"
-    }, {
-      id: 41,
-      day: IMAGES.BOOK42D,
-      night: IMAGES.BOOK42N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Inside, there is just a book."
-    }, {
-      id: 33,
-      day: IMAGES.BOOK33D,
-      night: IMAGES.BOOK33N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Winter Book"
-    }, {
-      id: 34,
-      day: IMAGES.BOOK34D,
-      night: IMAGES.BOOK34N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Autumn Book"
-    }, {
-      id: 14,
-      day: IMAGES.BOOK12D,
-      night: IMAGES.BOOK12N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Reidite Book"
-    }, {
-      id: 12,
-      day: IMAGES.BOOK14D,
-      night: IMAGES.BOOK14N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Lava Book"
-    }, {
-      id: 26,
-      day: IMAGES.BOOK26D,
-      night: IMAGES.BOOK26N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Lava Book 2"
-    }, {
-      id: 19,
-      day: IMAGES.BOOK19D,
-      night: IMAGES.BOOK19N,
-      rarity: RARITY.REIDITE,
-      author: "Winter",
-      name: "Ocean Mystery"
-    }, {
-      id: 21,
-      day: IMAGES.BOOK21D,
-      night: IMAGES.BOOK21N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Dragon Book"
-    }, {
-      id: 42,
-      day: IMAGES.BOOK43D,
-      night: IMAGES.BOOK43N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Engineer Book"
-    }, {
-      id: 43,
-      day: IMAGES.BOOK44D,
-      night: IMAGES.BOOK44N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Nightmare Book"
-    }, {
-      id: 44,
-      day: IMAGES.BOOK45D,
-      night: IMAGES.BOOK45N,
-      rarity: RARITY.REIDITE,
-      author: "aloner",
-      name: "Mystery Book"
-    }],
-    ACCESSORY: [{
-      id: 0,
-      day: IMAGES.ACCESSORY0D,
-      night: IMAGES.ACCESSORY0D,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Nothing"
-    }, {
-      id: 2,
-      day: IMAGES.ACCESSORY4D,
-      night: IMAGES.ACCESSORY4N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Pink Cheeks"
-    }, {
-      id: 3,
-      day: IMAGES.ACCESSORY5D,
-      night: IMAGES.ACCESSORY5N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Heart"
-    }, {
-      id: 1,
-      day: IMAGES.ACCESSORY3D,
-      night: IMAGES.ACCESSORY3N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Bandage 1"
-    }, {
-      id: 4,
-      day: IMAGES.ACCESSORY6D,
-      night: IMAGES.ACCESSORY6N,
-      rarity: RARITY.FREE,
-      author: "Starve.io",
-      name: "Flower 1"
-    }, {
-      id: 5,
-      day: IMAGES.ACCESSORY8D,
-      night: IMAGES.ACCESSORY8N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Bow 1"
-    }, {
-      id: 6,
-      day: IMAGES.ACCESSORY9D,
-      night: IMAGES.ACCESSORY9N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Bandage 2"
-    }, {
-      id: 7,
-      day: IMAGES.ACCESSORY15D,
-      night: IMAGES.ACCESSORY15N,
-      rarity: RARITY.WOOD,
-      author: "Starve.io",
-      name: "Flower 2"
-    }, {
-      id: 8,
-      day: IMAGES.ACCESSORY10D,
-      night: IMAGES.ACCESSORY10N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Bandage 3"
-    }, {
-      id: 36,
-      day: IMAGES.ACCESSORY36D,
-      night: IMAGES.ACCESSORY36N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Foliage"
-    }, {
-      id: 59,
-      day: IMAGES.ACCESSORY47D,
-      night: IMAGES.ACCESSORY47N,
-      rarity: RARITY.WOOD,
-      author: "eogito",
-      name: "Peaceful"
-    }, {
-      id: 67,
-      day: IMAGES.ACCESSORY55D,
-      night: IMAGES.ACCESSORY55N,
-      rarity: RARITY.WOOD,
-      author: "pizza wa",
-      name: "Sparkles"
-    }, {
-      id: 68,
-      day: IMAGES.ACCESSORY56D,
-      night: IMAGES.ACCESSORY56N,
-      rarity: RARITY.WOOD,
-      author: "pizza wa",
-      name: "Luxury"
-    }, {
-      id: 69,
-      day: IMAGES.ACCESSORY57D,
-      night: IMAGES.ACCESSORY57N,
-      rarity: RARITY.WOOD,
-      author: "pizza wa",
-      name: "Snow Flakes Crown"
-    }, {
-      id: 17,
-      day: IMAGES.ACCESSORY17D,
-      night: IMAGES.ACCESSORY17N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Glasses 1"
-    }, {
-      id: 10,
-      day: IMAGES.ACCESSORY7D,
-      night: IMAGES.ACCESSORY7N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Bow 2"
-    }, {
-      id: 11,
-      day: IMAGES.ACCESSORY13D,
-      night: IMAGES.ACCESSORY13N,
-      rarity: RARITY.STONE,
-      author: "pizza wa",
-      name: "Little Stars"
-    }, {
-      id: 12,
-      day: IMAGES.ACCESSORY11D,
-      night: IMAGES.ACCESSORY11N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Pirate Eye Patch 1"
-    }, {
-      id: 44,
-      day: IMAGES.ACCESSORY44D,
-      night: IMAGES.ACCESSORY44N,
-      rarity: RARITY.STONE,
-      author: "Taco4Life",
-      name: "Pirate Eye Patch 2"
-    }, {
-      id: 23,
-      day: IMAGES.ACCESSORY23D,
-      night: IMAGES.ACCESSORY23N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Clown nose"
-    }, {
-      id: 16,
-      day: IMAGES.ACCESSORY2D,
-      night: IMAGES.ACCESSORY2N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Eye Patch"
-    }, {
-      id: 30,
-      day: IMAGES.ACCESSORY30D,
-      night: IMAGES.ACCESSORY30N,
-      rarity: RARITY.STONE,
-      author: "eogito",
-      name: "Flower 3"
-    }, {
-      id: 38,
-      day: IMAGES.ACCESSORY38D,
-      night: IMAGES.ACCESSORY38N,
-      rarity: RARITY.STONE,
-      author: "Winter",
-      name: "False Nose"
-    }, {
-      id: 74,
-      day: IMAGES.ACCESSORY62D,
-      night: IMAGES.ACCESSORY62N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Red Cloth"
-    }, {
-      id: 75,
-      day: IMAGES.ACCESSORY63D,
-      night: IMAGES.ACCESSORY63N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Blue Cloth"
-    }, {
-      id: 79,
-      day: IMAGES.ACCESSORY67D,
-      night: IMAGES.ACCESSORY67N,
-      rarity: RARITY.STONE,
-      author: "Starve.io",
-      name: "Transparent Mask"
-    }, {
-      id: 89,
-      day: IMAGES.ACCESSORY77D,
-      night: IMAGES.ACCESSORY77N,
-      rarity: RARITY.STONE,
-      author: "Anyone want to play?",
-      name: "Starve.io Anime"
-    }, {
-      id: 94,
-      day: IMAGES.ACCESSORY78D,
-      night: IMAGES.ACCESSORY78N,
-      rarity: RARITY.STONE,
-      author: "Ant",
-      name: "Hero Mask"
-    }, {
-      id: 15,
-      day: IMAGES.ACCESSORY16D,
-      night: IMAGES.ACCESSORY16N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Star Glasses"
-    }, {
-      id: 21,
-      day: IMAGES.ACCESSORY21D,
-      night: IMAGES.ACCESSORY21N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Great-aunt\'s Glasses"
-    }, {
-      id: 24,
-      day: IMAGES.ACCESSORY24D,
-      night: IMAGES.ACCESSORY24N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Little Starver"
-    }, {
-      id: 22,
-      day: IMAGES.ACCESSORY22D,
-      night: IMAGES.ACCESSORY22N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Little Glasses"
-    }, {
-      id: 13,
-      day: IMAGES.ACCESSORY14D,
-      night: IMAGES.ACCESSORY14N,
-      rarity: RARITY.GOLD,
-      author: "Starve.io",
-      name: "Flower Chain"
-    }, {
-      id: 29,
-      day: IMAGES.ACCESSORY29D,
-      night: IMAGES.ACCESSORY29N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Horns"
-    }, {
-      id: 31,
-      day: IMAGES.ACCESSORY31D,
-      night: IMAGES.ACCESSORY31N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Golden Flower"
-    }, {
-      id: 40,
-      day: IMAGES.ACCESSORY40D,
-      night: IMAGES.ACCESSORY40N,
-      rarity: RARITY.GOLD,
-      author: "pizza wa",
-      name: "Sleeping Mask"
-    }, {
-      id: 57,
-      day: IMAGES.ACCESSORY50D,
-      night: IMAGES.ACCESSORY50N,
-      rarity: RARITY.GOLD,
-      author: "Taco4Life",
-      name: "Fish on your head"
-    }, {
-      id: 58,
-      day: IMAGES.ACCESSORY46D,
-      night: IMAGES.ACCESSORY46N,
-      rarity: RARITY.GOLD,
-      author: "eogito",
-      name: "Rose"
-    }, {
-      id: 91,
-      day: IMAGES.ACCESSORY80D,
-      night: IMAGES.ACCESSORY80N,
-      rarity: RARITY.GOLD,
-      author: "upfiz",
-      name: "Grey Scarf"
-    }, {
-      id: 92,
-      day: IMAGES.ACCESSORY81D,
-      night: IMAGES.ACCESSORY81N,
-      rarity: RARITY.GOLD,
-      author: "upfiz",
-      name: "Black Scarf"
-    }, {
-      id: 93,
-      day: IMAGES.ACCESSORY82D,
-      night: IMAGES.ACCESSORY82N,
-      rarity: RARITY.GOLD,
-      author: "upfiz",
-      name: "Skull Mask"
-    }, {
-      id: 9,
-      day: IMAGES.ACCESSORY1D,
-      night: IMAGES.ACCESSORY1N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Fancy Glasses"
-    }, {
-      id: 25,
-      day: IMAGES.ACCESSORY25D,
-      night: IMAGES.ACCESSORY25N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Medecin Mask"
-    }, {
-      id: 14,
-      day: IMAGES.ACCESSORY12D,
-      night: IMAGES.ACCESSORY12N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mr. Mayor"
-    }, {
-      id: 19,
-      day: IMAGES.ACCESSORY19D,
-      night: IMAGES.ACCESSORY19N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Sunglasses 2"
-    }, {
-      id: 28,
-      day: IMAGES.ACCESSORY28D,
-      night: IMAGES.ACCESSORY28N,
-      rarity: RARITY.DIAMOND,
-      author: "pizza wa",
-      name: "Starfish"
-    }, {
-      id: 37,
-      day: IMAGES.ACCESSORY37D,
-      night: IMAGES.ACCESSORY37N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Berry"
-    }, {
-      id: 39,
-      day: IMAGES.ACCESSORY39D,
-      night: IMAGES.ACCESSORY39N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Flake"
-    }, {
-      id: 43,
-      day: IMAGES.ACCESSORY43D,
-      night: IMAGES.ACCESSORY43N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Leaf "
-    }, {
-      id: 61,
-      day: IMAGES.ACCESSORY49D,
-      night: IMAGES.ACCESSORY49N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "A sword in your head"
-    }, {
-      id: 62,
-      day: IMAGES.ACCESSORY51D,
-      night: IMAGES.ACCESSORY51N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Winter Scarf"
-    }, {
-      id: 64,
-      day: IMAGES.ACCESSORY53D,
-      night: IMAGES.ACCESSORY53N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Winter Scarf 2"
-    }, {
-      id: 66,
-      day: IMAGES.ACCESSORY54D,
-      night: IMAGES.ACCESSORY54N,
-      rarity: RARITY.DIAMOND,
-      author: "eogito",
-      name: "Winter Scarf 3"
-    }, {
-      id: 70,
-      day: IMAGES.ACCESSORY58D,
-      night: IMAGES.ACCESSORY58N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Mask with animal tracks"
-    }, {
-      id: 71,
-      day: IMAGES.ACCESSORY59D,
-      night: IMAGES.ACCESSORY59N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Spring Mask"
-    }, {
-      id: 72,
-      day: IMAGES.ACCESSORY60D,
-      night: IMAGES.ACCESSORY60N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Pink Mask"
-    }, {
-      id: 73,
-      day: IMAGES.ACCESSORY61D,
-      night: IMAGES.ACCESSORY61N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Blue Mask"
-    }, {
-      id: 76,
-      day: IMAGES.ACCESSORY64D,
-      night: IMAGES.ACCESSORY64N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Military Mask"
-    }, {
-      id: 77,
-      day: IMAGES.ACCESSORY65D,
-      night: IMAGES.ACCESSORY65N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Orange Mask"
-    }, {
-      id: 78,
-      day: IMAGES.ACCESSORY66D,
-      night: IMAGES.ACCESSORY66N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "White and Red Points Mask"
-    }, {
-      id: 80,
-      day: IMAGES.ACCESSORY68D,
-      night: IMAGES.ACCESSORY68N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Stick out your tongue Mask"
-    }, {
-      id: 81,
-      day: IMAGES.ACCESSORY69D,
-      night: IMAGES.ACCESSORY69N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Two Teeth Mask"
-    }, {
-      id: 82,
-      day: IMAGES.ACCESSORY70D,
-      night: IMAGES.ACCESSORY70N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Make-up Mask"
-    }, {
-      id: 83,
-      day: IMAGES.ACCESSORY71D,
-      night: IMAGES.ACCESSORY71N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Sad Mask"
-    }, {
-      id: 84,
-      day: IMAGES.ACCESSORY72D,
-      night: IMAGES.ACCESSORY72N,
-      rarity: RARITY.DIAMOND,
-      author: "Starve.io",
-      name: "Happy Mask"
-    }, {
-      id: 90,
-      day: IMAGES.ACCESSORY79D,
-      night: IMAGES.ACCESSORY79N,
-      rarity: RARITY.DIAMOND,
-      author: "aloner",
-      name: "Blood"
-    }, {
-      id: 27,
-      day: IMAGES.ACCESSORY27D,
-      night: IMAGES.ACCESSORY27N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Clown Face"
-    }, {
-      id: 20,
-      day: IMAGES.ACCESSORY20D,
-      night: IMAGES.ACCESSORY20N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Sunglasses 3"
-    }, {
-      id: 32,
-      day: IMAGES.ACCESSORY32D,
-      night: IMAGES.ACCESSORY32N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Engineer\'s Glasses"
-    }, {
-      id: 33,
-      day: IMAGES.ACCESSORY33D,
-      night: IMAGES.ACCESSORY33N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Engineer\'s Monocle"
-    }, {
-      id: 34,
-      day: IMAGES.ACCESSORY34D,
-      night: IMAGES.ACCESSORY34N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Mauve\'s butt"
-    }, {
-      id: 41,
-      day: IMAGES.ACCESSORY41D,
-      night: IMAGES.ACCESSORY41N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Lapa Head"
-    }, {
-      id: 42,
-      day: IMAGES.ACCESSORY42D,
-      night: IMAGES.ACCESSORY42N,
-      rarity: RARITY.AMETHYST,
-      author: "eogito",
-      name: "Lapa Head "
-    }, {
-      id: 85,
-      day: IMAGES.ACCESSORY73D,
-      night: IMAGES.ACCESSORY73N,
-      rarity: RARITY.AMETHYST,
-      author: "Starve.io",
-      name: "Mask and Glasses"
-    }, {
-      id: 60,
-      day: IMAGES.ACCESSORY48D,
-      night: IMAGES.ACCESSORY48N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Jason"
-    }, {
-      id: 26,
-      day: IMAGES.ACCESSORY26D,
-      night: IMAGES.ACCESSORY26N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Devil Horns"
-    }, {
-      id: 18,
-      day: IMAGES.ACCESSORY18D,
-      night: IMAGES.ACCESSORY18N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Big Boss"
-    }, {
-      id: 35,
-      day: IMAGES.ACCESSORY35D,
-      night: IMAGES.ACCESSORY35N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Baby Kraken"
-    }, {
-      id: 63,
-      day: IMAGES.ACCESSORY52D,
-      night: IMAGES.ACCESSORY52N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Deer Antlers"
-    }, {
-      id: 65,
-      day: IMAGES.ACCESSORY45D,
-      night: IMAGES.ACCESSORY45N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Baby Dragon on your head"
-    }, {
-      id: 86,
-      day: IMAGES.ACCESSORY74D,
-      night: IMAGES.ACCESSORY74N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Gaz Mask and Glasses"
-    }, {
-      id: 87,
-      day: IMAGES.ACCESSORY75D,
-      night: IMAGES.ACCESSORY75N,
-      rarity: RARITY.REIDITE,
-      author: "Starve.io",
-      name: "Pink Gaz Mask and Glasses"
-    }, {
-      id: 88,
-      day: IMAGES.ACCESSORY76D,
-      night: IMAGES.ACCESSORY76N,
-      rarity: RARITY.REIDITE,
-      author: "eogito",
-      name: "Engineer Glasses"
-    }, {
-      id: 45,
-      day: IMAGES.LEVEL5D,
-      night: IMAGES.LEVEL5N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 5",
-      level: 5
-    }, {
-      id: 46,
-      day: IMAGES.LEVEL10D,
-      night: IMAGES.LEVEL10N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 10",
-      level: 10
-    }, {
-      id: 47,
-      day: IMAGES.LEVEL15D,
-      night: IMAGES.LEVEL15N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 15",
-      level: 15
-    }, {
-      id: 48,
-      day: IMAGES.LEVEL20D,
-      night: IMAGES.LEVEL20N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 20",
-      level: 20
-    }, {
-      id: 49,
-      day: IMAGES.LEVEL25D,
-      night: IMAGES.LEVEL25N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 25",
-      level: 25
-    }, {
-      id: 50,
-      day: IMAGES.LEVEL30D,
-      night: IMAGES.LEVEL30N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 30",
-      level: 30
-    }, {
-      id: 51,
-      day: IMAGES.LEVEL35D,
-      night: IMAGES.LEVEL35N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 35",
-      level: 35
-    }, {
-      id: 52,
-      day: IMAGES.LEVEL40D,
-      night: IMAGES.LEVEL40N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 40",
-      level: 40
-    }, {
-      id: 53,
-      day: IMAGES.LEVEL45D,
-      night: IMAGES.LEVEL45N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 45",
-      level: 45
-    }, {
-      id: 54,
-      day: IMAGES.LEVEL50D,
-      night: IMAGES.LEVEL50N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 50",
-      level: 50
-    }, {
-      id: 55,
-      day: IMAGES.LEVEL55D,
-      night: IMAGES.LEVEL55N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 55",
-      level: 55
-    }, {
-      id: 56,
-      day: IMAGES.LEVEL60D,
-      night: IMAGES.LEVEL60N,
-      rarity: RARITY.LEVEL,
-      author: "Starve.io",
-      name: "More than Level 60",
-      level: 60
-    }]
-  };
+export function render_cosmetics() {
   WORLD.ZOMBIE_SKIN = find_cosmetics_per_id(COSMETICS.SKIN, 21);
   WORLD.VAMPIRE_SKIN = find_cosmetics_per_id(COSMETICS.SKIN, 20);
   sprite[SPRITE.BODY] = [];
@@ -3674,21 +111,21 @@ function render_cosmetics() {
   sprite[SPRITE.BOOK] = [];
   sprite[SPRITE.BAG] = [];
   sprite[SPRITE.ACCESSORY] = [];
-  for (var i = 0; i < COSMETICS.SKIN.length; i++) {
+  for (let i = 0; i < COSMETICS.SKIN.length; i++) {
     sprite[SPRITE.BODY][i] = [COSMETICS.SKIN[i].day, COSMETICS.SKIN[i].night];
     sprite[SPRITE.HAND][i] = [COSMETICS.SKIN[i].dayHand, COSMETICS.SKIN[i].nightHand];
   }
-  for (var i = 0; i < COSMETICS.BOOK.length; i++)
+  for (let i = 0; i < COSMETICS.BOOK.length; i++)
     sprite[SPRITE.BOOK][i] = [COSMETICS.BOOK[i].day, COSMETICS.BOOK[i].night];
-  for (var i = 0; i < COSMETICS.CRATE.length; i++)
+  for (let i = 0; i < COSMETICS.CRATE.length; i++)
     sprite[SPRITE.CRATE][i] = [COSMETICS.CRATE[i].day, COSMETICS.CRATE[i].night];
-  for (var i = 0; i < COSMETICS.BAG.length; i++)
+  for (let i = 0; i < COSMETICS.BAG.length; i++)
     sprite[SPRITE.BAG][i] = [COSMETICS.BAG[i].day, COSMETICS.BAG[i].night];
-  for (var i = 0; i < COSMETICS.ACCESSORY.length; i++)
+  for (let i = 0; i < COSMETICS.ACCESSORY.length; i++)
     sprite[SPRITE.ACCESSORY][i] = [COSMETICS.ACCESSORY[i].day, COSMETICS.ACCESSORY[i].night];
 };
 
-function fill_path(ctx, fill, stroke, width) {
+export function fill_path(ctx, fill, stroke, width) {
   if (fill) {
     ctx.fillStyle = fill;
     ctx.fill();
@@ -3700,7 +137,7 @@ function fill_path(ctx, fill, stroke, width) {
   }
 };
 
-function round_rect(ctx, a, b, d, c, e) {
+export function round_rect(ctx, a, b, d, c, e) {
   (d < (2 * e)) && (e = d / 2);
   (c < (2 * e)) && (e = c / 2);
   (0 > e) && (e = 0);
@@ -3713,7 +150,7 @@ function round_rect(ctx, a, b, d, c, e) {
   ctx.closePath();
 };
 
-function semi_round_rect(ctx, a, b, d, c, e) {
+export function semi_round_rect(ctx, a, b, d, c, e) {
   (d < (2 * e)) && (e = d / 2);
   (c < (2 * e)) && (e = c / 2);
   (0 > e) && (e = 0);
@@ -3726,18 +163,18 @@ function semi_round_rect(ctx, a, b, d, c, e) {
   ctx.closePath();
 };
 
-function circle(ctx, x, y, r) {
+export function circle(ctx, x, y, r) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
 };
 
-function circle_angle(ctx, x, y, r, a) {
+export function circle_angle(ctx, x, y, r, a) {
   ctx.beginPath();
   ctx.lineCap = "round";
   ctx.arc(x, y, r, 0, (Math.PI * 2) * a);
 };
 
-function round_regular_polygon(ctx, n, r, round) {
+export function round_regular_polygon(ctx, n, r, round) {
   var a = (Math.PI * 2) / n;
   ctx.beginPath();
   var vertex = [{
@@ -3745,27 +182,27 @@ function round_regular_polygon(ctx, n, r, round) {
     y: 0
   }];
   var middle = [];
-  for (var i = 1; i < n; i++) {
+  for (let i = 1; i < n; i++) {
     vertex.push({
       x: Math.cos(i * a) * r,
       y: Math.sin(i * a) * r
     });
     var len = vertex.length;
-    middle.push(Utils.middle_point(vertex[len - 2], vertex[len - 1]));
+    middle.push(middle_point(vertex[len - 2], vertex[len - 1]));
   }
-  middle.push(Utils.middle_point(vertex[vertex.length - 1], vertex[0]));
+  middle.push(middle_point(vertex[vertex.length - 1], vertex[0]));
   var v = middle[middle.length - 1];
   ctx.moveTo(v.x, v.y);
-  for (var i = 0; i < n; i++)
+  for (let i = 0; i < n; i++)
     ctx.arcTo(vertex[i].x, vertex[i].y, middle[i].x, middle[i].y, round);
   ctx.closePath();
 };
 
-function create_rotated_img(r, img) {
+export function create_rotated_img(r, img) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var d = Math.sqrt((img.width * img.width) + (img.height * img.height));
-  d2 = d / 2;
+  const d2 = d / 2;
   can.width = d;
   can.height = d;
   ctx.translate(d2, d2);
@@ -3774,7 +211,7 @@ function create_rotated_img(r, img) {
   return can;
 };
 
-function create_message(scale, msg) {
+export function create_message(scale, msg) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var h = Math.floor(scale * 28);
@@ -3795,7 +232,7 @@ function create_message(scale, msg) {
   return can;
 };
 
-function create_accessory(scale, color, i) {
+export function create_accessory(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -3948,7 +385,7 @@ function create_accessory(scale, color, i) {
   return can;
 };
 
-function create_hurt_player(scale, color) {
+export function create_hurt_player(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 120;
@@ -3970,7 +407,7 @@ function create_hurt_player(scale, color) {
   return can;
 };
 
-function create_player(scale, color, i) {
+export function create_player(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 176 * scale;
@@ -4797,7 +1234,7 @@ function create_player(scale, color, i) {
   return can;
 };
 
-function create_robotskin(scale, color) {
+export function create_robotskin(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 350 * scale;
@@ -4880,7 +1317,7 @@ function create_robotskin(scale, color) {
   return can;
 };
 
-function create_skins(scale, color, i) {
+export function create_skins(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 175 * scale;
@@ -5271,7 +1708,7 @@ function create_skins(scale, color, i) {
   return can;
 };
 
-function create_garlic(scale, draw_shadow, color) {
+export function create_garlic(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 264 * scale;
@@ -5347,7 +1784,7 @@ function create_garlic(scale, draw_shadow, color) {
   return can;
 };
 
-function create_garland_inv(scale, draw_shadow, color) {
+export function create_garland_inv(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 70 * scale;
@@ -5369,7 +1806,7 @@ function create_garland_inv(scale, draw_shadow, color) {
   return can;
 };
 
-function create_garland(scale, draw_shadow, color) {
+export function create_garland(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 22 * scale;
@@ -5386,7 +1823,7 @@ function create_garland(scale, draw_shadow, color) {
   return can;
 };
 
-function create_garland_light(scale, draw_shadow, color) {
+export function create_garland_light(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 20 * scale;
@@ -5397,7 +1834,7 @@ function create_garland_light(scale, draw_shadow, color) {
   return can;
 };
 
-function create_roof(scale, draw_shadow, color) {
+export function create_roof(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 248 * scale;
@@ -5449,7 +1886,7 @@ function create_roof(scale, draw_shadow, color) {
   return can;
 };
 
-function create_roof1(scale, draw_shadow, color) {
+export function create_roof1(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 248 * scale;
@@ -5491,7 +1928,7 @@ function create_roof1(scale, draw_shadow, color) {
   return can;
 };
 
-function create_roof2(scale, draw_shadow, color) {
+export function create_roof2(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 248 * scale;
@@ -5539,7 +1976,7 @@ function create_roof2(scale, draw_shadow, color) {
   return can;
 };
 
-function create_zombie_head(scale, draw_shadow, color) {
+export function create_zombie_head(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 191 * scale;
@@ -5616,7 +2053,7 @@ function create_zombie_head(scale, draw_shadow, color) {
   return can;
 };
 
-function create_zombie_boss(scale, draw_shadow, color) {
+export function create_zombie_boss(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 191 * scale;
@@ -5668,7 +2105,7 @@ function create_zombie_boss(scale, draw_shadow, color) {
   return can;
 };
 
-function create_zombie_hurt(scale, color) {
+export function create_zombie_hurt(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 191 * scale;
@@ -5714,7 +2151,7 @@ function create_zombie_hurt(scale, color) {
   return can;
 };
 
-function create_plant_seed(scale, useless, color) {
+export function create_plant_seed(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 40;
@@ -5740,7 +2177,7 @@ function create_plant_seed(scale, useless, color) {
   return can;
 };
 
-function create_fish1(scale, useless, color, i) {
+export function create_fish1(scale, useless, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 185 * scale;
@@ -5942,7 +2379,7 @@ function create_fish1(scale, useless, color, i) {
   return can;
 };
 
-function create_hurt_fish1(scale, color) {
+export function create_hurt_fish1(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 185 * scale;
@@ -6031,7 +2468,7 @@ function create_hurt_fish1(scale, color) {
   return can;
 };
 
-function create_fish2(scale, useless, color, i) {
+export function create_fish2(scale, useless, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 185 * scale;
@@ -6173,27 +2610,33 @@ function create_fish2(scale, useless, color, i) {
   return can;
 };
 
-function create_food_plant(scale) {
+export function create_food_plant(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 200;
   var h = scale * 200;
   can.width = w;
   can.height = h;
-  var img = create_plant(0.35, false, ["#0e3022", "#0b8052", "#077b49"]);
+
+  let img = create_plant(0.35, false, ["#0e3022", "#0b8052", "#077b49"]);
   ctx.drawImage(img, 10, 10);
-  var img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
+
+  img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
   ctx.drawImage(img, 21, 20);
-  var img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
+
+  img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
   ctx.drawImage(img, 38, 28);
-  var img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
+
+  img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
   ctx.drawImage(img, 15, 37);
-  var img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
+
+  img = create_fruit(0.9, false, ["#3d2a6e", "#8255b5"]);
   ctx.drawImage(img, 32, 45);
+
   return can;
 };
 
-function create_gear(scale, color) {
+export function create_gear(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 100;
@@ -6207,7 +2650,7 @@ function create_gear(scale, color) {
   var wr2 = wr / 2;
   var hr2 = hr / 2;
   ctx.translate(x, y);
-  for (var i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
     round_rect(ctx, -wr2, -hr2, wr, hr, scale * 2);
     ctx.rotate(Math.PI / 4);
     fill_path(ctx, color);
@@ -6220,7 +2663,7 @@ function create_gear(scale, color) {
   return can;
 };
 
-function create_gear_option(scale, color, t) {
+export function create_gear_option(scale, color, t) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 32;
@@ -6238,7 +2681,7 @@ function create_gear_option(scale, color, t) {
   if (t == 1) {
     circle(ctx, 0, 0, 10 * scale, 0);
     fill_path(ctx, color[2], color[2], 3 * scale);
-    for (var i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
       round_rect(ctx, -wr2, -hr2, wr, hr, scale * 2);
       ctx.rotate(Math.PI / 4);
       fill_path(ctx, color[2], color[2], 4 * scale);
@@ -6246,7 +2689,7 @@ function create_gear_option(scale, color, t) {
   }
   circle(ctx, 0, 0, 10 * scale, 0);
   fill_path(ctx, color[0], color[1], 1.5 * scale);
-  for (var i = 0; i < 4; i++) {
+  for (let i = 0; i < 4; i++) {
     round_rect(ctx, -wr2, -hr2, wr, hr, scale * 2);
     ctx.rotate(Math.PI / 4);
     fill_path(ctx, color[0], color[1], 1.5 * scale);
@@ -6264,12 +2707,12 @@ function create_gear_option(scale, color, t) {
   return can;
 };
 
-function create_minimap_object(ctx, scale, color, t, r, max, min) {
+export function create_minimap_object(ctx, scale, color, t, r, max, min) {
   if (min === undefined)
     min = 0;
 
   for (var k = (max == -1) ? 0 : max; k >= min; k--) {
-    for (var i = 0; i < 200; i++) {
+    for (let i = 0; i < 200; i++) {
       for (var j = 0; j < 200; j++) {
         var tile = MAP.tiles[j][i];
         if (!tile || !tile[t])
@@ -6290,7 +2733,7 @@ function create_minimap_object(ctx, scale, color, t, r, max, min) {
   }
 };
 
-function create_minimap(scale, color) {
+export function create_minimap(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 200 * scale;
@@ -6357,7 +2800,7 @@ function create_minimap(scale, color) {
   return can;
 };
 
-function create_workbench(scale, draw_shadow, color) {
+export function create_workbench(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 125;
@@ -6387,12 +2830,15 @@ function create_workbench(scale, draw_shadow, color) {
   ctx.translate(-40 * scale, -30 * scale);
   round_rect(ctx, 0, 0, w, h, round);
   fill_path(ctx, color[3]);
-  var img = create_gear(0.7 * scale, color[3]);
+  let img = create_gear(0.7 * scale, color[3]);
   ctx.drawImage(img, 45 * scale, -25 * scale);
-  var img = create_gear(0.7 * scale, color[3]);
+
+  img = create_gear(0.7 * scale, color[3]);
   ctx.drawImage(img, 45 * scale, 15 * scale);
-  var img = create_gear(1.2 * scale, color[3]);
+
+  img = create_gear(1.2 * scale, color[3]);
   ctx.drawImage(img, 28 * scale, -30 * scale);
+
   var w = 15 * scale;
   var h = 70 * scale;
   var round = 5 * scale;
@@ -6420,7 +2866,7 @@ function create_workbench(scale, draw_shadow, color) {
   return can;
 };
 
-function create_rabbit(scale, color) {
+export function create_rabbit(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 85;
@@ -6487,7 +2933,7 @@ function create_rabbit(scale, color) {
   return can;
 };
 
-function create_hurt_rabbit(scale, color) {
+export function create_hurt_rabbit(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 85;
@@ -6512,7 +2958,7 @@ function create_hurt_rabbit(scale, color) {
   return can;
 };
 
-function create_hurt_wolf(scale, color) {
+export function create_hurt_wolf(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 188 * scale;
@@ -6558,7 +3004,7 @@ function create_hurt_wolf(scale, color) {
   return can;
 };
 
-function create_wolf(scale, color) {
+export function create_wolf(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 188 * scale;
@@ -6736,7 +3182,7 @@ function create_wolf(scale, color) {
   return can;
 };
 
-function create_meat(scale, useless, color) {
+export function create_meat(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 55;
@@ -6764,7 +3210,7 @@ function create_meat(scale, useless, color) {
   return can;
 };
 
-function create_hurt_spider(scale, color) {
+export function create_hurt_spider(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 238 * scale;
@@ -6859,7 +3305,7 @@ function create_hurt_spider(scale, color) {
   return can;
 };
 
-function create_spider(scale, color) {
+export function create_spider(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 238 * scale;
@@ -7135,7 +3581,7 @@ function create_spider(scale, color) {
   return can;
 };
 
-function create_web(scale, color) {
+export function create_web(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 450 * scale;
@@ -7257,7 +3703,7 @@ function create_web(scale, color) {
   return can;
 };
 
-function create_dead_box(scale, color, i) {
+export function create_dead_box(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -7422,7 +3868,7 @@ function create_dead_box(scale, color, i) {
   return can;
 };
 
-function create_hurt_dead_box(scale, color) {
+export function create_hurt_dead_box(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -7470,7 +3916,7 @@ function create_hurt_dead_box(scale, color) {
   return can;
 };
 
-function create_dead_box_ui(scale, color) {
+export function create_dead_box_ui(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 650 * scale;
@@ -7542,7 +3988,7 @@ function create_dead_box_ui(scale, color) {
   return can;
 };
 
-function create_SANDWICH(scale, draw_shadow, color) {
+export function create_SANDWICH(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -7626,7 +4072,7 @@ function create_SANDWICH(scale, draw_shadow, color) {
   return can;
 };
 
-function create_scales(scale, draw_shadow, color) {
+export function create_scales(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -7774,7 +4220,7 @@ function create_scales(scale, draw_shadow, color) {
   return can;
 };
 
-function create_wheat(scale, draw_shadow, color) {
+export function create_wheat(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 52 * scale;
@@ -7841,7 +4287,7 @@ function create_wheat(scale, draw_shadow, color) {
   return can;
 };
 
-function create_windmill(scale, draw_shadow, color) {
+export function create_windmill(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -7889,7 +4335,7 @@ function create_windmill(scale, draw_shadow, color) {
   return can;
 };
 
-function create_windmill_wing(scale, draw_shadow, color) {
+export function create_windmill_wing(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -8041,7 +4487,7 @@ function create_windmill_wing(scale, draw_shadow, color) {
   return can;
 };
 
-function create_windmill_head(scale, draw_shadow, color) {
+export function create_windmill_head(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -8063,7 +4509,7 @@ function create_windmill_head(scale, draw_shadow, color) {
   return can;
 };
 
-function create_cord(scale, useless, color) {
+export function create_cord(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 75;
@@ -8106,7 +4552,7 @@ function create_cord(scale, useless, color) {
   return can;
 };
 
-function create_bandage(scale, useless, color) {
+export function create_bandage(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 195;
@@ -8137,7 +4583,7 @@ function create_bandage(scale, useless, color) {
   return can;
 };
 
-function create_craft_button(scale, funs, subscale, color, alpha) {
+export function create_craft_button(scale, funs, subscale, color, alpha) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 70;
@@ -8146,10 +4592,10 @@ function create_craft_button(scale, funs, subscale, color, alpha) {
   var shadow = scale * 5;
   can.width = w;
   can.height = h + shadow;
-  for (var i = 0; i < funs.length; i++) {
+  for (let i = 0; i < funs.length; i++) {
     var f = funs[i];
     ctx.globalAlpha = f.a;
-    var img = f.f(subscale, false, f.c);
+    let img = f.f(subscale, false, f.c);
     ctx.save();
     ctx.translate((w / 2) + (f.x * scale), (h / 2) + (f.y * scale));
     ctx.rotate(f.r);
@@ -8157,7 +4603,7 @@ function create_craft_button(scale, funs, subscale, color, alpha) {
     ctx.restore();
   }
   var buttons = [];
-  for (var i = 0; i < color.length; i++) {
+  for (let i = 0; i < color.length; i++) {
     var tmpcan = document.createElement("canvas");
     var tmpctx = tmpcan.getContext("2d");
     tmpcan.width = w;
@@ -8184,7 +4630,7 @@ function create_craft_button(scale, funs, subscale, color, alpha) {
   return buttons;
 };
 
-function create_bread_oven_ui(scale, color) {
+export function create_bread_oven_ui(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 149 * scale;
@@ -8259,7 +4705,7 @@ function create_bread_oven_ui(scale, color) {
   return can;
 };
 
-function create_big_fire_wood(scale, useless, color) {
+export function create_big_fire_wood(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 193;
@@ -8290,7 +4736,7 @@ function create_big_fire_wood(scale, useless, color) {
   return can;
 };
 
-function create_fire(scale, useless, color) {
+export function create_fire(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 145;
@@ -8322,7 +4768,7 @@ function create_fire(scale, useless, color) {
   return can;
 };
 
-function create_wood_fire(scale, useless, color) {
+export function create_wood_fire(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 135;
@@ -8350,7 +4796,7 @@ function create_wood_fire(scale, useless, color) {
   return can;
 };
 
-function create_ground_fire(scale, useless, color) {
+export function create_ground_fire(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 205;
@@ -8367,7 +4813,7 @@ function create_ground_fire(scale, useless, color) {
   return can;
 };
 
-function create_halo_fire(scale, useless, color) {
+export function create_halo_fire(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 370;
@@ -8383,7 +4829,7 @@ function create_halo_fire(scale, useless, color) {
   return can;
 };
 
-function create_elf_hat(scale, draw_shadow, color) {
+export function create_elf_hat(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 155 * scale;
@@ -8475,7 +4921,7 @@ function create_elf_hat(scale, draw_shadow, color) {
   return can;
 };
 
-function create_christmas_hat(scale, draw_shadow, color) {
+export function create_christmas_hat(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 155 * scale;
@@ -8558,7 +5004,7 @@ function create_christmas_hat(scale, draw_shadow, color) {
   return can;
 };
 
-function create_zombie_hand(scale, color) {
+export function create_zombie_hand(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 220;
@@ -8578,7 +5024,7 @@ function create_zombie_hand(scale, color) {
   return can;
 };
 
-function create_hand(scale, color) {
+export function create_hand(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 40;
@@ -8594,7 +5040,7 @@ function create_hand(scale, color) {
   return can;
 };
 
-function create_hand_shadow(scale, color) {
+export function create_hand_shadow(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 220;
@@ -8610,7 +5056,7 @@ function create_hand_shadow(scale, color) {
   return can;
 };
 
-function create_apricot_tree(scale, color, rotate, i) {
+export function create_apricot_tree(scale, color, rotate, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 210;
@@ -8979,7 +5425,7 @@ function create_apricot_tree(scale, color, rotate, i) {
   return can;
 };
 
-function create_music_button(scale, color, i, on) {
+export function create_music_button(scale, color, i, on) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 121 * scale;
@@ -9131,13 +5577,13 @@ function create_music_button(scale, color, i, on) {
   return can;
 };
 
-function create_tree_snow(scale, color, rotate) {
+export function create_tree_snow(scale, color, rotate) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   ctx.rotate(Math.PI / 2);
 };
 
-function create_tree_branch(scale, color, rotate) {
+export function create_tree_branch(scale, color, rotate) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 450;
@@ -9222,7 +5668,7 @@ function create_tree_branch(scale, color, rotate) {
   return can;
 };
 
-function create_apricot_forest(branch, tree) {
+export function create_apricot_forest(branch, tree) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = Math.max(tree.width, branch.width);
@@ -9234,7 +5680,7 @@ function create_apricot_forest(branch, tree) {
   return can;
 };
 
-function create_pickaxe(scale, draw_shadow, color) {
+export function create_pickaxe(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 105;
@@ -9281,7 +5727,7 @@ function create_pickaxe(scale, draw_shadow, color) {
   return can;
 };
 
-function create_sword_wood(scale, draw_shadow, color) {
+export function create_sword_wood(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -9418,7 +5864,7 @@ function create_sword_wood(scale, draw_shadow, color) {
   return can;
 };
 
-function create_pirate_sword(scale, draw_shadow, color) {
+export function create_pirate_sword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 424 * scale;
@@ -9554,7 +6000,7 @@ function create_pirate_sword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_sword(scale, draw_shadow, color) {
+export function create_sword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 100 * scale;
@@ -9634,7 +6080,7 @@ function create_sword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_stonesword(scale, draw_shadow, color) {
+export function create_stonesword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 290 * scale;
@@ -9710,7 +6156,7 @@ function create_stonesword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_crab(scale, useless, color, i) {
+export function create_crab(scale, useless, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 283 * scale;
@@ -9903,7 +6349,7 @@ function create_crab(scale, useless, color, i) {
   return can;
 };
 
-function create_hurt_crab(scale, color) {
+export function create_hurt_crab(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 283 * scale;
@@ -9959,7 +6405,7 @@ function create_hurt_crab(scale, color) {
   return can;
 };
 
-function create_crab_claw_left(scale, useless, color) {
+export function create_crab_claw_left(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 131 * scale;
@@ -9994,7 +6440,7 @@ function create_crab_claw_left(scale, useless, color) {
   return can;
 };
 
-function create_crab_claw_right(scale, useless, color) {
+export function create_crab_claw_right(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 104 * scale;
@@ -10029,7 +6475,7 @@ function create_crab_claw_right(scale, useless, color) {
   return can;
 };
 
-function create_crab_stick(scale, draw_shadow, color) {
+export function create_crab_stick(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 321 * scale;
@@ -10215,7 +6661,7 @@ function create_crab_stick(scale, draw_shadow, color) {
   return can;
 };
 
-function create_goldsword(scale, draw_shadow, color) {
+export function create_goldsword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 290 * scale;
@@ -10285,7 +6731,7 @@ function create_goldsword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_diamondsword(scale, draw_shadow, color) {
+export function create_diamondsword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 290 * scale;
@@ -10387,7 +6833,7 @@ function create_diamondsword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_amesword(scale, draw_shadow, color) {
+export function create_amesword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 290 * scale;
@@ -10512,7 +6958,7 @@ function create_amesword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_sugar_can(scale, draw_shadow, color) {
+export function create_sugar_can(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 154 * scale;
@@ -10675,7 +7121,7 @@ function create_sugar_can(scale, draw_shadow, color) {
   return can;
 };
 
-function create_cookie(scale, draw_shadow, color) {
+export function create_cookie(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 350 * scale;
@@ -10752,7 +7198,7 @@ function create_cookie(scale, draw_shadow, color) {
   return can;
 };
 
-function create_candy(scale, draw_shadow, color) {
+export function create_candy(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 217 * scale;
@@ -11027,7 +7473,7 @@ function create_candy(scale, draw_shadow, color) {
   return can;
 };
 
-function create_ferrero_rocher(scale, draw_shadow, color) {
+export function create_ferrero_rocher(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 118 * scale;
@@ -11244,7 +7690,7 @@ function create_ferrero_rocher(scale, draw_shadow, color) {
   return can;
 };
 
-function create_seed(scale, draw_shadow, color) {
+export function create_seed(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 70;
@@ -11353,7 +7799,7 @@ function create_seed(scale, draw_shadow, color) {
   return can;
 };
 
-function create_info_box(inv) {
+export function create_info_box(inv) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var text = LANG[inv];
@@ -11407,7 +7853,7 @@ function create_info_box(inv) {
   return can;
 };
 
-function create_welcome_text(text) {
+export function create_welcome_text(text) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   ctx.lineJoin = "round";
@@ -11419,7 +7865,7 @@ function create_welcome_text(text) {
   var height = (text.length * (h + 4)) + 10;
   var width = 0;
   ctx.font = h + "px Baloo Paaji";
-  for (var i = 0; i < text.length; i++) {
+  for (let i = 0; i < text.length; i++) {
     if (text[i].charAt(0) === "#") {
       color[i] = text[i].substring(0, 7);
       text[i] = text[i].substring(8);
@@ -11429,14 +7875,14 @@ function create_welcome_text(text) {
   }
   can.height = height;
   can.width = width;
-  for (var i = 0; i < text.length; i++) {
-    var img = create_text(1, text[i], h, color[i], null, null, null, null, null, "#000", 6);
+  for (let i = 0; i < text.length; i++) {
+    let img = create_text(1, text[i], h, color[i], null, null, null, null, null, "#000", 6);
     ctx.drawImage(img, 8, (i * (h + 4)) + 5);
   }
   return can;
 };;
 
-function create_text(scale, text, h, color, shadow, dist, rounded, radius, max, stroke, line) {
+export function create_text(scale, text, h, color, shadow, dist, rounded, radius, max, stroke, line) {
   if (line === undefined)
     line = 0;
 
@@ -11479,7 +7925,7 @@ function create_text(scale, text, h, color, shadow, dist, rounded, radius, max, 
   return can;
 };
 
-function create_stone(scale, useless, color) {
+export function create_stone(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 220;
@@ -11502,7 +7948,7 @@ function create_stone(scale, useless, color) {
   return can;
 };
 
-function create_cave_stone(scale, draw_shadow, color, i) {
+export function create_cave_stone(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 220;
@@ -11535,7 +7981,7 @@ function create_cave_stone(scale, draw_shadow, color, i) {
   return can;
 };
 
-function create_gold(scale, useless, color) {
+export function create_gold(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 120;
@@ -11581,7 +8027,7 @@ function create_gold(scale, useless, color) {
   return can;
 };
 
-function create_diamond(scale, useless, color) {
+export function create_diamond(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 180;
@@ -11670,7 +8116,7 @@ function create_diamond(scale, useless, color) {
   return can;
 };
 
-function create_plant(scale, draw_shadow, color) {
+export function create_plant(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 140;
@@ -11724,7 +8170,7 @@ function create_plant(scale, draw_shadow, color) {
   return can;
 };
 
-function create_fruit(scale, useless, color) {
+export function create_fruit(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 18;
@@ -11750,59 +8196,7 @@ function create_fruit(scale, useless, color) {
   return can;
 };
 
-function create_leaf(scale, color) {
-  var can = document.createElement("canvas");
-  var ctx = can.getContext("2d");
-  can.width = 80 * scale;
-  can.height = 100 * scale;
-  ctx.scale(0.5, 0.5);
-  ctx.translate(10, 15);
-  ctx.globalAlpha = 0.5;
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.moveTo(47 * scale, 5 * scale);
-  ctx.bezierCurveTo(19 * scale, 30 * scale, 12 * scale, 42 * scale, 10 * scale, 55 * scale);
-  ctx.bezierCurveTo(11 * scale, 75 * scale, 27 * scale, 76 * scale, 36 * scale, 72 * scale);
-  ctx.bezierCurveTo(52 * scale, 60 * scale, 53 * scale, 46 * scale, 54 * scale, 31 * scale);
-  ctx.bezierCurveTo(53 * scale, 14 * scale, 50 * scale, 9 * scale, 48 * scale, 6 * scale);
-  ctx.closePath();
-  fill_path(ctx, color[0]);
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.moveTo(17 * scale, 70 * scale);
-  ctx.bezierCurveTo(18 * scale, 77 * scale, 10 * scale, 83 * scale, 4 * scale, 87 * scale);
-  fill_path(ctx, undefined, color[0], scale * 10);
-  ctx.translate(0, -10);
-  ctx.globalAlpha = 1;
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.moveTo(47 * scale, 5 * scale);
-  ctx.bezierCurveTo(19 * scale, 30 * scale, 12 * scale, 42 * scale, 10 * scale, 55 * scale);
-  ctx.bezierCurveTo(11 * scale, 75 * scale, 27 * scale, 76 * scale, 36 * scale, 72 * scale);
-  ctx.bezierCurveTo(52 * scale, 60 * scale, 53 * scale, 46 * scale, 54 * scale, 31 * scale);
-  ctx.bezierCurveTo(53 * scale, 14 * scale, 50 * scale, 9 * scale, 48 * scale, 6 * scale);
-  ctx.closePath();
-  fill_path(ctx, color[1], color[2], 8 * scale);
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.moveTo(17 * scale, 70 * scale);
-  ctx.bezierCurveTo(18 * scale, 77 * scale, 10 * scale, 83 * scale, 4 * scale, 87 * scale);
-  fill_path(ctx, undefined, color[2], 8 * scale);
-  ctx.globalAlpha = 0.5;
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.moveTo(17 * scale, 70 * scale);
-  ctx.bezierCurveTo(33 * scale, 52 * scale, 39 * scale, 33 * scale, 48 * scale, 7 * scale);
-  fill_path(ctx, undefined, color[2], 8 * scale);
-  return can;
-};
-
-function create_leaf(scale, color) {
+export function create_leaf(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 234 * scale;
@@ -11821,7 +8215,7 @@ function create_leaf(scale, color) {
   return can;
 };
 
-function create_herb(scale, useless, color, i, a) {
+export function create_herb(scale, useless, color, i, a) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   if (i == 0) {
@@ -11874,7 +8268,7 @@ function create_herb(scale, useless, color, i, a) {
   return can;
 };
 
-function create_flake(scale, r, color) {
+export function create_flake(scale, r, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = (scale * r) * 2;
@@ -11889,7 +8283,7 @@ function create_flake(scale, r, color) {
   return can;
 };
 
-function create_divingmask(scale, draw_shadow, color) {
+export function create_divingmask(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 373 * scale;
@@ -12006,7 +8400,7 @@ function create_divingmask(scale, draw_shadow, color) {
   return can;
 };
 
-function create_superdivingsuit(scale, draw_shadow, color) {
+export function create_superdivingsuit(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 220 * scale;
@@ -12451,7 +8845,7 @@ function create_superdivingsuit(scale, draw_shadow, color) {
   return can;
 };
 
-function create_windmill_chest(scale, color) {
+export function create_windmill_chest(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 243 * scale;
@@ -12516,7 +8910,7 @@ function create_windmill_chest(scale, color) {
   return can;
 };
 
-function create_cake(scale, draw_shadow, color) {
+export function create_cake(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -12574,7 +8968,7 @@ function create_cake(scale, draw_shadow, color) {
   return can;
 };
 
-function create_fishfood(scale, draw_shadow, color) {
+export function create_fishfood(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -12733,7 +9127,7 @@ function create_fishfood(scale, draw_shadow, color) {
   return can;
 };
 
-function create_fishfood_cooked(scale, draw_shadow, color) {
+export function create_fishfood_cooked(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 309 * scale;
@@ -12853,7 +9247,7 @@ function create_fishfood_cooked(scale, draw_shadow, color) {
   return can;
 };
 
-function create_wall(scale, draw_shadow, color) {
+export function create_wall(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 130;
@@ -12877,7 +9271,7 @@ function create_wall(scale, draw_shadow, color) {
   return can;
 };
 
-function create_delay_wall(scale, color) {
+export function create_delay_wall(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 130;
@@ -12895,7 +9289,7 @@ function create_delay_wall(scale, color) {
   return can;
 };
 
-function create_wall_diamond(scale, draw_shadow, color) {
+export function create_wall_diamond(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 130 * scale;
@@ -12923,7 +9317,7 @@ function create_wall_diamond(scale, draw_shadow, color) {
   return can;
 };
 
-function create_palm(scale, color) {
+export function create_palm(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 372 * scale;
@@ -13097,7 +9491,7 @@ function create_palm(scale, color) {
   return can;
 };
 
-function create_special_fur(scale, draw_shadow, color) {
+export function create_special_fur(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 248 * scale;
@@ -13124,7 +9518,7 @@ function create_special_fur(scale, draw_shadow, color) {
   return can;
 };
 
-function create_wall_stone(scale, draw_shadow, color) {
+export function create_wall_stone(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 130 * scale;
@@ -13152,7 +9546,7 @@ function create_wall_stone(scale, draw_shadow, color) {
   return can;
 };
 
-function create_wall_gold(scale, draw_shadow, color) {
+export function create_wall_gold(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = scale * 125;
@@ -13180,7 +9574,7 @@ function create_wall_gold(scale, draw_shadow, color) {
   return can;
 };
 
-function create_door_wood(scale, draw_shadow, color) {
+export function create_door_wood(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 90 * scale;
@@ -13217,7 +9611,7 @@ function create_door_wood(scale, draw_shadow, color) {
   return can;
 };
 
-function create_door_stone(scale, draw_shadow, color) {
+export function create_door_stone(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 90 * scale;
@@ -13266,7 +9660,7 @@ function create_door_stone(scale, draw_shadow, color) {
   return can;
 };
 
-function create_door_gold(scale, draw_shadow, color) {
+export function create_door_gold(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 90 * scale;
@@ -13317,7 +9711,7 @@ function create_door_gold(scale, draw_shadow, color) {
   return can;
 };
 
-function create_furnace_on(scale, draw_shadow, color) {
+export function create_furnace_on(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 300 * scale;
@@ -13378,7 +9772,7 @@ function create_furnace_on(scale, draw_shadow, color) {
   return can;
 };
 
-function create_furnace_off(scale, draw_shadow, color) {
+export function create_furnace_off(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 300 * scale;
@@ -13453,7 +9847,7 @@ function create_furnace_off(scale, draw_shadow, color) {
   return can;
 };
 
-function create_furnace_slot(scale, useless, color) {
+export function create_furnace_slot(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 118 * scale;
@@ -13466,7 +9860,7 @@ function create_furnace_slot(scale, useless, color) {
   return can;
 };
 
-function create_door_diamond(scale, draw_shadow, color) {
+export function create_door_diamond(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 90 * scale;
@@ -13517,7 +9911,7 @@ function create_door_diamond(scale, draw_shadow, color) {
   return can;
 };
 
-function create_coat(scale, draw_shadow, color) {
+export function create_coat(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 135 * scale;
@@ -13565,7 +9959,7 @@ function create_coat(scale, draw_shadow, color) {
   return can;
 };
 
-function create_crab_crown(scale, draw_shadow, color) {
+export function create_crab_crown(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 501 * scale;
@@ -13682,7 +10076,7 @@ function create_crab_crown(scale, draw_shadow, color) {
   return can;
 };
 
-function create_crab_loot(scale, draw_shadow, color) {
+export function create_crab_loot(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 304 * scale;
@@ -13732,7 +10126,7 @@ function create_crab_loot(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bed(scale, draw_shadow, color) {
+export function create_bed(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 175 * scale;
@@ -13853,7 +10247,7 @@ function create_bed(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bed_top(scale, draw_shadow, color) {
+export function create_bed_top(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 175 * scale;
@@ -13916,7 +10310,7 @@ function create_bed_top(scale, draw_shadow, color) {
   return can;
 };
 
-function create_crab_spear(scale, draw_shadow, color) {
+export function create_crab_spear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 115 * scale;
@@ -14162,7 +10556,7 @@ function create_crab_spear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_wood_spear(scale, draw_shadow, color) {
+export function create_wood_spear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 81 * scale;
@@ -14238,7 +10632,7 @@ function create_wood_spear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_stonespear(scale, draw_shadow, color) {
+export function create_stonespear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 100 * scale;
@@ -14403,7 +10797,7 @@ function create_stonespear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_goldspear(scale, draw_shadow, color) {
+export function create_goldspear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 88 * scale;
@@ -14541,7 +10935,7 @@ function create_goldspear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_diamondspear(scale, draw_shadow, color) {
+export function create_diamondspear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 106 * scale;
@@ -14663,7 +11057,7 @@ function create_diamondspear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_amespear(scale, draw_shadow, color) {
+export function create_amespear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 108 * scale;
@@ -14786,7 +11180,7 @@ function create_amespear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_spear(scale, draw_shadow, color) {
+export function create_spear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 81 * scale;
@@ -14835,7 +11229,7 @@ function create_spear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_dragon_spear(scale, draw_shadow, color) {
+export function create_dragon_spear(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 43 * scale;
@@ -14943,7 +11337,7 @@ function create_dragon_spear(scale, draw_shadow, color) {
   return can;
 };
 
-function create_plus_chest(scale, draw_shadow, color) {
+export function create_plus_chest(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 200 * scale;
@@ -14961,7 +11355,7 @@ function create_plus_chest(scale, draw_shadow, color) {
   return can;
 };
 
-function create_chest_slot(scale, draw_shadow, color) {
+export function create_chest_slot(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 118 * scale;
@@ -14982,7 +11376,7 @@ function create_chest_slot(scale, draw_shadow, color) {
   return can;
 };
 
-function create_chest(scale, draw_shadow, color) {
+export function create_chest(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 165 * scale;
@@ -15048,7 +11442,7 @@ function create_chest(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bag(scale, useless, color) {
+export function create_bag(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 86 * scale;
@@ -15077,7 +11471,7 @@ function create_bag(scale, useless, color) {
   return can;
 };
 
-function create_fur(scale, useless, color) {
+export function create_fur(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 92 * scale;
@@ -15101,7 +11495,7 @@ function create_fur(scale, useless, color) {
   return can;
 };
 
-function create_verified(scale, color) {
+export function create_verified(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 60 * scale;
@@ -15130,7 +11524,7 @@ function create_verified(scale, color) {
   return can;
 };
 
-function create_earmuff(scale, useless, color) {
+export function create_earmuff(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 151 * scale;
@@ -15174,7 +11568,7 @@ function create_earmuff(scale, useless, color) {
   return can;
 };
 
-function create_cap_scarf(scale, draw_shadow, color) {
+export function create_cap_scarf(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 138 * scale;
@@ -15262,7 +11656,7 @@ function create_cap_scarf(scale, draw_shadow, color) {
   return can;
 };
 
-function create_spike(scale, draw_shadow, color) {
+export function create_spike(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 170;
@@ -15278,7 +11672,7 @@ function create_spike(scale, draw_shadow, color) {
   ctx.globalAlpha = 1;
   ctx.translate(0, -7 * scale);
   ctx.save();
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     ctx.rotate(Math.PI / 5);
     ctx.save();
     ctx.translate(65 * scale, 0);
@@ -15296,7 +11690,7 @@ function create_spike(scale, draw_shadow, color) {
   return can;
 };
 
-function create_spiketimer(scale, color) {
+export function create_spiketimer(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 170;
@@ -15307,7 +11701,7 @@ function create_spiketimer(scale, color) {
   can.height = h;
   ctx.translate(x, y);
   ctx.save();
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     ctx.rotate(Math.PI / 5);
     ctx.save();
     ctx.translate(65 * scale, 0);
@@ -15323,7 +11717,7 @@ function create_spiketimer(scale, color) {
   return can;
 };
 
-function create_spike_stone(scale, draw_shadow, color) {
+export function create_spike_stone(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -15338,7 +11732,7 @@ function create_spike_stone(scale, draw_shadow, color) {
   fill_path(ctx, color[0]);
   ctx.globalAlpha = 1;
   ctx.translate(85 * scale, 80 * scale);
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     ctx.rotate(Math.PI / 5);
     ctx.save();
     ctx.translate(65 * scale, 0);
@@ -15361,7 +11755,7 @@ function create_spike_stone(scale, draw_shadow, color) {
   return can;
 };
 
-function create_spike_gold(scale, draw_shadow, color) {
+export function create_spike_gold(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -15376,7 +11770,7 @@ function create_spike_gold(scale, draw_shadow, color) {
   fill_path(ctx, color[0]);
   ctx.globalAlpha = 1;
   ctx.translate(85 * scale, 82 * scale);
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     ctx.rotate(Math.PI / 5);
     ctx.save();
     ctx.translate(65 * scale, 0);
@@ -15399,7 +11793,7 @@ function create_spike_gold(scale, draw_shadow, color) {
   return can;
 };
 
-function create_spike_diamond(scale, draw_shadow, color) {
+export function create_spike_diamond(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -15414,7 +11808,7 @@ function create_spike_diamond(scale, draw_shadow, color) {
   fill_path(ctx, color[0]);
   ctx.globalAlpha = 1;
   ctx.translate(85 * scale, 82 * scale);
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     ctx.rotate(Math.PI / 5);
     ctx.save();
     ctx.translate(65 * scale, 0);
@@ -15437,7 +11831,7 @@ function create_spike_diamond(scale, draw_shadow, color) {
   return can;
 };
 
-function create_hammer(scale, draw_shadow, color) {
+export function create_hammer(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 69 * scale;
@@ -15487,7 +11881,7 @@ function create_hammer(scale, draw_shadow, color) {
   return can;
 };
 
-function create_clock_day(scale) {
+export function create_clock_day(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 321 * scale;
@@ -15674,7 +12068,7 @@ function create_clock_day(scale) {
   return can;
 };
 
-function create_clock_night(scale) {
+export function create_clock_night(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 321 * scale;
@@ -15861,7 +12255,7 @@ function create_clock_night(scale) {
   return can;
 };
 
-function create_arrow_clock(scale) {
+export function create_arrow_clock(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 321 * scale;
@@ -15892,7 +12286,7 @@ function create_arrow_clock(scale) {
   return can;
 };
 
-function create_island(scale, color, i) {
+export function create_island(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   if (i == 0) {
@@ -15950,7 +12344,7 @@ function create_island(scale, color, i) {
   return can;
 };
 
-function create_sign(scale, draw_shadow, color) {
+export function create_sign(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 450 * scale;
@@ -16033,7 +12427,7 @@ function create_sign(scale, draw_shadow, color) {
   return can;
 };
 
-function create_sign_button(scale, color, i) {
+export function create_sign_button(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 450 * scale;
@@ -16249,18 +12643,18 @@ function create_sign_button(scale, color, i) {
   return can;
 };
 
-function create_symbols(scale, draw_shadow, color, i) {
+export function create_symbols(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 450 * scale;
   can.height = 260 * scale;
-  var img = create_sign(1 * scale, true, color);
+  let img = create_sign(1 * scale, true, color);
   ctx.drawImage(img, 0 * scale, 0 * scale);
   if (i == 1) {
     ctx.translate(100 * scale, 0 * scale);
     circle(ctx, 113 * scale, 120 * scale, 66 * scale);
     fill_path(ctx, undefined, color[4], 13 * scale);
-    var img = create_sword(0.65 * scale, true, ["#0d1b1c", "#4d2d14", "#432516", "#939393", "#5f6061"]);
+    let img = create_sword(0.65 * scale, true, ["#0d1b1c", "#4d2d14", "#432516", "#939393", "#5f6061"]);
     ctx.rotate(0.7);
     ctx.drawImage(img, 133 * scale, -64 * scale);
     ctx.rotate(-0.7);
@@ -16285,27 +12679,37 @@ function create_symbols(scale, draw_shadow, color, i) {
     fill_path(ctx, "#dff2f7", "#187484", 7 * scale);
     circle(ctx, 145 * scale, 82 * scale, 12 * scale);
     fill_path(ctx, "#dff2f7", "#187484", 7 * scale);
-    var img = create_plant(0.5 * scale, true, ["#80500b", "#7c4908"]);
+    let img = create_plant(0.5 * scale, true, ["#80500b", "#7c4908"]);
     ctx.drawImage(img, 10 * scale, 85 * scale);
-    var img = create_plant(0.5 * scale, true, ["#80500b", "#7c4908"]);
+
+    img = create_plant(0.5 * scale, true, ["#80500b", "#7c4908"]);
     ctx.drawImage(img, 50 * scale, 85 * scale);
-    var img = create_plant(0.5 * scale, true, ["#80500b", "#7c4908"]);
+
+    img = create_plant(0.5 * scale, true, ["#80500b", "#7c4908"]);
     ctx.drawImage(img, 90 * scale, 85 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 90 * scale, 105 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 90 * scale, 105 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 30 * scale, 125 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 50 * scale, 115 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 30 * scale, 100 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 80 * scale, 120 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 110 * scale, 125 * scale);
-    var img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
+
+    img = create_fruit(1 * scale, true, ["#3d2a6e", "#8255b5"]);
     ctx.drawImage(img, 120 * scale, 105 * scale);
   } else if (i == 3) {
     ctx.translate(100 * scale, 0 * scale);
@@ -16394,7 +12798,7 @@ function create_symbols(scale, draw_shadow, color, i) {
   return can;
 };
 
-function create_dragon_helmet(scale, draw_shadow, color) {
+export function create_dragon_helmet(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 345 * scale;
@@ -16559,7 +12963,7 @@ function create_dragon_helmet(scale, draw_shadow, color) {
   return can;
 };
 
-function create_fir_one(scale, color) {
+export function create_fir_one(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 149 * scale;
@@ -16581,7 +12985,7 @@ function create_fir_one(scale, color) {
   return can;
 };
 
-function create_fir_two(scale, color) {
+export function create_fir_two(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 173 * scale;
@@ -16603,7 +13007,7 @@ function create_fir_two(scale, color) {
   return can;
 };
 
-function create_fir_three(scale, color) {
+export function create_fir_three(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 253 * scale;
@@ -16633,7 +13037,7 @@ function create_fir_three(scale, color) {
   return can;
 };
 
-function create_amethyst(scale, draw_shadow, color) {
+export function create_amethyst(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 139 * scale;
@@ -16754,7 +13158,7 @@ function create_amethyst(scale, draw_shadow, color) {
   return can;
 };
 
-function create_dragon_ground(scale, color) {
+export function create_dragon_ground(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 100 * scale;
@@ -16765,7 +13169,7 @@ function create_dragon_ground(scale, color) {
   return can;
 };
 
-function create_snow_one(scale, color) {
+export function create_snow_one(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -16783,7 +13187,7 @@ function create_snow_one(scale, color) {
   return can;
 };
 
-function create_snow_two(scale, color) {
+export function create_snow_two(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -16810,7 +13214,7 @@ function create_snow_two(scale, color) {
   return can;
 };
 
-function create_snow_three(scale, color) {
+export function create_snow_three(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -16829,7 +13233,7 @@ function create_snow_three(scale, color) {
   return can;
 };
 
-function create_snow_four(scale, color) {
+export function create_snow_four(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -16849,7 +13253,7 @@ function create_snow_four(scale, color) {
   return can;
 };
 
-function create_snow_five(scale, color) {
+export function create_snow_five(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 48 * scale;
@@ -16866,7 +13270,7 @@ function create_snow_five(scale, color) {
   return can;
 };
 
-function create_snow_six(scale, color) {
+export function create_snow_six(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -16885,7 +13289,7 @@ function create_snow_six(scale, color) {
   return can;
 };
 
-function create_snow_sept(scale, color) {
+export function create_snow_sept(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 33 * scale;
@@ -16902,7 +13306,7 @@ function create_snow_sept(scale, color) {
   return can;
 };
 
-function create_snow_step(scale, color) {
+export function create_snow_step(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 20 * scale;
@@ -16912,7 +13316,7 @@ function create_snow_step(scale, color) {
   return can;
 };
 
-function create_winter_fox(scale, color) {
+export function create_winter_fox(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 161 * scale;
@@ -17108,7 +13512,7 @@ function create_winter_fox(scale, color) {
   return can;
 };
 
-function create_hurt_fox_winter(scale, color) {
+export function create_hurt_fox_winter(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 161 * scale;
@@ -17160,7 +13564,7 @@ function create_hurt_fox_winter(scale, color) {
   return can;
 };
 
-function create_polar_bear(scale, color) {
+export function create_polar_bear(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 147 * scale;
@@ -17259,7 +13663,7 @@ function create_polar_bear(scale, color) {
   return can;
 };
 
-function create_hurt_polar_bear(scale, color) {
+export function create_hurt_polar_bear(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 147 * scale;
@@ -17293,7 +13697,7 @@ function create_hurt_polar_bear(scale, color) {
   return can;
 };
 
-function create_dragon(scale, color) {
+export function create_dragon(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 271 * scale;
@@ -17800,7 +14204,7 @@ function create_dragon(scale, color) {
   return can;
 };
 
-function create_hurt_dragon(scale, color) {
+export function create_hurt_dragon(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 271 * scale;
@@ -17930,7 +14334,7 @@ function create_hurt_dragon(scale, color) {
   return can;
 };
 
-function create_wingleft(scale, color) {
+export function create_wingleft(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 85 * scale;
@@ -17972,7 +14376,7 @@ function create_wingleft(scale, color) {
   return can;
 };
 
-function create_hurt_wingleft(scale, color) {
+export function create_hurt_wingleft(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 85 * scale;
@@ -18014,7 +14418,7 @@ function create_hurt_wingleft(scale, color) {
   return can;
 };
 
-function create_wingright(scale, color) {
+export function create_wingright(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 85 * scale;
@@ -18057,7 +14461,7 @@ function create_wingright(scale, color) {
   return can;
 };
 
-function create_hurt_wingright(scale, color) {
+export function create_hurt_wingright(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 85 * scale;
@@ -18100,7 +14504,7 @@ function create_hurt_wingright(scale, color) {
   return can;
 };
 
-function create_explorer_hat(scale, draw_shadow, color) {
+export function create_explorer_hat(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 187 * scale;
@@ -18184,7 +14588,7 @@ function create_explorer_hat(scale, draw_shadow, color) {
   return can;
 };
 
-function create_wooden_helmet(scale, draw_shadow, color) {
+export function create_wooden_helmet(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 180 * scale;
@@ -18391,7 +14795,7 @@ function create_wooden_helmet(scale, draw_shadow, color) {
   return can;
 };
 
-function create_viking_hat(scale, draw_shadow, color) {
+export function create_viking_hat(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 175 * scale;
@@ -18554,7 +14958,7 @@ function create_viking_hat(scale, draw_shadow, color) {
   return can;
 };
 
-function create_gold_helmet(scale, draw_shadow, color) {
+export function create_gold_helmet(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 142 * scale;
@@ -18607,7 +15011,7 @@ function create_gold_helmet(scale, draw_shadow, color) {
   return can;
 };
 
-function create_diamond_helmet(scale, draw_shadow, color) {
+export function create_diamond_helmet(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 142 * scale;
@@ -18709,7 +15113,7 @@ function create_diamond_helmet(scale, draw_shadow, color) {
   return can;
 };
 
-function create_amethyst_helmet(scale, draw_shadow, color) {
+export function create_amethyst_helmet(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 145 * scale;
@@ -18847,7 +15251,7 @@ function create_amethyst_helmet(scale, draw_shadow, color) {
   return can;
 };
 
-function create_book(scale, draw_shadow, color) {
+export function create_book(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -18912,7 +15316,7 @@ function create_book(scale, draw_shadow, color) {
   return can;
 };
 
-function create_paper(scale, draw_shadow, color) {
+export function create_paper(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -18944,7 +15348,7 @@ function create_paper(scale, draw_shadow, color) {
   return can;
 };
 
-function create_lock(scale, draw_shadow, color) {
+export function create_lock(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 47 * scale;
@@ -18976,7 +15380,7 @@ function create_lock(scale, draw_shadow, color) {
   return can;
 };
 
-function create_tronctotem(scale, draw_shadow, color) {
+export function create_tronctotem(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 201 * scale;
@@ -19000,7 +15404,7 @@ function create_tronctotem(scale, draw_shadow, color) {
   return can;
 };
 
-function create_headtotem(scale, draw_shadow, color, rotate) {
+export function create_headtotem(scale, draw_shadow, color, rotate) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 501 * scale;
@@ -19106,7 +15510,7 @@ function create_headtotem(scale, draw_shadow, color, rotate) {
   return can;
 };
 
-function create_icon_team(scale, color, i) {
+export function create_icon_team(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 95 * scale;
@@ -19184,7 +15588,7 @@ function create_icon_team(scale, color, i) {
   return can;
 };
 
-function create_team_button(scale, color, i) {
+export function create_team_button(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 120 * scale;
@@ -19194,33 +15598,40 @@ function create_team_button(scale, color, i) {
   round_rect(ctx, 10 * scale, 5 * scale, 95 * scale, 80 * scale, 10 * scale);
   fill_path(ctx, color[3], color[4], 4 * scale);
   if (i == 0) {
-    var img = create_icon_team(0.75 * scale, color, 0);
+    let img = create_icon_team(0.75 * scale, color, 0);
     ctx.drawImage(img, 22 * scale, 18 * scale);
   } else if (i == 1) {
-    var img = create_icon_team(0.75 * scale, color, 1);
+    let img = create_icon_team(0.75 * scale, color, 1);
     ctx.drawImage(img, 22 * scale, 18 * scale);
   }
   return can;
 };
 
-function create_totem(scale, draw_shadow, color) {
+export function create_totem(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
+
   can.width = 185 * scale;
   can.height = 164 * scale;
+
   ctx.translate(0, 0);
-  var img = create_tronctotem(scale, draw_shadow, color);
+
+  let img = create_tronctotem(scale, draw_shadow, color);
   ctx.drawImage(img, -10 * scale, 0 * scale);
-  var img = create_headtotem(scale, draw_shadow, color, 0);
+
+  img = create_headtotem(scale, draw_shadow, color, 0);
   ctx.drawImage(img, -83 * scale, -40 * scale);
-  var img = create_headtotem(scale, draw_shadow, color, Math.PI / 1.4);
+
+  img = create_headtotem(scale, draw_shadow, color, Math.PI / 1.4);
   ctx.drawImage(img, -15 * scale, -88 * scale);
-  var img = create_headtotem(scale, draw_shadow, color, Math.PI / -1.4);
+  
+  img = create_headtotem(scale, draw_shadow, color, Math.PI / -1.4);
   ctx.drawImage(img, 15 * scale, -8 * scale);
+
   return can;
 };
 
-function create_lockpick(scale, draw_shadow, color) {
+export function create_lockpick(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 450 * scale;
@@ -19374,7 +15785,7 @@ function create_lockpick(scale, draw_shadow, color) {
   return can;
 };
 
-function create_resurrection_ground(scale, draw_shadow, color) {
+export function create_resurrection_ground(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 202 * scale;
@@ -19389,7 +15800,7 @@ function create_resurrection_ground(scale, draw_shadow, color) {
   return can;
 };
 
-function create_resurrection_hole(scale, draw_shadow, color) {
+export function create_resurrection_hole(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 89 * scale;
@@ -19407,7 +15818,7 @@ function create_resurrection_hole(scale, draw_shadow, color) {
   return can;
 };
 
-function create_resurrection_rotate(scale, draw_shadow, color) {
+export function create_resurrection_rotate(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 88 * scale;
@@ -19421,7 +15832,7 @@ function create_resurrection_rotate(scale, draw_shadow, color) {
   return can;
 };
 
-function create_resurrection(scale, draw_shadow, color) {
+export function create_resurrection(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 202 * scale;
@@ -19602,7 +16013,7 @@ function create_resurrection(scale, draw_shadow, color) {
   return can;
 };
 
-function create_dragon_heart(scale, useless, color) {
+export function create_dragon_heart(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 161 * scale;
@@ -19703,7 +16114,7 @@ function create_dragon_heart(scale, useless, color) {
   return can;
 };
 
-function create_ghost(scale, useless, color) {
+export function create_ghost(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 254 * scale;
@@ -19763,7 +16174,7 @@ function create_ghost(scale, useless, color) {
   return can;
 };
 
-function create_gemme_green(scale, draw_shadow, color) {
+export function create_gemme_green(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 104 * scale;
@@ -19888,7 +16299,7 @@ function create_gemme_green(scale, draw_shadow, color) {
   return can;
 };
 
-function create_superhammer(scale, draw_shadow, color) {
+export function create_superhammer(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 105 * scale;
@@ -19970,7 +16381,7 @@ function create_superhammer(scale, draw_shadow, color) {
   return can;
 };
 
-function create_dragon_sword(scale, draw_shadow, color) {
+export function create_dragon_sword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 46 * scale;
@@ -20062,7 +16473,7 @@ function create_dragon_sword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_cursed_sword(scale, draw_shadow, color) {
+export function create_cursed_sword(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 65 * scale;
@@ -20148,7 +16559,7 @@ function create_cursed_sword(scale, draw_shadow, color) {
   return can;
 };
 
-function create_shop(scale, color) {
+export function create_shop(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = scale * 120;
@@ -20161,14 +16572,17 @@ function create_shop(scale, color) {
   fill_path(ctx, color[0]);
   round_rect(ctx, 10 * scale, 5 * scale, 110 * scale, 90 * scale, 10 * scale);
   fill_path(ctx, color[1], color[2], 4 * scale);
-  var img = create_rotated_img(-Math.PI / 5, create_pickaxe(scale * 0.5, true, ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0)", "#FFF", "#FFF", "#FFF", "#FFF"]));
+
+  let img = create_rotated_img(-Math.PI / 5, create_pickaxe(scale * 0.5, true, ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0)", "#FFF", "#FFF", "#FFF", "#FFF"]));
   ctx.drawImage(img, 12 * scale, 18 * scale);
-  var img = create_rotated_img(Math.PI / 4, create_hammer(scale * 0.55, true, ["rgba(255, 255, 255, 0)", "#FFF", "#FFF", "#FFF", "#FFF"]));
+
+  img = create_rotated_img(Math.PI / 4, create_hammer(scale * 0.55, true, ["rgba(255, 255, 255, 0)", "#FFF", "#FFF", "#FFF", "#FFF"]));
   ctx.drawImage(img, 36 * scale, 16 * scale);
+
   return can;
 };
 
-function create_blue_orb(scale, useless, color) {
+export function create_blue_orb(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 137 * scale;
@@ -20203,7 +16617,7 @@ function create_blue_orb(scale, useless, color) {
   return can;
 };
 
-function create_dragon_cube(scale, useless, color) {
+export function create_dragon_cube(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 137 * scale;
@@ -20325,7 +16739,7 @@ function create_dragon_cube(scale, useless, color) {
   return can;
 };
 
-function create_lake_edge(scale, color, i) {
+export function create_lake_edge(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   if (i == 0) {
@@ -20373,7 +16787,7 @@ function create_lake_edge(scale, color, i) {
   return can;
 };
 
-function create_lake_deep(scale, color, i) {
+export function create_lake_deep(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   if (i == 0) {
@@ -20420,7 +16834,7 @@ function create_lake_deep(scale, color, i) {
   return can;
 };
 
-function create_lake(scale, color, i) {
+export function create_lake(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   if (i == 0) {
@@ -20470,7 +16884,7 @@ function create_lake(scale, color, i) {
   return can;
 };
 
-function create_shingle(scale, color, i) {
+export function create_shingle(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   if (i == 0) {
@@ -21969,7 +18383,7 @@ function create_shingle(scale, color, i) {
   return can;
 };
 
-function create_kraken(scale, color) {
+export function create_kraken(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 376 * scale;
@@ -22501,7 +18915,7 @@ function create_kraken(scale, color) {
   return can;
 };
 
-function create_bread(scale, draw_shadow, color) {
+export function create_bread(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -22589,7 +19003,7 @@ function create_bread(scale, draw_shadow, color) {
   return can;
 };
 
-function create_hurt_kraken(scale, color) {
+export function create_hurt_kraken(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 376 * scale;
@@ -22630,7 +19044,7 @@ function create_hurt_kraken(scale, color) {
   return can;
 };
 
-function create_bread_oven_off(scale, draw_shadow, color) {
+export function create_bread_oven_off(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 440 * scale;
@@ -22662,7 +19076,7 @@ function create_bread_oven_off(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bread_oven(scale, draw_shadow, color) {
+export function create_bread_oven(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 440 * scale;
@@ -22871,7 +19285,7 @@ function create_bread_oven(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bread_light_down(scale, color) {
+export function create_bread_light_down(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 110 * scale;
@@ -22882,7 +19296,7 @@ function create_bread_light_down(scale, color) {
   return can;
 };
 
-function create_bread_light_up(scale, color) {
+export function create_bread_light_up(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 110 * scale;
@@ -22893,7 +19307,7 @@ function create_bread_light_up(scale, color) {
   return can;
 };
 
-function create_bridge(scale, draw_shadow, color) {
+export function create_bridge(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 102 * scale;
@@ -22925,7 +19339,7 @@ function create_bridge(scale, draw_shadow, color) {
   return can;
 };
 
-function create_well_border(scale, color) {
+export function create_well_border(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 496 * scale;
@@ -22941,7 +19355,7 @@ function create_well_border(scale, color) {
   return can;
 };
 
-function create_well(scale, draw_shadow, color) {
+export function create_well(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 496 * scale;
@@ -22979,7 +19393,7 @@ function create_well(scale, draw_shadow, color) {
   ctx.closePath();
   fill_path(ctx, color[0]);
   ctx.globalAlpha = 1;
-  var img = create_well_border(scale, color);
+  let img = create_well_border(scale, color);
   ctx.drawImage(img, 0, 0);
   ctx.translate(0, -10 * scale);
   circle(ctx, 247.01138305664062 * scale, 249.3125 * scale, 161.4465855941215 * scale);
@@ -23461,7 +19875,7 @@ function create_well(scale, draw_shadow, color) {
   return can;
 };
 
-function create_sand(scale, useless, color) {
+export function create_sand(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 218 * scale;
@@ -23493,7 +19907,7 @@ function create_sand(scale, useless, color) {
   return can;
 };
 
-function create_ice(scale, useless, color) {
+export function create_ice(scale, useless, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 167 * scale;
@@ -23531,7 +19945,7 @@ function create_ice(scale, useless, color) {
   return can;
 };
 
-function create_plot(scale, draw_shadow, color) {
+export function create_plot(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 163 * scale;
@@ -23657,7 +20071,7 @@ function create_plot(scale, draw_shadow, color) {
   return can;
 };
 
-function create_watering_can(scale, draw_shadow, color) {
+export function create_watering_can(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 168 * scale;
@@ -23727,7 +20141,7 @@ function create_watering_can(scale, draw_shadow, color) {
   return can;
 };
 
-function create_pirahna(scale, draw_shadow, color) {
+export function create_pirahna(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 158 * scale;
@@ -23952,7 +20366,7 @@ function create_pirahna(scale, draw_shadow, color) {
   return can;
 };
 
-function create_hurt_pirahna(scale, color) {
+export function create_hurt_pirahna(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 158 * scale;
@@ -24040,7 +20454,7 @@ function create_hurt_pirahna(scale, color) {
   return can;
 };
 
-function create_flour(scale, draw_shadow, color) {
+export function create_flour(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -24098,7 +20512,7 @@ function create_flour(scale, draw_shadow, color) {
   return can;
 };
 
-function create_leaderboard(scale) {
+export function create_leaderboard(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = 200 * scale;
@@ -24116,7 +20530,7 @@ function create_leaderboard(scale) {
   return can;
 };
 
-function create_pumpkin(scale, draw_shadow, color) {
+export function create_pumpkin(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 272 * scale;
@@ -24196,7 +20610,7 @@ function create_pumpkin(scale, draw_shadow, color) {
   return can;
 };
 
-function create_brambles(scale, draw_shadow, color) {
+export function create_brambles(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 247 * scale;
@@ -24489,7 +20903,7 @@ function create_brambles(scale, draw_shadow, color) {
   return can;
 };
 
-function create_hood(scale, draw_shadow, color) {
+export function create_hood(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 465 * scale;
@@ -24566,7 +20980,7 @@ function create_hood(scale, draw_shadow, color) {
   return can;
 };
 
-function create_winter_hood(scale, draw_shadow, color) {
+export function create_winter_hood(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 465 * scale;
@@ -24671,7 +21085,7 @@ function create_winter_hood(scale, draw_shadow, color) {
   return can;
 };
 
-function create_peasant(scale, draw_shadow, color, i) {
+export function create_peasant(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 198 * scale;
@@ -24902,7 +21316,7 @@ function create_peasant(scale, draw_shadow, color, i) {
   return can;
 };
 
-function create_treasure_chest(scale, color) {
+export function create_treasure_chest(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 253 * scale;
@@ -24993,7 +21407,7 @@ function create_treasure_chest(scale, color) {
   return can;
 };
 
-function create_hurt_treasure_chest(scale, color) {
+export function create_hurt_treasure_chest(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 253 * scale;
@@ -25021,7 +21435,7 @@ function create_hurt_treasure_chest(scale, color) {
   return can;
 };
 
-function create_bottle(scale, draw_shadow, color) {
+export function create_bottle(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 316 * scale;
@@ -25072,7 +21486,7 @@ function create_bottle(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bottle_full(scale, draw_shadow, color) {
+export function create_bottle_full(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 316 * scale;
@@ -25112,7 +21526,7 @@ function create_bottle_full(scale, draw_shadow, color) {
   return can;
 };
 
-function create_drink_delay(scale, color) {
+export function create_drink_delay(scale, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 316 * scale;
@@ -25152,7 +21566,7 @@ function create_drink_delay(scale, color) {
   return can;
 };
 
-function create_bucket_empty(scale, draw_shadow, color) {
+export function create_bucket_empty(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -25248,7 +21662,7 @@ function create_bucket_empty(scale, draw_shadow, color) {
   return can;
 };
 
-function create_bucket_full(scale, draw_shadow, color) {
+export function create_bucket_full(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 400 * scale;
@@ -25355,7 +21769,7 @@ function create_bucket_full(scale, draw_shadow, color) {
   return can;
 };
 
-function create_shovel(scale, draw_shadow, color) {
+export function create_shovel(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 80 * scale;
@@ -25405,7 +21819,7 @@ function create_shovel(scale, draw_shadow, color) {
   return can;
 };
 
-function create_symbol_hud(scale, color, i) {
+export function create_symbol_hud(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 109 * scale;
@@ -25523,7 +21937,7 @@ function create_symbol_hud(scale, color, i) {
   return can;
 };
 
-function create_button_background(style, pressed) {
+export function create_button_background(style, pressed) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = style.w + style.lw;
@@ -25550,14 +21964,14 @@ function create_button_background(style, pressed) {
   return can;
 };
 
-function create_button(style) {
+export function create_button(style) {
   var buttons = [];
-  for (var i = 0; i < style.length; i++)
+  for (let i = 0; i < style.length; i++)
     buttons.push(create_button_background(style[i], (i == 2) ? true : false));
   return buttons;
 };
 
-function create_oxygen_gauges(scale) {
+export function create_oxygen_gauges(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = 600 * scale;
@@ -25571,7 +21985,7 @@ function create_oxygen_gauges(scale) {
   return can;
 };
 
-function create_recipe_button(scale, color, i) {
+export function create_recipe_button(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 573 * scale;
@@ -25693,7 +22107,7 @@ function create_recipe_button(scale, color, i) {
   return can;
 };
 
-function create_quest_button(scale, draw_shadow, color, i) {
+export function create_quest_button(scale, draw_shadow, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 170 * scale;
@@ -25776,7 +22190,7 @@ function create_quest_button(scale, draw_shadow, color, i) {
   return can;
 };
 
-function create_market_button(scale, color, i) {
+export function create_market_button(scale, color, i) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 81 * scale;
@@ -25898,7 +22312,7 @@ function create_market_button(scale, color, i) {
   return can;
 };
 
-function create_spanner(scale, draw_shadow, color) {
+export function create_spanner(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 144 * scale;
@@ -25950,7 +22364,7 @@ function create_spanner(scale, draw_shadow, color) {
   return can;
 };
 
-function create_present(scale, draw_shadow, color) {
+export function create_present(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 160 * scale;
@@ -26081,7 +22495,7 @@ function create_present(scale, draw_shadow, color) {
   return can;
 };
 
-function create_crown_life(scale, draw_shadow, color) {
+export function create_crown_life(scale, draw_shadow, color) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 372 * scale;
@@ -26295,7 +22709,7 @@ function create_crown_life(scale, draw_shadow, color) {
   return can;
 };
 
-function create_background_market() {
+export function create_background_market() {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   can.width = 460;
@@ -26314,7 +22728,7 @@ function create_background_market() {
   return can;
 };
 
-function create_gauges(scale) {
+export function create_gauges(scale) {
   var can = document.createElement("canvas");
   var ctx = can.getContext("2d");
   var w = 950 * scale;
@@ -26326,38 +22740,44 @@ function create_gauges(scale) {
   var yh = 1 * scale;
   var r = 4 * scale;
   var lw = 4 * scale;
+
   can.width = w;
   can.height = h;
   ctx.translate(0, 15 * scale);
+
   round_rect(ctx, xw, yh, gw, hg, r);
   fill_path(ctx, null, "#69A148", lw);
-  var img = sprite[SPRITE.HEART_SYMBOL_HUD];
+
+  let img = sprite[SPRITE.HEART_SYMBOL_HUD];
   ctx.drawImage(img, 17, -8);
   ctx.translate(gh, 0);
   round_rect(ctx, xw, yh, gw, hg, r);
   fill_path(ctx, null, "#AF352A", lw);
-  var img = sprite[SPRITE.FOOD_SYMBOL_HUD];
+
+  img = sprite[SPRITE.FOOD_SYMBOL_HUD];
   ctx.drawImage(img, 17, -9);
   ctx.translate(gh, 0);
   round_rect(ctx, xw, yh, gw, hg, r);
   fill_path(ctx, null, "#669BB1", lw);
-  var img = sprite[SPRITE.COLD_SYMBOL_HUD];
+
+  img = sprite[SPRITE.COLD_SYMBOL_HUD];
   ctx.drawImage(img, 17, -8);
   ctx.translate(gh, 0);
+
   round_rect(ctx, xw, yh, gw, hg, r);
   fill_path(ctx, null, "#074A87", lw);
-  var img = sprite[SPRITE.WATER_SYMBOL_HUD];
+  img = sprite[SPRITE.WATER_SYMBOL_HUD];
   ctx.drawImage(img, 17, -8);
   return can;
 };
 
-function _load_images() {
+export function _load_images() {
   var TIMEDEBUG = (new Date).getTime();
   render_cosmetics();
 
   function codeToTile(code) {
     var tile = 0;
-    for (var i = 0, j = 0; i < code.length; i++) {
+    for (let i = 0, j = 0; i < code.length; i++) {
       var c = code.charAt(i);
       if ((c === "_") || (i === 5))
         continue;
@@ -27207,7 +23627,7 @@ function _load_images() {
   MINIMAP_UTILS["LAVA"] = [IMAGES.MAPDAY_LAVA, IMAGES.MAPNIGHT_LAVA];
   for (var _key in MINIMAP_UTILS) {
     var _utils = MINIMAP_UTILS[_key];
-    for (var i = 0; i < _utils.length; i++) {
+    for (let i = 0; i < _utils.length; i++) {
       var _subutils = _utils[i];
       if (_subutils.tryLoad !== undefined)
         _subutils.tryLoad();
@@ -27223,7 +23643,7 @@ function _load_images() {
   console.log("Load images", Date.now() - TIMEDEBUG);
 };;
 
-function create_images() {
+export function create_images() {
   var scale = 1;
   var TIMEDEBUG = (new Date).getTime();
   _load_images();
@@ -27231,28 +23651,28 @@ function create_images() {
   sprite[SPRITE.BUBBLES] = [];
   sprite[SPRITE.BUBBLES][SPRITE.DAY] = [];
   sprite[SPRITE.BUBBLES][SPRITE.NIGHT] = [];
-  for (var i = 0; i < SPRITE.BUBBLES_SIZES; i++) {
+  for (let i = 0; i < SPRITE.BUBBLES_SIZES; i++) {
     sprite[SPRITE.BUBBLES][SPRITE.DAY].push(CTI(create_flake(scale, 4 + i, "#59B8CE")));
     sprite[SPRITE.BUBBLES][SPRITE.NIGHT].push(CTI(create_flake(scale, 4 + i, "#90DDD9")));
   }
   sprite[SPRITE.FLAKES] = [];
   sprite[SPRITE.FLAKES][SPRITE.DAY] = [];
   sprite[SPRITE.FLAKES][SPRITE.NIGHT] = [];
-  for (var i = 0; i < SPRITE.FLAKES_SIZES; i++) {
+  for (let i = 0; i < SPRITE.FLAKES_SIZES; i++) {
     sprite[SPRITE.FLAKES][SPRITE.DAY].push(CTI(create_flake(scale, 4 + i, "#fff")));
     sprite[SPRITE.FLAKES][SPRITE.NIGHT].push(CTI(create_flake(scale, 4 + i, "#fff")));
   }
   sprite[SPRITE.DESERT] = [];
   sprite[SPRITE.DESERT][SPRITE.DAY] = [];
   sprite[SPRITE.DESERT][SPRITE.NIGHT] = [];
-  for (var i = 0; i < SPRITE.FLAKES_SIZES; i++) {
+  for (let i = 0; i < SPRITE.FLAKES_SIZES; i++) {
     sprite[SPRITE.DESERT][SPRITE.DAY].push(CTI(create_flake(scale, 6 + i, "#DDCD8A")));
     sprite[SPRITE.DESERT][SPRITE.NIGHT].push(CTI(create_flake(scale, 6 + i, "#155E57")));
   }
   sprite[SPRITE.ASHES] = [];
   sprite[SPRITE.ASHES][SPRITE.DAY] = [];
   sprite[SPRITE.ASHES][SPRITE.NIGHT] = [];
-  for (var i = 0; i < SPRITE.ASHES_SIZES; i++) {
+  for (let i = 0; i < SPRITE.ASHES_SIZES; i++) {
     sprite[SPRITE.ASHES][SPRITE.DAY].push(CTI(create_flake(scale, 4 + i, "#353326")));
     sprite[SPRITE.ASHES][SPRITE.NIGHT].push(CTI(create_flake(scale, 4 + i, "#1D2526")));
   }
@@ -27272,14 +23692,6 @@ function create_images() {
   sprite[SPRITE.GARLANDS][3][SPRITE.NIGHT] = CTI(create_garland(scale * 1.5, true, ["#cd232d"]));
   sprite[SPRITE.GARLANDS][4][SPRITE.DAY] = CTI(create_garland(scale * 1.5, true, ["#42b672"]));
   sprite[SPRITE.GARLANDS][4][SPRITE.NIGHT] = CTI(create_garland(scale * 1.5, true, ["#42b672"]));
-  var cti = Utils.gup("cti", window.location.href);
-  if (cti)
-    document.getElementById("version").innerHTML += "[CTI]";
-  else
-    CTI = function (a) {
-      a.loaded = 1;
-      return a;
-    };
   sprite[SPRITE.MARKET_BGD] = CTI(create_background_market());
   sprite[SPRITE.STONES] = [];
   sprite[SPRITE.STONES][SPRITE.DAY] = [];
@@ -27857,7 +24269,7 @@ function create_images() {
   sprite[SPRITE.TEAM_BUTTON].push(CTI(create_team_button(scale * 0.7, ["#0b3719", "#228745", "#1a7034", "#614a1a", "#238845"], 0)));
   sprite[SPRITE.TEAM_BUTTON].push(CTI(create_team_button(scale * 0.7, ["#092a14", "#186733", "#124a23", "#4c3a15", "#1b6735"], 0)));
   sprite[SPRITE.FULL_TEAM_BUTTON] = [];
-  var img = CTI(create_team_button(scale * 0.7, ["#280e09", "#77371f", "#280e09", "#2e2410", "#77371f"], 0));
+  let img = CTI(create_team_button(scale * 0.7, ["#280e09", "#77371f", "#280e09", "#2e2410", "#77371f"], 0));
   sprite[SPRITE.FULL_TEAM_BUTTON].push(img);
   sprite[SPRITE.FULL_TEAM_BUTTON].push(img);
   sprite[SPRITE.FULL_TEAM_BUTTON].push(img);
@@ -28058,7 +24470,7 @@ function create_images() {
   sprite[SPRITE.MINIMAP_CTX] = [];
   sprite[SPRITE.BIGMAP] = [];
   sprite[SPRITE.BIGMAP_CTX] = [];
-  for (var i = 0; i < 2; i++) {
+  for (let i = 0; i < 2; i++) {
     sprite[SPRITE.MINIMAP][i] = document.createElement("canvas");
     sprite[SPRITE.MINIMAP][i].width = 193;
     sprite[SPRITE.MINIMAP][i].height = 193;
@@ -28258,7 +24670,7 @@ function create_images() {
   sprite[SPRITE.DELAY_WEAPON] = CTI(create_rotated_img(5.8, create_sword(scale * 0.15, true, ["rgba(0, 0, 0, 0)", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"])));
   sprite[SPRITE.COUNTER] = [];
   sprite[SPRITE.SLOT_NUMBER] = [];
-  for (var i = 0; i < (WORLD.WITH_BAG + 2); i++)
+  for (let i = 0; i < (WORLD.WITH_BAG + 2); i++)
     sprite[SPRITE.SLOT_NUMBER][i] = create_text(scale, "" + (i + 1), 12, "#FFF");
   sprite[SPRITE.RECIPE_BUTTON] = [];
   sprite[SPRITE.RECIPE_BUTTON].push(CTI(create_recipe_button(scale * 0.12, ["#442F19", "#2C2112", "#C09D6F", "#A37943", "#eda80d"])));
@@ -28281,7 +24693,7 @@ function create_images() {
   console.log("Load canvas", Date.now() - TIMEDEBUG);
 };
 
-function init_fake_world() {
+export function init_fake_world() {
   document.getElementById("game_body").style.backgroundColor = SPRITE.GROUND[fake_world.time];
   fake_world.items.push(new Item(ITEMS.FIRE, 0, 0, 0, 0, (Math.random() * Math.PI) * 2, 2, 1));
   fake_world.items.push(new Item(ITEMS.FRUIT, 0, 0, 0, 0, 0, 0, 5));
@@ -28289,7 +24701,7 @@ function init_fake_world() {
   fake_world.items.push(new Item(ITEMS.FRUIT, 0, 0, 0, 0, 0, 0, 5));
 };
 
-function draw_fake_world() {
+export function draw_fake_world() {
   var scale = 1;
   var time = fake_world.time;
   if (sprite[SPRITE.HERB]) {
@@ -28351,7 +24763,7 @@ function draw_fake_world() {
     fruits.fruits[3].y = fruits.y;
     fruits.fruits[4].x = fruits.x - 7.5;
     fruits.fruits[4].y = fruits.y + 14.5;
-    for (var i = 0; i < fruits.info; i++) {
+    for (let i = 0; i < fruits.info; i++) {
       fruits.fruits[i].draw(SPRITE.FRUIT);
     }
     var fruits = items[3];
@@ -28367,7 +24779,7 @@ function draw_fake_world() {
     fruits.fruits[3].y = fruits.y;
     fruits.fruits[4].x = fruits.x - 7.5;
     fruits.fruits[4].y = fruits.y + 14.5;
-    for (var i = 0; i < fruits.info; i++) {
+    for (let i = 0; i < fruits.info; i++) {
       fruits.fruits[i].draw(SPRITE.FRUIT);
     }
     items[0].x = 450;

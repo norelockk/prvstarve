@@ -1,5 +1,6 @@
 import './assets/style.css';
 import { can, render, resize } from './canvas';
+import { install_game } from './game';
 
 const game_body = document.getElementById("game_body") ?? document.querySelector("#game_body");
 
@@ -11,3 +12,4 @@ can.oncontextmenu = () => false;
 
 resize();
 render();
+install_game();

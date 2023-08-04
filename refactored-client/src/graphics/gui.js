@@ -1,5 +1,6 @@
-import { delta } from '../canvas';
+import { delta, ctxDrawImage } from '../canvas';
 import { ease_in_out_quad } from '../utils';
+
 
 export const ANIMATION_STOP = 0;
 export const ANIMATION_RUN = 1;
@@ -52,8 +53,8 @@ export function gui_render_text(text, font, color, height, width, background, pa
   if (borderTextWidth === undefined)
     borderTextWidth = 0;
 
-  var can = document.createElement("canvas");
-  var ctx = can.getContext("2d");
+  const can = document.createElement("canvas");
+  const ctx = can.getContext("2d");
   ctx.textBaseline = "middle", ctx.font = ((((weight !== undefined) ? (weight + " ") : '') + height) + "px ") + font;
   if (width !== undefined)
     width = Math.min(ctx.measureText(text).width, width);
@@ -95,6 +96,8 @@ export function gui_render_text(text, font, color, height, width, background, pa
 }
 
 export function gui_create_button(width, height, text, custom_img, hd, breath, callback, x, y, position, active) {
+  let img;
+
   if (y === undefined)
     y = 0;
 
@@ -112,9 +115,9 @@ export function gui_create_button(width, height, text, custom_img, hd, breath, c
     breath = 0;
 
   if (custom_img)
-    var img = custom_img;
+    img = custom_img;
 
-  var button_data = {
+  const button_data = {
     width: width,
     height: height,
     img: img,
@@ -131,18 +134,18 @@ export function gui_create_button(width, height, text, custom_img, hd, breath, c
     position: position,
     active: active
   };
-  var get_img = function () {
+  const get_img = function () {
     return button_data.img[button_data.state];
   };
-  var in_button = function (mouse) {
-    var translate = button_data.translate;
+  const in_button = function (mouse) {
+    const translate = button_data.translate;
     if ((button_data.width === 0) || (button_data.height === 0)) {
       button_data.width = button_data.img[0].width;
       button_data.height = button_data.img[0].height;
     }
     return (((mouse.x > translate.x) && (mouse.x < (translate.x + (button_data.width / hd)))) && (mouse.y > translate.y)) && (mouse.y < (translate.y + (button_data.height / hd)));
   };
-  var trigger = function (can, mouse, state) {
+  const trigger = function (can, mouse, state) {
     if (in_button(mouse)) {
       if (state == MOUSE_DOWN)
         button_data.state = BUTTON_CLICK;
@@ -156,8 +159,8 @@ export function gui_create_button(width, height, text, custom_img, hd, breath, c
     button_data.state = BUTTON_OUT;
     return false;
   };
-  var breath = function () {
-    var s = 0;
+  breath = function () {
+    let s = 0;
     if (button_data.enable_breath === 1) {
       if ((button_data.state === BUTTON_IN) || (button_data.state === BUTTON_CLICK))
         button_data.breath = (button_data.breath + (delta * 1000)) % 1000;
@@ -171,30 +174,30 @@ export function gui_create_button(width, height, text, custom_img, hd, breath, c
     }
     return s;
   };
-  var draw;
+  let draw;
   if (hd === 2) {
     draw = function (ctx_target) {
-      var s = 1 + breath();
-      var img = get_img();
-      var w = (button_data.width * s) / 2;
-      var h = (button_data.height * s) / 2;
-      var _w = (w - (button_data.width / 2)) / 2;
-      var _h = (h - (button_data.height / 2)) / 2;
+      const s = 1 + breath();
+      const img = get_img();
+      const w = (button_data.width * s) / 2;
+      const h = (button_data.height * s) / 2;
+      const _w = (w - (button_data.width / 2)) / 2;
+      const _h = (h - (button_data.height / 2)) / 2;
       ctxDrawImage(ctx_target, img, button_data.translate.x - _w, button_data.translate.y - _h, w, h);
     };
   } else if (hd === 3) {
     draw = function (ctx_target) {
-      var img = get_img();
-      var w = button_data.width;
-      var h = button_data.height;
-      var _w = (w - button_data.width) / 2;
-      var _h = (h - button_data.height) / 2;
+      const img = get_img();
+      const w = button_data.width;
+      const h = button_data.height;
+      const _w = (w - button_data.width) / 2;
+      const _h = (h - button_data.height) / 2;
       ctxDrawImage(ctx_target, img, button_data.translate.x - _w, button_data.translate.y - _h, w, h);
     };
     hd = 1;
   } else {
     draw = function (ctx_target) {
-      var img = get_img();
+      const img = get_img();
       ctxDrawImage(ctx_target, img, button_data.translate.x, button_data.translate.y);
     };
   }
@@ -207,13 +210,13 @@ export function gui_create_button(width, height, text, custom_img, hd, breath, c
 }
 
 export function gui_create_image_hd(img, active, x, y, position) {
-  var translate = {
+  const translate = {
     x: x,
     y: y,
     _x: x,
     _y: y
   };
-  var draw = function (ctx_target) {
+  const draw = function (ctx_target) {
     ctxDrawImage(ctx_target, img, translate.x, translate.y, img.width / 2, img.height / 2);
   };
   return {
@@ -225,11 +228,11 @@ export function gui_create_image_hd(img, active, x, y, position) {
 }
 
 export function gui_create_image(img) {
-  var translate = {
+  const translate = {
     x: 0,
     y: 0
   };
-  var draw = function (ctx_target) {
+  const draw = function (ctx_target) {
     ctxDrawImage(ctx_target, img, translate.x, translate.y);
   };
   return {
@@ -243,13 +246,13 @@ export function gui_create_animation(img, time) {
   if (time === undefined)
     time = 0.033;
 
-  var translate = {
+  const translate = {
     x: 0,
     y: 0
   };
-  var sprite = 0;
-  var delay = 0;
-  var get_img = function () {
+  let sprite = 0;
+  let delay = 0;
+  const get_img = function () {
     delay += delta;
     if (delay > time) {
       sprite = (sprite + 1) % img.length;
@@ -257,7 +260,7 @@ export function gui_create_animation(img, time) {
     }
     return img[sprite];
   };
-  var draw = function (ctx_target) {
+  const draw = function (ctx_target) {
     ctxDrawImage(ctx_target, get_img(), translate.x, translate.y);
   };
   return {

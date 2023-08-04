@@ -1,8 +1,9 @@
-import { INFO_BOX, PLAYER_LEVEL, SPRITE, WORLD, ITEMS, EXTRACTORS, INV, CLIENT, STATE } from '../constants';
-import { ctxDrawImage, scale, ctx } from '../canvas';
-import { game, user } from '../game';
+import { INFO_BOX, PLAYER_LEVEL, SPRITE, WORLD, ITEMS, EXTRACTORS, INV, CLIENT, STATE, __EFFECT_BOX__, __EFFECT_HEAL__, __EFFECT_COLD__, __EFFECT_HUNGER__, __EFFECT_HURT__, __IMAGE_EFFECT_COLOR__, __IMAGE_EFFECT__ } from '../constants';
+import { ctxDrawImage, scale, ctx, delta, canw, canh, canw2, canh2 } from '../canvas';
+import { game, user, world, sprite } from '../game';
 import { dist, simplify_number, get_angle_2, reduceAngle, lerp, ease_out_quad, ease_in_out_quad } from '../utils';
 import { BUTTON_CLICK } from './gui';
+import { create_info_box, create_text } from './flat';
 
 export function draw_info_box() {
   var box = game.info_box;
@@ -55,7 +56,7 @@ export function draw_well_inventory() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.WELL].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.WELL].length; i++) {
     var well = world.units[ITEMS.WELL][i];
     var m = dist(well, p);
     if (m < min) {
@@ -77,7 +78,7 @@ export function draw_sign_button() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.SIGN].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.SIGN].length; i++) {
     var sign = world.units[ITEMS.SIGN][i];
     var m = dist(sign, p);
     if (((m < min) && (sign.info === 0)) && (sign.pid === user.id)) {
@@ -102,7 +103,7 @@ export function draw_bread_oven_inventory() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.BREAD_OVEN].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.BREAD_OVEN].length; i++) {
     var bread_oven = world.units[ITEMS.BREAD_OVEN][i];
     var m = dist(bread_oven, p);
     if (m < min) {
@@ -159,7 +160,7 @@ export function draw_extractor_inventory() {
   for (var j = 0; j < EXTRACTORS.length; j++) {
     var type = EXTRACTORS[j][0];
     var mineral = EXTRACTORS[j][1];
-    for (var i = 0; i < world.units[type].length; i++) {
+    for (let i = 0; i < world.units[type].length; i++) {
       var extractor = world.units[type][i];
       var m = dist(extractor, p);
       if (m < min) {
@@ -223,7 +224,7 @@ export function draw_windmill_inventory() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.WINDMILL].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.WINDMILL].length; i++) {
     var windmill = world.units[ITEMS.WINDMILL][i];
     var m = dist(windmill, p);
     if (m < min) {
@@ -269,7 +270,7 @@ export function draw_furnace_inventory() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.FURNACE].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.FURNACE].length; i++) {
     var furnace = world.units[ITEMS.FURNACE][i];
     var m = dist(furnace, p);
     if (m < min) {
@@ -303,7 +304,7 @@ export function draw_resurrection_inventory() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.RESURRECTION].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.RESURRECTION].length; i++) {
     var resurrection = world.units[ITEMS.RESURRECTION][i];
     var m = dist(resurrection, p);
     if (m < min) {
@@ -327,7 +328,7 @@ export function draw_team_buttons() {
   var p = world.fast_units[user.uid];
   var min = WORLD.DIST_TOTEM;
   if (p) {
-    for (var i = 0; i < world.units[ITEMS.TOTEM].length; i++) {
+    for (let i = 0; i < world.units[ITEMS.TOTEM].length; i++) {
       var totem = world.units[ITEMS.TOTEM][i];
       var m = dist(totem, p);
       if (m < min) {
@@ -376,7 +377,7 @@ export function draw_chest_inventory() {
   if (!p)
     return;
 
-  for (var i = 0; i < world.units[ITEMS.CHEST].length; i++) {
+  for (let i = 0; i < world.units[ITEMS.CHEST].length; i++) {
     var chest = world.units[ITEMS.CHEST][i];
     var m = dist(chest, p);
     if (m < min) {
@@ -441,7 +442,7 @@ export function draw_bigmap() {
     ctx.fill();
   }
   var players = game.minimap.players;
-  for (var i = 0; i < players.length; i++) {
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     ctx.fillStyle = !world.time ? "#ff0000" : "#ff0000";
     circle(ctx, x + ((600 * (p.x / (world.nw * 100))) * scale), y + ((600 * (p.y / (world.nh * 100))) * scale), scale * 6);
@@ -477,7 +478,7 @@ export function draw_minimap() {
   }
   var old_scale = scale;
   var players = game.minimap.players;
-  for (var i = 0; i < players.length; i++) {
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     ctx.fillStyle = !world.time ? "#ff0000" : "#ff0000";
     circle(ctx, minimap.x + ((193 * (p.x / (world.nw * 100))) * scale), minimap.y + ((193 * (p.y / (world.nh * 100))) * scale), scale * 2);
@@ -531,13 +532,13 @@ export function draw_leaderboard() {
     ldb.update = false;
     var ids = ldb.ids;
     var w = game_ldb.can.width;
-    var h = game_ldb.can.height;
+    var w = game_ldb.can.height;
     var ctx2 = game_ldb.ctx;
     var players = world.players;
     var in_ldb = false;
     ctx2.clearRect(0, 0, w, h);
     ctx2.drawImage(game_ldb.img, 0, 0);
-    for (var i = 0; i < ids.length; i++) {
+    for (let i = 0; i < ids.length; i++) {
       var p = players[ids[i]];
       if ((world.mode === WORLD.MODE_HUNGER_GAMES) && (p.nickname === "spectator"))
         continue;
@@ -745,10 +746,10 @@ export function draw_ui_crafting() {
   }
   if (craft.crafting) {
     var ret = craft.timeout.update();
-    for (var i = 0; i < craft.can_craft.length; i++) {
+    for (let i = 0; i < craft.can_craft.length; i++) {
       var button = craft.can_craft[i];
       if (craft.id == button.id) {
-        var h = scale * 42;
+        var w = scale * 42;
         var h2 = scale * 17;
         round_rect(ctx, button.info.translate.x, button.info.translate.y + (h * (1 - craft.timeout.v)), button.info.width, (h * craft.timeout.v) + h2, scale * 10);
         ctx.fillStyle = "#55B973";
@@ -768,7 +769,7 @@ export function draw_ui_crafting() {
     }
     return true;
   } else {
-    for (var i = 0; i < craft.can_craft.length; i++)
+    for (let i = 0; i < craft.can_craft.length; i++)
       craft.can_craft[i].draw(ctx);
   }
   return false;
@@ -777,11 +778,11 @@ export function draw_ui_crafting() {
 export function draw_ui_chat() {
   var players = world.units[ITEMS.PLAYERS];
   if ((((((world.mode === WORLD.MODE_PVP) || (world.mode === WORLD.MODE_EXPERIMENTAL)) || (world.mode === WORLD.MODE_ZOMBIES)) || (world.mode === WORLD.MODE_LEGACY)) || (world.mode === WORLD.MODE_BR)) || (world.mode === WORLD.MODE_VAMPIRES) || (world.mode === WORLD.MODE_COMMUNITY)) {
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
       players[i].draw_text();
     }
   } else if (world.mode === WORLD.MODE_HUNGER_GAMES) {
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
       if (user.spectator || user.show_spectators.enabled)
         players[i].draw_text();
       else if (players[i].player.nickname !== "spectator")
@@ -794,7 +795,7 @@ export function draw_ui_chat() {
 export function draw_ui_inventory() {
   var inv = user.inv;
   var p = world.fast_units[user.uid];
-  for (var i = 0; i < inv.can_select.length; i++) {
+  for (let i = 0; i < inv.can_select.length; i++) {
     var button = inv.can_select[i];
     var push = false;
     var p = world.fast_units[user.uid];
@@ -928,8 +929,8 @@ export function draw_door(id) {
     var y = 0;
   };
   var img = sprite[id][world.time];
-  w = -img.width;
-  h = -img.height;
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   ctx.restore();
 };
@@ -949,14 +950,14 @@ export function draw_chest() {
     var x = 0;
     var y = 0;
   };
-  img = sprite[SPRITE.CHEST][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.CHEST][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   if (this.lock) {
-    img = sprite[SPRITE.LOCK][world.time];
-    w = -img.width;
-    h = -img.height;
+    var img = sprite[SPRITE.LOCK][world.time];
+    var w = -img.width;
+    var h = -img.height;
     ctxDrawImage(ctx, img, ((-w / 2) + x) - (1 * scale), (-h / 2) + y, w, h);
   }
   ctx.restore();
@@ -966,9 +967,9 @@ export function draw_thornbush_seed() {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.THORNBUSH_SEED_MOB][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.THORNBUSH_SEED_MOB][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -977,9 +978,9 @@ export function draw_garlic_seed() {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.GARLIC_SEED_MOB][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.GARLIC_SEED_MOB][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -988,9 +989,9 @@ export function draw_pumpkin_seed() {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.PUMPKIN_SEED_MOB][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.PUMPKIN_SEED_MOB][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -999,9 +1000,9 @@ export function draw_aloe_vera_mob() {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.ALOE_VERA][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.ALOE_VERA][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -1010,9 +1011,9 @@ export function draw_wheat_seed() {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.WHEAT_MOB][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.WHEAT_MOB][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -1089,9 +1090,9 @@ export function draw_roof(id) {
     var y = 0;
   };
   var len = sprite[SPRITE.ROOFS].length;
-  img = sprite[SPRITE.ROOFS][(this.j + (this.i % 2)) % len][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[SPRITE.ROOFS][(this.j + (this.i % 2)) % len][world.time];
+  var w = -img.width;
+  var h = -img.height;
   var p = world.fast_units[user.uid];
   if (p && ((user.id === this.pid) || user.in_team(this.pid))) {
     if (dist(this, p) < 550)
@@ -1127,9 +1128,9 @@ export function draw_garland(id) {
   if (this.halo.update())
     this.color += 0.2 + (Math.random() * 0.3);
 
-  img = sprite[SPRITE.GARLANDS][Math.floor(this.id + this.color) % 5][world.time];
-  w = -img.width * this.halo.v;
-  h = -img.height * this.halo.v;
+  var img = sprite[SPRITE.GARLANDS][Math.floor(this.id + this.color) % 5][world.time];
+  var w = -img.width * this.halo.v;
+  var h = -img.height * this.halo.v;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   ctx.restore();
 };
@@ -1152,7 +1153,7 @@ export function draw_bed(id) {
   if ((id === SPRITE.BED_TOP) && !world.transition) {
     var opacity = 0;
     var players = world.units[ITEMS.PLAYERS];
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
       var dist = dist(players[i], this);
       if ((dist < 140) && (dist > 35)) {
         opacity = 0;
@@ -1167,9 +1168,9 @@ export function draw_bed(id) {
       this.opacity = Math.min(1, this.opacity + (delta / 1.5));
     ctx.globalAlpha = this.opacity;
   }
-  img = sprite[id][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[id][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   ctx.globalAlpha = 1;
   ctx.restore();
@@ -1190,9 +1191,9 @@ export function draw_simple_item(id) {
     var x = 0;
     var y = 0;
   };
-  img = sprite[id][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[id][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   ctx.restore();
 };
@@ -1202,7 +1203,7 @@ export function draw_river_tile(is, ie, js, je, id, t, max, min, rand) {
   if (min === undefined)
     min = 0;
 
-  for (var i = is; i <= ie; i++) {
+  for (let i = is; i <= ie; i++) {
     for (var j = js; j <= je; j++) {
       var tile = MAP.tiles[i][j];
       if ((tile === undefined) || (tile[t] === undefined))
@@ -1249,7 +1250,7 @@ export function draw_sand_worm_ground() {
       this.ground.push(ground);
     }
   }
-  for (var i = 0; i < this.ground.length; i++) {
+  for (let i = 0; i < this.ground.length; i++) {
     var ground = this.ground[i];
     ctx.save();
     ctx.translate(user.cam.x + ground.x, user.cam.y + ground.y);
@@ -1289,8 +1290,8 @@ export function draw_sand_worm() {
     else
       _alpha = 1;
     var img = sprite[SPRITE.SAND_WORM1][world.time];
-    w = -img.width * this.breath.v;
-    h = -img.height * this.breath.v;
+    var w = -img.width * this.breath.v;
+    var h = -img.height * this.breath.v;
     ctx.globalAlpha = _alpha;
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     var imgHurt = sprite[SPRITE.HURT_SAND_WORM1];
@@ -1302,8 +1303,8 @@ export function draw_sand_worm() {
     else
       _alpha = 1;
     var img = sprite[SPRITE.SAND_WORM2][world.time];
-    w = -img.width * this.breath.v;
-    h = -img.height * this.breath.v;
+    var w = -img.width * this.breath.v;
+    var h = -img.height * this.breath.v;
     ctx.globalAlpha = _alpha;
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     var imgHurt = sprite[SPRITE.HURT_SAND_WORM2];
@@ -1313,8 +1314,8 @@ export function draw_sand_worm() {
       this.action -= STATE.HURT;
 
     ctx.globalAlpha = (0.6 - this.hit.v) * _alpha;
-    w = -imgHurt.width * this.breath.v;
-    h = -imgHurt.height * this.breath.v;
+    var w = -imgHurt.width * this.breath.v;
+    var h = -imgHurt.height * this.breath.v;
     ctxDrawImage(ctx, imgHurt, -w / 4, -h / 4, w / 2, h / 2);
   }
   ctx.globalAlpha = 1;
@@ -1336,14 +1337,14 @@ export function draw_vulture() {
     this._alpha = Math.max(0, this._alpha - (delta * 2.2));
   else
     this._alpha = Math.min(1, this._alpha + (delta * 2.2));
-  img = sprite[SPRITE.VULTURE_GROUND_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.VULTURE_GROUND_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.globalAlpha = 1 - this._alpha;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
-  img = sprite[SPRITE.VULTURE_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.VULTURE_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.globalAlpha = this._alpha;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if (this.action & STATE.HURT) {
@@ -1352,19 +1353,19 @@ export function draw_vulture() {
 
     ctx.globalAlpha = (0.6 - this.hit.v) * (1 - this._alpha);
     var img = sprite[SPRITE.HURT_VULTURE_GROUND];
-    w = (-img.width * this.breath.v) * this.scale;
-    h = (-img.height * this.breath.v) * this.scale;
+    var w = (-img.width * this.breath.v) * this.scale;
+    var h = (-img.height * this.breath.v) * this.scale;
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.globalAlpha = (0.6 - this.hit.v) * this._alpha;
     var img = sprite[SPRITE.HURT_VULTURE];
-    w = (-img.width * this.breath.v) * this.scale;
-    h = (-img.height * this.breath.v) * this.scale;
+    var w = (-img.width * this.breath.v) * this.scale;
+    var h = (-img.height * this.breath.v) * this.scale;
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.globalAlpha = 1;
   }
-  img = sprite[SPRITE.VULTURE_WING_LEFT_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.VULTURE_WING_LEFT_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.save();
   ctx.translate(-40 * scale, 80 * scale);
   ctx.rotate(this.rotate.v);
@@ -1377,7 +1378,7 @@ export function draw_vulture() {
     ctx.globalAlpha = 1;
   }
   ctx.restore();
-  img = sprite[SPRITE.VULTURE_WING_RIGHT_ATTACK][world.time];
+  var img = sprite[SPRITE.VULTURE_WING_RIGHT_ATTACK][world.time];
   ctx.save();
   ctx.translate(40 * scale, 80 * scale);
   ctx.rotate(-this.rotate.v);
@@ -1410,19 +1411,19 @@ export function draw_hawk() {
   else
     this._alpha = Math.min(1, this._alpha + (delta * 2.2));
   if ((this.info & 1) === 0)
-    img = sprite[SPRITE.HAWK_GROUND][world.time];
+    var img = sprite[SPRITE.HAWK_GROUND][world.time];
   else
-    img = sprite[SPRITE.HAWK_GROUND_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.HAWK_GROUND_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.globalAlpha = 1 - this._alpha;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if ((this.info & 1) === 0)
-    img = sprite[SPRITE.HAWK][world.time];
+    var img = sprite[SPRITE.HAWK][world.time];
   else
-    img = sprite[SPRITE.HAWK_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.HAWK_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.globalAlpha = this._alpha;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if (this.action & STATE.HURT) {
@@ -1431,22 +1432,22 @@ export function draw_hawk() {
 
     ctx.globalAlpha = (0.6 - this.hit.v) * (1 - this._alpha);
     var img = sprite[SPRITE.HURT_HAWK_GROUND];
-    w = (-img.width * this.breath.v) * this.scale;
-    h = (-img.height * this.breath.v) * this.scale;
+    var w = (-img.width * this.breath.v) * this.scale;
+    var h = (-img.height * this.breath.v) * this.scale;
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.globalAlpha = (0.6 - this.hit.v) * this._alpha;
     var img = sprite[SPRITE.HURT_HAWK];
-    w = (-img.width * this.breath.v) * this.scale;
-    h = (-img.height * this.breath.v) * this.scale;
+    var w = (-img.width * this.breath.v) * this.scale;
+    var h = (-img.height * this.breath.v) * this.scale;
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.globalAlpha = 1;
   }
   if ((this.info & 1) === 0)
-    img = sprite[SPRITE.HAWK_WING_LEFT][world.time];
+    var img = sprite[SPRITE.HAWK_WING_LEFT][world.time];
   else
-    img = sprite[SPRITE.HAWK_WING_LEFT_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.HAWK_WING_LEFT_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.save();
   ctx.translate(-20 * scale, 0 * scale);
   ctx.rotate(this.rotate.v);
@@ -1460,9 +1461,9 @@ export function draw_hawk() {
   }
   ctx.restore();
   if ((this.info & 1) === 0)
-    img = sprite[SPRITE.HAWK_WING_RIGHT][world.time];
+    var img = sprite[SPRITE.HAWK_WING_RIGHT][world.time];
   else
-    img = sprite[SPRITE.HAWK_WING_RIGHT_ATTACK][world.time];
+    var img = sprite[SPRITE.HAWK_WING_RIGHT_ATTACK][world.time];
   ctx.save();
   ctx.translate(20 * scale, 0 * scale);
   ctx.rotate(-this.rotate.v);
@@ -1490,11 +1491,11 @@ export function draw_baby_lava() {
   this.breath.update();
   this.rotate.update();
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_LAVA][world.time];
+    var img = sprite[SPRITE.BABY_LAVA][world.time];
   else
-    img = sprite[SPRITE.BABY_LAVA_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.BABY_LAVA_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1506,11 +1507,11 @@ export function draw_baby_lava() {
     ctx.globalAlpha = 1;
   }
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_LAVA_WING_LEFT][world.time];
+    var img = sprite[SPRITE.BABY_LAVA_WING_LEFT][world.time];
   else
-    img = sprite[SPRITE.BABY_LAVA_WING_LEFT_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.BABY_LAVA_WING_LEFT_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.save();
   ctx.translate(-40 * scale, 10 * scale);
   ctx.rotate(this.rotate.v);
@@ -1523,9 +1524,9 @@ export function draw_baby_lava() {
   }
   ctx.restore();
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_LAVA_WING_RIGHT][world.time];
+    var img = sprite[SPRITE.BABY_LAVA_WING_RIGHT][world.time];
   else
-    img = sprite[SPRITE.BABY_LAVA_WING_RIGHT_ATTACK][world.time];
+    var img = sprite[SPRITE.BABY_LAVA_WING_RIGHT_ATTACK][world.time];
   ctx.save();
   ctx.translate(40 * scale, 10 * scale);
   ctx.rotate(-this.rotate.v);
@@ -1551,11 +1552,11 @@ export function draw_baby_dragon() {
   this.breath.update();
   this.rotate.update();
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_DRAGON][world.time];
+    var img = sprite[SPRITE.BABY_DRAGON][world.time];
   else
-    img = sprite[SPRITE.BABY_DRAGON_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.BABY_DRAGON_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1567,11 +1568,11 @@ export function draw_baby_dragon() {
     ctx.globalAlpha = 1;
   }
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_DRAGON_WING_LEFT][world.time];
+    var img = sprite[SPRITE.BABY_DRAGON_WING_LEFT][world.time];
   else
-    img = sprite[SPRITE.BABY_DRAGON_WING_LEFT_ATTACK][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+    var img = sprite[SPRITE.BABY_DRAGON_WING_LEFT_ATTACK][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.save();
   ctx.translate(-40 * scale, 10 * scale);
   ctx.rotate(this.rotate.v);
@@ -1584,9 +1585,9 @@ export function draw_baby_dragon() {
   }
   ctx.restore();
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_DRAGON_WING_RIGHT][world.time];
+    var img = sprite[SPRITE.BABY_DRAGON_WING_RIGHT][world.time];
   else
-    img = sprite[SPRITE.BABY_DRAGON_WING_RIGHT_ATTACK][world.time];
+    var img = sprite[SPRITE.BABY_DRAGON_WING_RIGHT_ATTACK][world.time];
   ctx.save();
   ctx.translate(40 * scale, 10 * scale);
   ctx.rotate(-this.rotate.v);
@@ -1611,9 +1612,9 @@ export function draw_lava_dragon() {
     this.scale = Math.max(this.scale - delta, 1);
   this.breath.update();
   this.rotate.update();
-  img = sprite[SPRITE.LAVA_DRAGON][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.LAVA_DRAGON][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1624,9 +1625,9 @@ export function draw_lava_dragon() {
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.globalAlpha = 1;
   }
-  img = sprite[SPRITE.LAVA_WING_LEFT][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.LAVA_WING_LEFT][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.save();
   ctx.translate(-60 * scale, 20 * scale);
   ctx.rotate(this.rotate.v);
@@ -1638,7 +1639,7 @@ export function draw_lava_dragon() {
     ctx.globalAlpha = 1;
   }
   ctx.restore();
-  img = sprite[SPRITE.LAVA_WING_RIGHT][world.time];
+  var img = sprite[SPRITE.LAVA_WING_RIGHT][world.time];
   ctx.save();
   ctx.translate(60 * scale, 20 * scale);
   ctx.rotate(-this.rotate.v);
@@ -1663,9 +1664,9 @@ export function draw_dragon() {
     this.scale = Math.max(this.scale - delta, 1);
   this.breath.update();
   this.rotate.update();
-  img = sprite[SPRITE.DRAGON][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.DRAGON][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1676,9 +1677,9 @@ export function draw_dragon() {
     ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
     ctx.globalAlpha = 1;
   }
-  img = sprite[SPRITE.WING_LEFT][world.time];
-  w = (-img.width * this.breath.v) * this.scale;
-  h = (-img.height * this.breath.v) * this.scale;
+  var img = sprite[SPRITE.WING_LEFT][world.time];
+  var w = (-img.width * this.breath.v) * this.scale;
+  var h = (-img.height * this.breath.v) * this.scale;
   ctx.save();
   ctx.translate(-30 * scale, 70 * scale);
   ctx.rotate(this.rotate.v);
@@ -1690,7 +1691,7 @@ export function draw_dragon() {
     ctx.globalAlpha = 1;
   }
   ctx.restore();
-  img = sprite[SPRITE.WING_RIGHT][world.time];
+  var img = sprite[SPRITE.WING_RIGHT][world.time];
   ctx.save();
   ctx.translate(30 * scale, 70 * scale);
   ctx.rotate(-this.rotate.v);
@@ -1713,9 +1714,9 @@ export function draw_crate(id, _hurt) {
     id = SPRITE.CRATE;
     this.info = 36;
   }
-  img = sprite[id][this.info][world.time];
-  w = -img.width / 2;
-  h = -img.height / 2;
+  var img = sprite[id][this.info][world.time];
+  var w = -img.width / 2;
+  var h = -img.height / 2;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1733,9 +1734,9 @@ export function draw_simple_mobs_2(id, hurt) {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
-  img = sprite[id][world.time];
-  w = -img.width;
-  h = -img.height;
+  var img = sprite[id][world.time];
+  var w = -img.width;
+  var h = -img.height;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1755,11 +1756,11 @@ export function draw_baby_mammoth() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   if (this.info === 0)
-    img = sprite[SPRITE.BABY_MAMMOTH][world.time];
+    var img = sprite[SPRITE.BABY_MAMMOTH][world.time];
   else
-    img = sprite[SPRITE.BABY_MAMMOTH_ATTACK][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+    var img = sprite[SPRITE.BABY_MAMMOTH_ATTACK][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1779,11 +1780,11 @@ export function draw_boar() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   if (this.info === 0)
-    img = sprite[SPRITE.BOAR][world.time];
+    var img = sprite[SPRITE.BOAR][world.time];
   else
-    img = sprite[SPRITE.BOAR_ATTACK][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+    var img = sprite[SPRITE.BOAR_ATTACK][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1807,11 +1808,11 @@ export function draw_crab_boss() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   if (this.info === 0)
-    img = sprite[SPRITE.CRAB_BOSS][world.time];
+    var img = sprite[SPRITE.CRAB_BOSS][world.time];
   else
-    img = sprite[SPRITE.CRAB_BOSS_ATTACK][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+    var img = sprite[SPRITE.CRAB_BOSS_ATTACK][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1838,11 +1839,11 @@ export function draw_crab_boss() {
   ctx.translate(100, 0);
   ctx.rotate(pi2);
   if (this.info === 0)
-    img = sprite[SPRITE.CRAB_BOSS_CLAW_LEFT][world.time];
+    var img = sprite[SPRITE.CRAB_BOSS_CLAW_LEFT][world.time];
   else
-    img = sprite[SPRITE.CRAB_BOSS_CLAW_LEFT_ATTACK][world.time];
-  w = -img.width * this.breathl.v;
-  h = -img.height * this.breathl.v;
+    var img = sprite[SPRITE.CRAB_BOSS_CLAW_LEFT_ATTACK][world.time];
+  var w = -img.width * this.breathl.v;
+  var h = -img.height * this.breathl.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     ctx.globalAlpha = 0.6 - this.hit.v;
@@ -1863,11 +1864,11 @@ export function draw_crab_boss() {
   ctx.translate(100, 0);
   ctx.rotate(pi2);
   if (this.info === 0)
-    img = sprite[SPRITE.CRAB_BOSS_CLAW_RIGHT][world.time];
+    var img = sprite[SPRITE.CRAB_BOSS_CLAW_RIGHT][world.time];
   else
-    img = sprite[SPRITE.CRAB_BOSS_CLAW_RIGHT_ATTACK][world.time];
-  w = -img.width * this.breathr.v;
-  h = -img.height * this.breathr.v;
+    var img = sprite[SPRITE.CRAB_BOSS_CLAW_RIGHT_ATTACK][world.time];
+  var w = -img.width * this.breathr.v;
+  var h = -img.height * this.breathr.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     ctx.globalAlpha = 0.6 - this.hit.v;
@@ -1894,11 +1895,11 @@ export function draw_crab() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   if (this.info === 0)
-    img = sprite[SPRITE.CRAB][world.time];
+    var img = sprite[SPRITE.CRAB][world.time];
   else
-    img = sprite[SPRITE.CRAB_ATTACK][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+    var img = sprite[SPRITE.CRAB_ATTACK][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -1925,11 +1926,11 @@ export function draw_crab() {
   ctx.translate(55, 0);
   ctx.rotate(pi2);
   if (this.info === 0)
-    img = sprite[SPRITE.CRAB_CLAW_LEFT][world.time];
+    var img = sprite[SPRITE.CRAB_CLAW_LEFT][world.time];
   else
-    img = sprite[SPRITE.CRAB_CLAW_LEFT_ATTACK][world.time];
-  w = -img.width * this.breathl.v;
-  h = -img.height * this.breathl.v;
+    var img = sprite[SPRITE.CRAB_CLAW_LEFT_ATTACK][world.time];
+  var w = -img.width * this.breathl.v;
+  var h = -img.height * this.breathl.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     ctx.globalAlpha = 0.6 - this.hit.v;
@@ -1950,11 +1951,11 @@ export function draw_crab() {
   ctx.translate(55, 0);
   ctx.rotate(pi2);
   if (this.info === 0)
-    img = sprite[SPRITE.CRAB_CLAW_RIGHT][world.time];
+    var img = sprite[SPRITE.CRAB_CLAW_RIGHT][world.time];
   else
-    img = sprite[SPRITE.CRAB_CLAW_RIGHT_ATTACK][world.time];
-  w = -img.width * this.breathr.v;
-  h = -img.height * this.breathr.v;
+    var img = sprite[SPRITE.CRAB_CLAW_RIGHT_ATTACK][world.time];
+  var w = -img.width * this.breathr.v;
+  var h = -img.height * this.breathr.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     ctx.globalAlpha = 0.6 - this.hit.v;
@@ -1978,17 +1979,17 @@ export function draw_spell() {
   this.born = Math.min(1, this.born + (delta * 2));
   ctx.globalAlpha = Math.min(1, Math.max(0, dist(this, this.r) / 80)) * this.born;
   this.breath.update();
-  img = sprite[SPRITE.SPELL][world.time][this.spell];
+  var img = sprite[SPRITE.SPELL][world.time][this.spell];
   if (this.spell < 2) {
-    w = -img.width * this.breath.v;
-    h = -img.height * this.breath.v;
+    var w = -img.width * this.breath.v;
+    var h = -img.height * this.breath.v;
   } else {
     if (this.fly === 0) {
-      w = -img.width;
-      h = -img.height;
+      var w = -img.width;
+      var h = -img.height;
     } else {
-      w = -img.width * 1.35;
-      h = -img.height * 1.35;
+      var w = -img.width * 1.35;
+      var h = -img.height * 1.35;
     }
   }
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
@@ -2001,9 +2002,9 @@ export function draw_simple_mobs(id, hurt) {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.breath.update();
-  img = sprite[id][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+  var img = sprite[id][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -2022,9 +2023,9 @@ export function draw_simple_mobs_hd(id, hurt) {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.breath.update();
-  img = sprite[id][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+  var img = sprite[id][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
   if (this.action & STATE.HURT) {
     if (this.hit.update() && (this.hit.o == false))
@@ -2044,9 +2045,9 @@ export function draw_breath_2(id, x, y) {
   ctx.rotate(this.angle);
   ctx.translate(this.x - x, this.y - y);
   this.breath.update();
-  img = sprite[id][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+  var img = sprite[id][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -2056,9 +2057,9 @@ export function draw_breath(id) {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.breath.update();
-  img = sprite[id][world.time];
-  w = -img.width * this.breath.v;
-  h = -img.height * this.breath.v;
+  var img = sprite[id][world.time];
+  var w = -img.width * this.breath.v;
+  var h = -img.height * this.breath.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -2086,7 +2087,7 @@ export function draw_thornbush() {
     else
       var img = sprite[SPRITE.PLANT_THORNBUSH][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     if (this.info & 16)
@@ -2122,7 +2123,7 @@ export function draw_garlic() {
     else
       var img = sprite[SPRITE.PLANT_GARLIC][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     if (this.info & 16)
@@ -2158,7 +2159,7 @@ export function draw_aloe_vera() {
     else
       var img = sprite[SPRITE.PLANT_ALOE_VERA][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     if (this.info & 16)
@@ -2194,7 +2195,7 @@ export function draw_watermelon() {
     else
       var img = sprite[SPRITE.PLANT_WATERMELON][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     if (this.info & 16)
@@ -2230,7 +2231,7 @@ export function draw_carrot() {
     else
       var img = sprite[SPRITE.PLANT_CARROT][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     if (this.info & 16)
@@ -2266,7 +2267,7 @@ export function draw_pumpkin() {
     else
       var img = sprite[SPRITE.PLANT_PUMPKIN][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     if (this.info & 16)
@@ -2302,7 +2303,7 @@ export function draw_wheat() {
     else
       var img = sprite[SPRITE.WHEAT_SEED][world.time];
     var w = -img.width * this.ground.v;
-    var h = -img.height * this.ground.v;
+    var w = -img.height * this.ground.v;
     ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   } else {
     this.wind.update();
@@ -2338,7 +2339,7 @@ export function draw_seed() {
   this.ground.update();
   var img = sprite[SPRITE.PLANT_SEED][world.time];
   var w = -img.width * this.ground.v;
-  var h = -img.height * this.ground.v;
+  var w = -img.height * this.ground.v;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   ctx.restore();
 };
@@ -2368,7 +2369,7 @@ export function draw_plant() {
   ctxDrawImage(ctx, img, (-img.width / 2) + x, (-img.width / 2) + y);
   ctx.restore();
   var amount = this.info & 15;
-  for (var i = 0; i < amount; i++)
+  for (let i = 0; i < amount; i++)
     this.fruits[i].draw(SPRITE.FRUIT);
 };
 
@@ -2393,7 +2394,7 @@ export function draw_tomato() {
   this.ground.update();
   var img = sprite[SPRITE.PLANT_TOMATO][world.time];
   var w = -img.width * this.ground.v;
-  var h = -img.height * this.ground.v;
+  var w = -img.height * this.ground.v;
   ctxDrawImage(ctx, img, (-w / 2) + x, (-h / 2) + y, w, h);
   ctx.restore();
 };
@@ -2403,7 +2404,7 @@ export function draw_tomato_fruit() {
     return;
 
   var amount = this.info & 15;
-  for (var i = 0; i < amount; i++)
+  for (let i = 0; i < amount; i++)
     this.fruits[i].draw(SPRITE.TOMATO, this.x, this.y);
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
@@ -2443,9 +2444,9 @@ export function draw_furnace() {
     var y = 0;
   };
   if (this.action == 2)
-    img = sprite[SPRITE.FURNACE_ON][world.time];
+    var img = sprite[SPRITE.FURNACE_ON][world.time];
   else
-    img = sprite[SPRITE.FURNACE_OFF][world.time];
+    var img = sprite[SPRITE.FURNACE_OFF][world.time];
   ctxDrawImage(ctx, img, (-img.width / 2) + x, (-img.height / 2) + y);
   ctx.restore();
 };
@@ -2458,7 +2459,7 @@ export function draw_furnace_ground() {
   ctx.globalAlpha = 0.3;
   var img = sprite[SPRITE.GROUND_FIRE][world.time];
   var w = -img.width * this.ground.v;
-  var h = -img.height * this.ground.v;
+  var w = -img.height * this.ground.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.globalAlpha = 1;
   ctx.restore();
@@ -2471,7 +2472,7 @@ export function draw_bread_oven_smog() {
   if ((((this.info & 31) && (this.info & 992)) && ((this.info & 31744) != 31744)) && ((this.smog.length == 0) || (this.smog[this.smog.length - 1] <= SPRITE.SMOG_PUSH)))
     this.smog.push(SPRITE.SMOG);
 
-  for (var i = 0; i < this.smog.length; i++) {
+  for (let i = 0; i < this.smog.length; i++) {
     this.smog[i] = Math.max(0, this.smog[i] - (delta * SPRITE.SMOG_SPEED));
     ctx.globalAlpha = this.smog[i] / 1.3;
     var v = (1 - this.smog[i]) * 40;
@@ -2494,7 +2495,7 @@ export function draw_fire_ground(id) {
   ctx.globalAlpha = 0.3;
   var img = sprite[SPRITE.GROUND_FIRE][world.time];
   var w = -img.width * this.ground.v;
-  var h = -img.height * this.ground.v;
+  var w = -img.height * this.ground.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.globalAlpha = 1;
   if (this.hit.update) {
@@ -2508,7 +2509,7 @@ export function draw_fire_ground(id) {
     var x = 0;
     var y = 0;
   };
-  img = sprite[id][world.time];
+  var img = sprite[id][world.time];
   ctxDrawImage(ctx, img, (-img.width / 2) + x, (-img.height / 2) + y);
   ctx.restore();
 };
@@ -2529,9 +2530,9 @@ export function draw_sign() {
     var y = 0;
   };
   if (this.info === 0)
-    img = sprite[SPRITE.SIGN][world.time];
+    var img = sprite[SPRITE.SIGN][world.time];
   else
-    img = sprite[SPRITE.SYMBOLS][world.time][this.info - 1];
+    var img = sprite[SPRITE.SYMBOLS][world.time][this.info - 1];
   ctxDrawImage(ctx, img, (-img.width / 2) + x, (-img.height / 2) + y);
   ctx.restore();
 };;
@@ -2552,15 +2553,15 @@ export function draw_bread_oven() {
     var y = 0;
   };
   if (((this.info & 31) && (this.info & 992)) && ((this.info & 31744) != 31744)) {
-    img = sprite[SPRITE.BREAD_OVEN_ON][world.time];
+    var img = sprite[SPRITE.BREAD_OVEN_ON][world.time];
     ctxDrawImage(ctx, img, (-img.width / 2) + x, (-img.height / 2) + y);
     this.up.update();
     var img = sprite[SPRITE.BREAD_LIGHT_UP][world.time];
     var w = -img.width * this.up.v;
-    var h = -img.height * this.up.v;
+    var w = -img.height * this.up.v;
     ctxDrawImage(ctx, img, (-w / 2) + (1 * scale), (-h / 2) + (3 * scale), w, h);
   } else {
-    img = sprite[SPRITE.BREAD_OVEN_OFF][world.time];
+    var img = sprite[SPRITE.BREAD_OVEN_OFF][world.time];
     ctxDrawImage(ctx, img, (-img.width / 2) + x, (-img.height / 2) + y);
   }
   ctx.restore();
@@ -2582,12 +2583,12 @@ export function draw_windmill_wings() {
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.save();
   ctx.rotate(this.rotate);
-  img = sprite[SPRITE.WINDMILL_WINGS][world.time];
+  var img = sprite[SPRITE.WINDMILL_WINGS][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.save();
   ctx.rotate(this.angl);
-  img = sprite[SPRITE.WINDMILL_HEAD][world.time];
+  var img = sprite[SPRITE.WINDMILL_HEAD][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.restore();
@@ -2612,13 +2613,13 @@ export function draw_extractor_stone() {
   }
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE_STONE][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE_STONE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   if ((this.info & 255) && ((this.info & 65280) != 65280))
     this.rotate = (this.rotate + (delta * 3)) % (Math.PI * 2);
 
   ctx.rotate(this.rotate);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE0_STONE][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE0_STONE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
 };
@@ -2642,13 +2643,13 @@ export function draw_extractor_gold() {
   }
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE_GOLD][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE_GOLD][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   if ((this.info & 255) && ((this.info & 65280) != 65280))
     this.rotate = (this.rotate + (delta * 3)) % (Math.PI * 2);
 
   ctx.rotate(this.rotate);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE0_GOLD][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE0_GOLD][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
 };
@@ -2672,13 +2673,13 @@ export function draw_extractor_diamond() {
   }
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE_DIAMOND][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE_DIAMOND][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   if ((this.info & 255) && ((this.info & 65280) != 65280))
     this.rotate = (this.rotate + (delta * 3)) % (Math.PI * 2);
 
   ctx.rotate(this.rotate);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE0_DIAMOND][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE0_DIAMOND][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
 };
@@ -2702,13 +2703,13 @@ export function draw_extractor_amethyst() {
   }
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE_AMETHYST][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE_AMETHYST][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   if ((this.info & 255) && ((this.info & 65280) != 65280))
     this.rotate = (this.rotate + (delta * 3)) % (Math.PI * 2);
 
   ctx.rotate(this.rotate);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE0_AMETHYST][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE0_AMETHYST][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
 };
@@ -2732,13 +2733,13 @@ export function draw_extractor_reidite() {
   }
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE_REIDITE][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE_REIDITE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   if ((this.info & 255) && ((this.info & 65280) != 65280))
     this.rotate = (this.rotate + (delta * 3)) % (Math.PI * 2);
 
   ctx.rotate(this.rotate);
-  img = sprite[SPRITE.EXTRACTOR_MACHINE0_REIDITE][world.time];
+  var img = sprite[SPRITE.EXTRACTOR_MACHINE0_REIDITE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
 };
@@ -2758,7 +2759,7 @@ export function draw_windmill_head() {
   ctx.save();
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.WINDMILL][world.time];
+  var img = sprite[SPRITE.WINDMILL][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
 };
@@ -2781,17 +2782,17 @@ export function draw_emerald_machine() {
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.save();
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.EMERALD_MACHINE][world.time];
+  var img = sprite[SPRITE.EMERALD_MACHINE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.save();
   ctx.rotate(this.rotate1);
-  img = sprite[SPRITE.EMERALD_MACHINE_ROTATE][world.time];
+  var img = sprite[SPRITE.EMERALD_MACHINE_ROTATE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.save();
   ctx.rotate(this.rotate2);
-  img = sprite[SPRITE.EMERALD_MACHINE_HOLE][world.time];
+  var img = sprite[SPRITE.EMERALD_MACHINE_HOLE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.restore();
@@ -2815,17 +2816,17 @@ export function draw_resurrection() {
   ctx.translate((user.cam.x + this.x) + x, (user.cam.y + this.y) + y);
   ctx.save();
   ctx.rotate(this.angle);
-  img = sprite[SPRITE.RESURRECTION][world.time];
+  var img = sprite[SPRITE.RESURRECTION][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.save();
   ctx.rotate(this.rotate1);
-  img = sprite[SPRITE.RESURRECTION_ROTATE][world.time];
+  var img = sprite[SPRITE.RESURRECTION_ROTATE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.save();
   ctx.rotate(this.rotate2);
-  img = sprite[SPRITE.RESURRECTION_HOLE][world.time];
+  var img = sprite[SPRITE.RESURRECTION_HOLE][world.time];
   ctxDrawImage(ctx, img, -img.width / 2, -img.height / 2);
   ctx.restore();
   ctx.restore();
@@ -2836,9 +2837,9 @@ export function draw_emerald_machine_halo() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.halo.update();
-  img = sprite[SPRITE.EMERALD_MACHINE_GROUND][world.time];
-  w = -img.width * this.halo.v;
-  h = -img.height * this.halo.v;
+  var img = sprite[SPRITE.EMERALD_MACHINE_GROUND][world.time];
+  var w = -img.width * this.halo.v;
+  var h = -img.height * this.halo.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -2848,9 +2849,9 @@ export function draw_resurrection_halo() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.halo.update();
-  img = sprite[SPRITE.RESURRECTION_GROUND][world.time];
-  w = -img.width * this.halo.v;
-  h = -img.height * this.halo.v;
+  var img = sprite[SPRITE.RESURRECTION_GROUND][world.time];
+  var w = -img.width * this.halo.v;
+  var h = -img.height * this.halo.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -2860,9 +2861,9 @@ export function draw_furnace_halo() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.halo.update();
-  img = sprite[SPRITE.HALO_FIRE][world.time];
-  w = -img.width * this.halo.v;
-  h = -img.height * this.halo.v;
+  var img = sprite[SPRITE.HALO_FIRE][world.time];
+  var w = -img.width * this.halo.v;
+  var h = -img.height * this.halo.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -2872,14 +2873,14 @@ export function draw_fire_halo() {
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   ctx.rotate(this.angle);
   this.fire.update();
-  img = sprite[SPRITE.FIRE][world.time];
-  w = -img.width * this.fire.v;
-  h = -img.height * this.fire.v;
+  var img = sprite[SPRITE.FIRE][world.time];
+  var w = -img.width * this.fire.v;
+  var h = -img.height * this.fire.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   this.halo.update();
-  img = sprite[SPRITE.HALO_FIRE][world.time];
-  w = -img.width * this.halo.v;
-  h = -img.height * this.halo.v;
+  var img = sprite[SPRITE.HALO_FIRE][world.time];
+  var w = -img.width * this.halo.v;
+  var h = -img.height * this.halo.v;
   ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   ctx.restore();
 };
@@ -2945,7 +2946,7 @@ export function draw_player_effect(p) {
 
 export function draw_player_right_stuff_after(right, x, y) {
   if (right >= 0) {
-    img = sprite[right][world.time];
+    var img = sprite[right][world.time];
     switch (right) {
       case SPRITE.WOOD_SHIELD:
       case SPRITE.STONE_SHIELD:
@@ -2965,7 +2966,7 @@ export function draw_player_right_stuff_after(right, x, y) {
 
 export function draw_player_right_stuff(right, x, y) {
   if (right >= 0) {
-    img = sprite[right][world.time];
+    var img = sprite[right][world.time];
     switch (right) {
       case SPRITE.PICK:
       case SPRITE.PICK_GOLD:
@@ -3179,15 +3180,15 @@ export function draw_vehicle() {
       this.vehicle_fx1 = Math.max(0.1, this.vehicle_fx1 - delta);
     var img = sprite[SPRITE.HAWK_TAMED][world.time];
     draw_image_transition_hd(SPRITE.HAWK_TAMED, img, -img.width / 4, -img.height / 4);
-    img = sprite[SPRITE.HAWK_WING_LEFT_TAMED][world.time];
-    w = -img.width;
-    h = -img.height;
+    var img = sprite[SPRITE.HAWK_WING_LEFT_TAMED][world.time];
+    var w = -img.width;
+    var h = -img.height;
     ctx.save();
     ctx.translate(-20 * scale, -20 * scale);
     ctx.rotate(this.vehicle_fx4.v * this.vehicle_fx1);
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.restore();
-    img = sprite[SPRITE.HAWK_WING_RIGHT_TAMED][world.time];
+    var img = sprite[SPRITE.HAWK_WING_RIGHT_TAMED][world.time];
     ctx.save();
     ctx.translate(20 * scale, -20 * scale);
     ctx.rotate(-this.vehicle_fx4.v * this.vehicle_fx1);
@@ -3202,15 +3203,15 @@ export function draw_vehicle() {
       this.vehicle_fx1 = Math.max(0.1, this.vehicle_fx1 - delta);
     var img = sprite[SPRITE.BABY_LAVA_TAMED][world.time];
     draw_image_transition_hd(SPRITE.BABY_LAVA_TAMED, img, -img.width / 4, -img.height / 4);
-    img = sprite[SPRITE.BABY_LAVA_WING_LEFT_TAMED][world.time];
-    w = -img.width;
-    h = -img.height;
+    var img = sprite[SPRITE.BABY_LAVA_WING_LEFT_TAMED][world.time];
+    var w = -img.width;
+    var h = -img.height;
     ctx.save();
     ctx.translate(-40 * scale, -45 * scale);
     ctx.rotate(this.vehicle_fx4.v * this.vehicle_fx1);
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.restore();
-    img = sprite[SPRITE.BABY_LAVA_WING_RIGHT_TAMED][world.time];
+    var img = sprite[SPRITE.BABY_LAVA_WING_RIGHT_TAMED][world.time];
     ctx.save();
     ctx.translate(40 * scale, -45 * scale);
     ctx.rotate(-this.vehicle_fx4.v * this.vehicle_fx1);
@@ -3225,15 +3226,15 @@ export function draw_vehicle() {
       this.vehicle_fx1 = Math.max(0.1, this.vehicle_fx1 - delta);
     var img = sprite[SPRITE.BABY_DRAGON_TAMED][world.time];
     draw_image_transition_hd(SPRITE.BABY_DRAGON_TAMED, img, -img.width / 4, -img.height / 4);
-    img = sprite[SPRITE.BABY_DRAGON_WING_LEFT_TAMED][world.time];
-    w = -img.width;
-    h = -img.height;
+    var img = sprite[SPRITE.BABY_DRAGON_WING_LEFT_TAMED][world.time];
+    var w = -img.width;
+    var h = -img.height;
     ctx.save();
     ctx.translate(-40 * scale, -45 * scale);
     ctx.rotate(this.vehicle_fx4.v * this.vehicle_fx1);
     ctxDrawImage(ctx, img, -w / 4, -h / 4, w / 2, h / 2);
     ctx.restore();
-    img = sprite[SPRITE.BABY_DRAGON_WING_RIGHT_TAMED][world.time];
+    var img = sprite[SPRITE.BABY_DRAGON_WING_RIGHT_TAMED][world.time];
     ctx.save();
     ctx.translate(40 * scale, -45 * scale);
     ctx.rotate(-this.vehicle_fx4.v * this.vehicle_fx1);
@@ -3294,9 +3295,9 @@ export function draw_vehicle() {
     ctx.rotate((Math.PI + this.vehicle_fx2) + pi4);
     ctx.translate(120, move);
     ctx.rotate(pi2);
-    img = sprite[SPRITE.CRAB_BOSS_CLAW_LEFT][world.time];
-    w = -img.width;
-    h = -img.height;
+    var img = sprite[SPRITE.CRAB_BOSS_CLAW_LEFT][world.time];
+    var w = -img.width;
+    var h = -img.height;
     ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
     ctx.restore();
     ctx.save();
@@ -3304,26 +3305,13 @@ export function draw_vehicle() {
     ctx.rotate(((Math.PI + this.vehicle_fx2) + pi2) + pi4);
     ctx.translate(120, move);
     ctx.rotate(pi2);
-    img = sprite[SPRITE.CRAB_BOSS_CLAW_RIGHT][world.time];
-    w = -img.width;
-    h = -img.height;
+    var img = sprite[SPRITE.CRAB_BOSS_CLAW_RIGHT][world.time];
+    var w = -img.width;
+    var h = -img.height;
     ctxDrawImage(ctx, img, -w / 2, -h / 2, w, h);
   }
   ctx.restore();
 };
-__EFFECT_HURT__ = 0;
-__EFFECT_HEAL__ = 1;
-__EFFECT_COLD__ = 2;
-__EFFECT_HUNGER__ = 3;
-__EFFECT_BOX__ = 4;
-__IMAGE_EFFECT__ = [
-  [],
-  [],
-  [],
-  [],
-  []
-];
-__IMAGE_EFFECT_COLOR__ = ["#BB0000", "#00BB00", "#1CE7E0", "#DBE71C", "#BB0000"];
 
 export function get_image_effect(image_id, image, effect) {
   if (image.tryLoad() !== 1)
@@ -3359,7 +3347,7 @@ export function draw_player() {
       break;
   }
   if (this.ghost) {
-    for (var i = 0; i < this.bubbles.length; i++) {
+    for (let i = 0; i < this.bubbles.length; i++) {
       var b = this.bubbles[i];
       if (b.life > 0.5)
         var alpha = 1 - ((b.life - 0.5) * 2);
@@ -3391,22 +3379,22 @@ export function draw_player() {
   var y = this.walk.v;
   var spriteid;
   if (this.clothe === SPRITE.WINTER_HOOD) {
-    img = sprite[SPRITE.GLOVES_HOOD][world.time];
+    var img = sprite[SPRITE.GLOVES_HOOD][world.time];
     spriteid = SPRITE.GLOVES_HOOD;
   } else if (this.clothe === SPRITE.DIAMOND_PROTECTION) {
-    img = sprite[SPRITE.GLOVES_DIAMOND_PROTECTION][world.time];
+    var img = sprite[SPRITE.GLOVES_DIAMOND_PROTECTION][world.time];
     spriteid = SPRITE.GLOVES_DIAMOND_PROTECTION;
   } else if (this.clothe === SPRITE.AMETHYST_PROTECTION) {
-    img = sprite[SPRITE.GLOVES_AMETHYST_PROTECTION][world.time];
+    var img = sprite[SPRITE.GLOVES_AMETHYST_PROTECTION][world.time];
     spriteid = SPRITE.GLOVES_AMETHYST_PROTECTION;
   } else if (this.clothe === SPRITE.REIDITE_PROTECTION) {
-    img = sprite[SPRITE.GLOVES_REIDITE_PROTECTION][world.time];
+    var img = sprite[SPRITE.GLOVES_REIDITE_PROTECTION][world.time];
     spriteid = SPRITE.GLOVES_REIDITE_PROTECTION;
   } else if (this.superzombie) {
-    img = sprite[SPRITE.ZOMBIE_HAND][world.time];
+    var img = sprite[SPRITE.ZOMBIE_HAND][world.time];
     spriteid = SPRITE.ZOMBIE_HAND;
   } else {
-    img = sprite[SPRITE.HAND][this.skin][world.time];
+    var img = sprite[SPRITE.HAND][this.skin][world.time];
     spriteid = SPRITE.HAND;
   }
   shadow = sprite[SPRITE.HAND_SHADOW][world.time];
@@ -3502,7 +3490,7 @@ export function draw_player() {
     var img = sprite[SPRITE.ZOMBIE_BODY][world.time];
     draw_image_transition(SPRITE.ZOMBIE_BODY, img, -img.width / 2, -img.height / 2);
     this.move_head.update();
-    img = sprite[SPRITE.ZOMBIE_HEAD][world.time];
+    var img = sprite[SPRITE.ZOMBIE_HEAD][world.time];
     draw_image_transition(SPRITE.ZOMBIE_HEAD, img, -img.width / 2, (-img.height / 2) + this.move_head.v);
   } else {
     var img = sprite[SPRITE.BODY][this.skin][world.time];
@@ -3616,7 +3604,7 @@ export function draw_player() {
     ctxDrawImage(ctx, img, x, y);
     if (this.player.level > 0) {
       var x2 = (x + img.width) + 5;
-      img = sprite[SPRITE.VERIFIED];
+      var img = sprite[SPRITE.VERIFIED];
       if (PLAYER_LEVEL[this.player.level] === undefined)
         PLAYER_LEVEL[this.player.level] = create_text(scale, ("[" + this.player.level) + "]", 20, "#F9E8A2", "#000", 2, null, null, 50 * scale);
 
@@ -3693,7 +3681,7 @@ export function draw_chat() {
   ctx.save();
   ctx.translate(user.cam.x + this.x, user.cam.y + this.y);
   if (this.text.length > 0) {
-    for (var i = 0;
+    for (let i = 0;
       (i < this.text.length) && (i < 2); i++) {
       if (!this.label[i]) {
         this.label[i] = create_message(scale, this.text[i]);
@@ -3711,7 +3699,7 @@ export function draw_chat() {
         this.text_effect[1] += delta;
 
     }
-    for (var i = 0;
+    for (let i = 0;
       (i < this.text.length) && (i < 2); i++) {
       var effect = this.text_effect[i];
       if (effect > 0) {
@@ -3741,7 +3729,7 @@ export function draw_objects_effect(is, ie, js, je, id, t, max, min) {
     min = 0;
 
   for (var k = max; k >= min; k--) {
-    for (var i = is; i <= ie; i++) {
+    for (let i = is; i <= ie; i++) {
       for (var j = js; j <= je; j++) {
         var tile = MAP.tiles[i][j];
         if (!tile || !tile[t])
@@ -3757,7 +3745,7 @@ export function draw_objects_effect(is, ie, js, je, id, t, max, min) {
           var _effect = (__effect + ((i + j) * 3)) % 60;
           var effect = (_effect < 30) ? (_effect / 30) : (1 - ((_effect - 30) / 30));
           var w = -img.width * (1 + ((0.9 * effect) / 30));
-          var h = -img.height * (1 + ((0.9 * effect) / 30));
+          var w = -img.height * (1 + ((0.9 * effect) / 30));
           _effect = (__effect + ((i + j) * 7)) % 60;
           effect = (_effect < 30) ? (_effect / 30) : (1 - ((_effect - 30) / 30));
           var _alpha = ctx.globalAlpha;
@@ -3776,7 +3764,7 @@ export function draw_breath_objects(is, ie, js, je, id, t, max, min) {
 
   world.breath[id].update();
   for (var k = max; k >= min; k--) {
-    for (var i = is; i <= ie; i++) {
+    for (let i = is; i <= ie; i++) {
       for (var j = js; j <= je; j++) {
         var tile = MAP.tiles[i][j];
         if (!tile || !tile[t])
@@ -3801,7 +3789,7 @@ export function draw_breath_objects(is, ie, js, je, id, t, max, min) {
           };
           var img = sprite[id][world.time][k];
           var w = -img.width * world.breath[id].v;
-          var h = -img.height * world.breath[id].v;
+          var w = -img.height * world.breath[id].v;
           ctxDrawImage(ctx, img, ((user.cam.x + object.x) - (w / 2)) + x, ((user.cam.y + object.y) - (h / 2)) + y, w, h);
         }
       }
@@ -3809,21 +3797,21 @@ export function draw_breath_objects(is, ie, js, je, id, t, max, min) {
   }
 };
 var randweb = [];
-for (var i = 0; i < 100; i++) {
+for (let i = 0; i < 100; i++) {
   var r = 1;
   if (Math.random() < 0.25)
     r = 0;
 
   randweb.push(r);
 }
-_scale_object = 1;
+const _scale_object = 1;
 
 export function draw_map_objects(is, ie, js, je, id, t, max, min, rand) {
   if (min === undefined)
     min = 0;
 
   for (var k = max; k >= min; k--) {
-    for (var i = is; i <= ie; i++) {
+    for (let i = is; i <= ie; i++) {
       for (var j = js; j <= je; j++) {
         if ((rand > 0) && (randweb[(i + (j * rand)) % randweb.length] === 1))
           continue;
@@ -3861,7 +3849,7 @@ export function draw_map_decorations(is, ie, js, je, id, t, max, min, rand) {
   if (min === undefined)
     min = 0;
 
-  for (var i = is; i <= ie; i++) {
+  for (let i = is; i <= ie; i++) {
     for (var j = js; j <= je; j++) {
       var tile = MAP.tiles[i][j];
       if ((tile === undefined) || (tile[t] === undefined))
@@ -3904,7 +3892,7 @@ export function draw_lava_effect(is, ie, js, je, id, t, max, min, rand) {
     min = 0;
 
   for (var k = max; k >= min; k--) {
-    for (var i = is; i <= ie; i++) {
+    for (let i = is; i <= ie; i++) {
       for (var j = js; j <= je; j++) {
         var tile = MAP.tiles[i][j];
         if ((tile === undefined) || (tile[t] === undefined))
@@ -3934,7 +3922,7 @@ export function draw_lava_effect(is, ie, js, je, id, t, max, min, rand) {
             }
             var img = sprite[SPRITE.LAVA_BUBBLE][world.time][_bubble[k].pos[_k].t];
             var w = -img.width * world.lava[_k].v;
-            var h = -img.height * world.lava[_k].v;
+            var w = -img.height * world.lava[_k].v;
             ctxDrawImage(ctx, img, (((user.cam.x + object.x) - (w / 4)) + x) + _bubble[k].pos[_k].x, (((user.cam.y + object.y) - (h / 4)) + y) + _bubble[k].pos[_k].y, w / 2, h / 2);
           }
         }
@@ -3942,7 +3930,7 @@ export function draw_lava_effect(is, ie, js, je, id, t, max, min, rand) {
     }
   }
 };
-_bubble = [{
+const _bubble = [{
   amount: 10,
   pos: [{
     x: -128,
@@ -4123,6 +4111,7 @@ export function draw_world() {
   var je = _je;
   var is = _is;
   var ie = _ie;
+
   if (ui.quality)
     draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.LAKE_EDGE, "l", 2);
 
@@ -4131,192 +4120,227 @@ export function draw_world() {
 
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.MAGMA, "la", 5);
   draw_map_transition(draw_breath_objects, is, ie, js, je, SPRITE.LAKE, "l", 2);
+
   if (ui.quality) {
     draw_map_transition(draw_lava_effect, is, ie, js, je, SPRITE.MAGMA, "la", 5);
     draw_map_transition(draw_breath_objects, is, ie, js, je, SPRITE.LAKE_DEEP, "l", 2);
   }
+
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.MARKER, "ma", 3);
-  var sand_worm = world.units[ITEMS.SAND_WORM];
-  for (var i = 0; i < sand_worm.length; i++)
+
+  let sand_worm = world.units[ITEMS.SAND_WORM];
+  let players = world.units[ITEMS.PLAYERS];
+  let bridge = world.units[ITEMS.BRIDGE];
+  let furnace = world.units[ITEMS.FURNACE];
+  let fire = world.units[ITEMS.FIRE];
+  let resurrection = world.units[ITEMS.RESURRECTION];
+  let emerald_machine = world.units[ITEMS.EMERALD_MACHINE];
+  let big_fire = world.units[ITEMS.BIG_FIRE];
+  let sign = world.units[ITEMS.SIGN];
+  let plot = world.units[ITEMS.PLOT];
+  let carrot = world.units[ITEMS.CARROT_SEED];
+  let watermelon = world.units[ITEMS.WATERMELON_SEED];
+  let aloe_vera = world.units[ITEMS.ALOE_VERA_SEED];
+  let wheat = world.units[ITEMS.WHEAT_MOB];
+  let seed = world.units[ITEMS.SEED];
+  let garlic = world.units[ITEMS.GARLIC_SEED];
+  let thornbush = world.units[ITEMS.THORNBUSH_SEED];
+  let pumpkin = world.units[ITEMS.PUMPKIN_SEED];
+  let crate = world.units[ITEMS.CRATE];
+  let dead_box = world.units[ITEMS.DEAD_BOX];
+  let gift = world.units[ITEMS.GIFT];
+  let door = world.units[ITEMS.WOOD_DOOR_SPIKE];
+  let rabbit = world.units[ITEMS.RABBIT];
+  let bed = world.units[ITEMS.BED];
+  let spell = world.units[ITEMS.SPELL];
+  let crab = world.units[ITEMS.CRAB];
+  let fox = world.units[ITEMS.FOX];
+  let boar = world.units[ITEMS.BOAR];
+  let wolf = world.units[ITEMS.WOLF];
+  let baby_dragon = world.units[ITEMS.BABY_DRAGON];
+  let baby_lava = world.units[ITEMS.BABY_LAVA];
+  let treasure = world.units[ITEMS.TREASURE_CHEST];
+  let kraken = world.units[ITEMS.KRAKEN];
+  let pira = world.units[ITEMS.PIRANHA];
+  let spider = world.units[ITEMS.SPIDER];
+  let penguin = world.units[ITEMS.PENGUIN];
+  let bear = world.units[ITEMS.BEAR];
+  let baby_mammoth = world.units[ITEMS.BABY_MAMMOTH];
+  let flame = world.units[ITEMS.FLAME];
+  let crab_boss = world.units[ITEMS.CRAB_BOSS];
+  let mammoth = world.units[ITEMS.MAMMOTH];
+  let dragon = world.units[ITEMS.DRAGON];
+  let chest = world.units[ITEMS.CHEST];
+  let workbench = world.units[ITEMS.WORKBENCH];
+  let bread_oven = world.units[ITEMS.BREAD_OVEN];
+  let wall = world.units[ITEMS.WALL];
+  let spike = world.units[ITEMS.SPIKE];
+  let well = world.units[ITEMS.WELL];
+  let totem = world.units[ITEMS.TOTEM];
+  let fruits = world.units[ITEMS.FRUIT];
+  let extractor = world.units[ITEMS.EXTRACTOR_MACHINE_STONE];
+  let windmill = world.units[ITEMS.WINDMILL];
+  let roof = world.units[ITEMS.ROOF];
+  let firefly = world.units[ITEMS.FIREFLY];
+  let garland = world.units[ITEMS.GARLAND];
+  let hawk = world.units[ITEMS.HAWK];
+  let vulture = world.units[ITEMS.VULTURE];
+
+  for (let i = 0; i < sand_worm.length; i++)
     sand_worm[i].draw_ground();
-  var players = world.units[ITEMS.PLAYERS];
-  for (var i = 0; i < players.length; i++) {
+  
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     for (var j = 0; j < p.swim.length; j++)
       draw_swim(p.swim[j]);
   }
-  var bridge = world.units[ITEMS.BRIDGE];
-  for (var i = 0; i < bridge.length; i++) {
+
+  for (let i = 0; i < bridge.length; i++) {
     draw_transition(bridge[i], SPRITE.BRIDGE);
     bridge[i].draw_life(bridge[i].info);
   }
-  var furnace = world.units[ITEMS.FURNACE];
-  for (var i = 0; i < furnace.length; i++) {
+
+  for (let i = 0; i < furnace.length; i++) {
     if (furnace[i].action == 2)
       draw_bg_transition(furnace[i]);
-
   }
-  var fire = world.units[ITEMS.FIRE];
-  for (var i = 0; i < fire.length; i++)
-    draw_bg_transition(fire[i], SPRITE.WOOD_FIRE);
-  var resurrection = world.units[ITEMS.RESURRECTION];
-  for (var i = 0; i < resurrection.length; i++)
-    draw_bg_transition(resurrection[i]);
-  var emerald_machine = world.units[ITEMS.EMERALD_MACHINE];
-  for (var i = 0; i < emerald_machine.length; i++)
-    draw_bg_transition(emerald_machine[i]);
-  var big_fire = world.units[ITEMS.BIG_FIRE];
-  for (var i = 0; i < big_fire.length; i++)
-    draw_bg_transition(big_fire[i], SPRITE.BIG_FIRE_WOOD);
-  var sign = world.units[ITEMS.SIGN];
-  for (var i = 0; i < sign.length; i++)
-    draw_transition(sign[i]);
-  var plot = world.units[ITEMS.PLOT];
-  for (var i = 0; i < plot.length; i++)
-    draw_transition(plot[i], SPRITE.PLOT);
-  var seed = world.units[ITEMS.SEED];
-  for (var i = 0; i < seed.length; i++)
-    draw_bg_transition(seed[i]);
-  var seed = world.units[ITEMS.TOMATO_SEED];
-  for (var i = 0; i < seed.length; i++)
-    draw_bg_transition(seed[i]);
-  var seed = world.units[ITEMS.SEED];
-  for (var i = 0; i < seed.length; i++)
-    draw_fg_transition(seed[i]);
-  var carrot = world.units[ITEMS.CARROT_SEED];
-  for (var i = 0; i < carrot.length; i++)
+
+  for (let i = 0; i < fire.length; i++) draw_bg_transition(fire[i], SPRITE.WOOD_FIRE);
+  for (let i = 0; i < resurrection.length; i++) draw_bg_transition(resurrection[i]);
+  for (let i = 0; i < emerald_machine.length; i++) draw_bg_transition(emerald_machine[i]);
+  for (let i = 0; i < big_fire.length; i++) draw_bg_transition(big_fire[i], SPRITE.BIG_FIRE_WOOD);
+  for (let i = 0; i < sign.length; i++) draw_transition(sign[i]);
+  for (let i = 0; i < plot.length; i++) draw_transition(plot[i], SPRITE.PLOT);
+  for (let i = 0; i < seed.length; i++) draw_bg_transition(seed[i]);
+
+  seed = world.units[ITEMS.TOMATO_SEED];
+  for (let i = 0; i < seed.length; i++) draw_bg_transition(seed[i]);
+
+  seed = world.units[ITEMS.SEED];
+  for (let i = 0; i < seed.length; i++) draw_fg_transition(seed[i]);
+
+  for (let i = 0; i < carrot.length; i++)
     if (((carrot[i].info & 15) === 0) || (carrot[i].info === 10))
       draw_transition(carrot[i]);
 
-  var watermelon = world.units[ITEMS.WATERMELON_SEED];
-  for (var i = 0; i < watermelon.length; i++)
+  for (let i = 0; i < watermelon.length; i++)
     if (((watermelon[i].info & 15) === 0) || (watermelon[i].info === 10))
       draw_transition(watermelon[i]);
 
-  var aloe_vera = world.units[ITEMS.ALOE_VERA_SEED];
-  for (var i = 0; i < aloe_vera.length; i++)
+  for (let i = 0; i < aloe_vera.length; i++)
     if (((aloe_vera[i].info & 15) === 0) || (aloe_vera[i].info === 10))
       draw_transition(aloe_vera[i]);
 
-  var wheat = world.units[ITEMS.WHEAT_MOB];
-  for (var i = 0; i < wheat.length; i++)
-    draw_transition(wheat[i], SPRITE.WHEAT_SEED);
-  var garlic = world.units[ITEMS.GARLIC_SEED];
-  for (var i = 0; i < garlic.length; i++)
+  for (let i = 0; i < wheat.length; i++) draw_transition(wheat[i], SPRITE.WHEAT_SEED);
+
+  for (let i = 0; i < garlic.length; i++)
     if (((garlic[i].info & 15) === 0) || (garlic[i].info === 10))
       draw_transition(garlic[i]);
 
-  var thornbush = world.units[ITEMS.THORNBUSH_SEED];
-  for (var i = 0; i < thornbush.length; i++)
+  for (let i = 0; i < thornbush.length; i++)
     if (((thornbush[i].info & 15) === 0) || (thornbush[i].info === 10))
       draw_transition(thornbush[i]);
 
-  var pumpkin = world.units[ITEMS.PUMPKIN_SEED];
-  for (var i = 0; i < pumpkin.length; i++)
+  for (let i = 0; i < pumpkin.length; i++)
     if (((pumpkin[i].info & 15) === 0) || (pumpkin[i].info === 10))
       draw_transition(pumpkin[i]);
 
-  var wheat = world.units[ITEMS.WHEAT_SEED];
-  for (var i = 0; i < wheat.length; i++)
-    draw_transition(wheat[i]);
-  var crate = world.units[ITEMS.CRATE];
-  for (var i = 0; i < crate.length; i++)
-    draw_transition(crate[i], SPRITE.CRATE, SPRITE.HURT_DEAD_BOX);
-  var dead_box = world.units[ITEMS.DEAD_BOX];
-  for (var i = 0; i < dead_box.length; i++)
-    draw_transition(dead_box[i], SPRITE.CRATE, SPRITE.HURT_DEAD_BOX);
-  var gift = world.units[ITEMS.GIFT];
-  for (var i = 0; i < gift.length; i++)
-    draw_transition(gift[i], SPRITE.GIFT, SPRITE.HURT_GIFT);
-  var door = world.units[ITEMS.WOOD_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+  wheat = world.units[ITEMS.WHEAT_SEED];
+  for (let i = 0; i < wheat.length; i++) draw_transition(wheat[i]);
+  
+  for (let i = 0; i < crate.length; i++) draw_transition(crate[i], SPRITE.CRATE, SPRITE.HURT_DEAD_BOX);
+
+  for (let i = 0; i < dead_box.length; i++) draw_transition(dead_box[i], SPRITE.CRATE, SPRITE.HURT_DEAD_BOX);
+  
+  for (let i = 0; i < gift.length; i++) draw_transition(gift[i], SPRITE.GIFT, SPRITE.HURT_GIFT);
+  
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info & 1)
       draw_transition(door[i], SPRITE.DOOR_WOOD_OPEN);
-
   }
-  var door = world.units[ITEMS.STONE_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.STONE_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info & 1)
       draw_transition(door[i], SPRITE.DOOR_STONE_OPEN);
-
   }
-  var door = world.units[ITEMS.GOLD_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.GOLD_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_GOLD_OPEN);
-
   }
-  var door = world.units[ITEMS.DIAMOND_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.DIAMOND_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_DIAMOND_OPEN);
-
   }
-  var door = world.units[ITEMS.AMETHYST_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.AMETHYST_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_AMETHYST_OPEN);
-
   }
-  var door = world.units[ITEMS.REIDITE_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.REIDITE_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_GOLD_OPEN);
-
   }
-  var door = world.units[ITEMS.WOOD_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.WOOD_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info & 1)
       draw_transition(door[i], SPRITE.DOOR_WOOD_OPEN);
-
   }
-  var door = world.units[ITEMS.STONE_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.STONE_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info & 1)
       draw_transition(door[i], SPRITE.DOOR_STONE_OPEN);
-
   }
-  var door = world.units[ITEMS.GOLD_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.GOLD_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_GOLD_OPEN);
-
   }
-  var door = world.units[ITEMS.DIAMOND_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.DIAMOND_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_DIAMOND_OPEN);
-
   }
-  var door = world.units[ITEMS.AMETHYST_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.AMETHYST_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_AMETHYST_OPEN);
-
   }
-  var door = world.units[ITEMS.REIDITE_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.REIDITE_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (door[i].info)
       draw_transition(door[i], SPRITE.DOOR_GOLD_OPEN);
-
   }
-  var rabbit = world.units[ITEMS.RABBIT];
-  for (var i = 0; i < rabbit.length; i++)
-    draw_transition(rabbit[i], SPRITE.RABBIT, SPRITE.HURT_RABBIT);
-  var bed = world.units[ITEMS.BED];
-  for (var i = 0; i < bed.length; i++)
-    draw_transition(bed[i], SPRITE.BED);
-  var sand_worm = world.units[ITEMS.SAND_WORM];
-  for (var i = 0; i < sand_worm.length; i++)
-    draw_transition(sand_worm[i], SPRITE.SAND_WORM, SPRITE.HURT_SAND_WORM);
-  var spell = world.units[ITEMS.SPELL];
-  for (var i = 0; i < spell.length; i++) {
+  
+  for (let i = 0; i < rabbit.length; i++) draw_transition(rabbit[i], SPRITE.RABBIT, SPRITE.HURT_RABBIT);
+  
+  for (let i = 0; i < bed.length; i++) draw_transition(bed[i], SPRITE.BED);
+  
+  sand_worm = world.units[ITEMS.SAND_WORM];
+  for (let i = 0; i < sand_worm.length; i++) draw_transition(sand_worm[i], SPRITE.SAND_WORM, SPRITE.HURT_SAND_WORM);
+  
+  spell = world.units[ITEMS.SPELL];
+  for (let i = 0; i < spell.length; i++) {
     if (spell[i].fly === 0)
       draw_transition(spell[i]);
 
   }
-  var players = world.units[ITEMS.PLAYERS];
-  for (var i = 0; i < players.length; i++) {
+
+  players = world.units[ITEMS.PLAYERS];
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     if (((((players[i].vehicle !== INV.BABY_DRAGON) && (players[i].vehicle !== INV.BABY_LAVA)) && (players[i].vehicle !== INV.HAWK)) && (players[i].vehicle !== INV.PLANE)) && (players[i].vehicle !== INV.NIMBUS)) {
       if (p.tower === 0) {
@@ -4368,272 +4392,274 @@ export function draw_world() {
       ctx.restore();
     }
   }
-  var bed = world.units[ITEMS.BED];
-  for (var i = 0; i < bed.length; i++)
-    draw_transition(bed[i], SPRITE.BED_TOP);
-  var crab = world.units[ITEMS.CRAB];
-  for (var i = 0; i < crab.length; i++)
-    draw_transition(crab[i]);
-  var fox = world.units[ITEMS.FOX];
-  for (var i = 0; i < fox.length; i++)
-    draw_transition(fox[i], SPRITE.FOX, SPRITE.HURT_FOX);
-  var boar = world.units[ITEMS.BOAR];
-  for (var i = 0; i < boar.length; i++)
-    draw_transition(boar[i]);
-  var wolf = world.units[ITEMS.WOLF];
-  for (var i = 0; i < wolf.length; i++)
-    draw_transition(wolf[i], SPRITE.WOLF, SPRITE.HURT_WOLF);
-  var baby_dragon = world.units[ITEMS.BABY_DRAGON];
-  for (var i = 0; i < baby_dragon.length; i++)
-    draw_transition(baby_dragon[i], SPRITE.BABY_DRAGON, SPRITE.HURT_BABY_DRAGON);
-  var baby_lava = world.units[ITEMS.BABY_LAVA];
-  for (var i = 0; i < baby_lava.length; i++)
-    draw_transition(baby_lava[i], SPRITE.BABY_LAVA, SPRITE.HURT_BABY_LAVA);
-  var carrot = world.units[ITEMS.CARROT_SEED];
-  for (var i = 0; i < carrot.length; i++)
+
+  bed = world.units[ITEMS.BED];
+  for (let i = 0; i < bed.length; i++) draw_transition(bed[i], SPRITE.BED_TOP);
+  
+  for (let i = 0; i < crab.length; i++) draw_transition(crab[i]);
+
+  for (let i = 0; i < fox.length; i++) draw_transition(fox[i], SPRITE.FOX, SPRITE.HURT_FOX);
+  
+  for (let i = 0; i < boar.length; i++) draw_transition(boar[i]);
+  
+  for (let i = 0; i < wolf.length; i++) draw_transition(wolf[i], SPRITE.WOLF, SPRITE.HURT_WOLF);
+  
+  for (let i = 0; i < baby_dragon.length; i++) draw_transition(baby_dragon[i], SPRITE.BABY_DRAGON, SPRITE.HURT_BABY_DRAGON);
+  
+  for (let i = 0; i < baby_lava.length; i++) draw_transition(baby_lava[i], SPRITE.BABY_LAVA, SPRITE.HURT_BABY_LAVA);
+
+  carrot = world.units[ITEMS.CARROT_SEED];
+  for (let i = 0; i < carrot.length; i++)
     if (((carrot[i].info & 15) !== 0) && (carrot[i].info !== 10))
       draw_transition(carrot[i]);
 
-  var watermelon = world.units[ITEMS.WATERMELON_SEED];
-  for (var i = 0; i < watermelon.length; i++)
+  watermelon = world.units[ITEMS.WATERMELON_SEED];
+  for (let i = 0; i < watermelon.length; i++)
     if (((watermelon[i].info & 15) !== 0) && (watermelon[i].info !== 10))
       draw_transition(watermelon[i]);
 
-  var aloe_vera = world.units[ITEMS.ALOE_VERA_MOB];
-  for (var i = 0; i < aloe_vera.length; i++)
-    draw_transition(aloe_vera[i], SPRITE.ALOE_VERA);
-  var aloe_vera = world.units[ITEMS.ALOE_VERA_SEED];
-  for (var i = 0; i < aloe_vera.length; i++)
+  aloe_vera = world.units[ITEMS.ALOE_VERA_MOB];
+  for (let i = 0; i < aloe_vera.length; i++) draw_transition(aloe_vera[i], SPRITE.ALOE_VERA);
+
+  aloe_vera = world.units[ITEMS.ALOE_VERA_SEED];
+  for (let i = 0; i < aloe_vera.length; i++)
     if (((aloe_vera[i].info & 15) !== 0) && (aloe_vera[i].info !== 10))
       draw_transition(aloe_vera[i]);
 
-  var seed = world.units[ITEMS.TOMATO_SEED];
-  for (var i = 0; i < seed.length; i++)
-    draw_fg_transition(seed[i]);
-  var garlic = world.units[ITEMS.GARLIC_SEED];
-  for (var i = 0; i < garlic.length; i++)
+  seed = world.units[ITEMS.TOMATO_SEED];
+  for (let i = 0; i < seed.length; i++) draw_fg_transition(seed[i]);
+
+  garlic = world.units[ITEMS.GARLIC_SEED];
+  for (let i = 0; i < garlic.length; i++)
     if (((garlic[i].info & 15) !== 0) && (garlic[i].info !== 10))
       draw_transition(garlic[i]);
 
-  var thornbush = world.units[ITEMS.THORNBUSH_SEED];
-  for (var i = 0; i < thornbush.length; i++)
+  thornbush = world.units[ITEMS.THORNBUSH_SEED];
+  for (let i = 0; i < thornbush.length; i++)
     if (((thornbush[i].info & 15) !== 0) && (thornbush[i].info !== 10))
       draw_transition(thornbush[i]);
 
-  var pumpkin = world.units[ITEMS.PUMPKIN_SEED];
-  for (var i = 0; i < pumpkin.length; i++)
+  pumpkin = world.units[ITEMS.PUMPKIN_SEED];
+  for (let i = 0; i < pumpkin.length; i++)
     if (((pumpkin[i].info & 15) !== 0) && (pumpkin[i].info !== 10))
       draw_transition(pumpkin[i]);
 
-  var treasure = world.units[ITEMS.TREASURE_CHEST];
-  for (var i = 0; i < treasure.length; i++)
-    draw_transition(treasure[i], SPRITE.TREASURE_CHEST, SPRITE.HURT_TREASURE_CHEST);
-  var kraken = world.units[ITEMS.KRAKEN];
-  for (var i = 0; i < kraken.length; i++)
-    draw_transition(kraken[i], SPRITE.KRAKEN, SPRITE.HURT_KRAKEN);
-  var pira = world.units[ITEMS.PIRANHA];
-  for (var i = 0; i < pira.length; i++)
-    draw_transition(pira[i], SPRITE.PIRANHA, SPRITE.HURT_PIRANHA);
-  var spider = world.units[ITEMS.SPIDER];
-  for (var i = 0; i < spider.length; i++)
-    draw_transition(spider[i], SPRITE.SPIDER, SPRITE.HURT_SPIDER);
-  var penguin = world.units[ITEMS.PENGUIN];
-  for (var i = 0; i < penguin.length; i++)
-    draw_transition(penguin[i], SPRITE.PENGUIN, SPRITE.HURT_PENGUIN);
-  var bear = world.units[ITEMS.BEAR];
-  for (var i = 0; i < bear.length; i++)
-    draw_transition(bear[i], SPRITE.BEAR, SPRITE.HURT_BEAR);
-  var baby_mammoth = world.units[ITEMS.BABY_MAMMOTH];
-  for (var i = 0; i < baby_mammoth.length; i++)
-    draw_transition(baby_mammoth[i]);
-  var flame = world.units[ITEMS.FLAME];
-  for (var i = 0; i < flame.length; i++)
-    draw_transition(flame[i], SPRITE.FIRE_MOB, SPRITE.HURT_FIRE_MOB);
-  var crab_boss = world.units[ITEMS.CRAB_BOSS];
-  for (var i = 0; i < crab_boss.length; i++)
-    draw_transition(crab_boss[i]);
-  var mammoth = world.units[ITEMS.MAMMOTH];
-  for (var i = 0; i < mammoth.length; i++)
-    draw_transition(mammoth[i], SPRITE.MAMMOTH, SPRITE.HURT_MAMMOTH);
-  var dragon = world.units[ITEMS.DRAGON];
-  for (var i = 0; i < dragon.length; i++) {
+  for (let i = 0; i < treasure.length; i++) draw_transition(treasure[i], SPRITE.TREASURE_CHEST, SPRITE.HURT_TREASURE_CHEST);
+
+  for (let i = 0; i < kraken.length; i++) draw_transition(kraken[i], SPRITE.KRAKEN, SPRITE.HURT_KRAKEN);
+  
+  for (let i = 0; i < pira.length; i++) draw_transition(pira[i], SPRITE.PIRANHA, SPRITE.HURT_PIRANHA);
+  
+  for (let i = 0; i < spider.length; i++) draw_transition(spider[i], SPRITE.SPIDER, SPRITE.HURT_SPIDER);
+  
+  for (let i = 0; i < penguin.length; i++) draw_transition(penguin[i], SPRITE.PENGUIN, SPRITE.HURT_PENGUIN);
+  
+  for (let i = 0; i < bear.length; i++) draw_transition(bear[i], SPRITE.BEAR, SPRITE.HURT_BEAR);
+
+  for (let i = 0; i < baby_mammoth.length; i++) draw_transition(baby_mammoth[i]);
+
+  for (let i = 0; i < flame.length; i++) draw_transition(flame[i], SPRITE.FIRE_MOB, SPRITE.HURT_FIRE_MOB);
+
+  for (let i = 0; i < crab_boss.length; i++) draw_transition(crab_boss[i]);
+  
+  for (let i = 0; i < mammoth.length; i++) draw_transition(mammoth[i], SPRITE.MAMMOTH, SPRITE.HURT_MAMMOTH);
+ 
+  for (let i = 0; i < dragon.length; i++) {
     if (dragon[i].scale === 1)
       draw_transition(dragon[i], SPRITE.DRAGON, SPRITE.HURT_DRAGON);
-
   }
-  var dragon = world.units[ITEMS.LAVA_DRAGON];
-  for (var i = 0; i < dragon.length; i++) {
+
+  dragon = world.units[ITEMS.LAVA_DRAGON];
+  for (let i = 0; i < dragon.length; i++) {
     if (dragon[i].scale === 1)
       draw_transition(dragon[i], SPRITE.LAVA_DRAGON, SPRITE.HURT_LAVA_DRAGON);
-
   }
-  var chest = world.units[ITEMS.CHEST];
-  for (var i = 0; i < chest.length; i++)
-    draw_transition(chest[i]);
-  var workbench = world.units[ITEMS.WORKBENCH];
-  for (var i = 0; i < workbench.length; i++)
-    draw_transition(workbench[i], SPRITE.WORKBENCH);
-  var furnace = world.units[ITEMS.FURNACE];
-  for (var i = 0; i < furnace.length; i++)
-    draw_transition(furnace[i]);
-  var bread_oven = world.units[ITEMS.BREAD_OVEN];
-  for (var i = 0; i < bread_oven.length; i++)
-    draw_transition(bread_oven[i]);
-  var door = world.units[ITEMS.WOOD_DOOR];
-  for (var i = 0; i < door.length; i++) {
+  
+  for (let i = 0; i < chest.length; i++) draw_transition(chest[i]);
+  
+  for (let i = 0; i < workbench.length; i++) draw_transition(workbench[i], SPRITE.WORKBENCH);
+  
+  furnance = world.units[ITEMS.FURNACE];
+  for (let i = 0; i < furnace.length; i++) draw_transition(furnace[i]);
+
+  for (let i = 0; i < bread_oven.length; i++) draw_transition(bread_oven[i]);
+
+  door = world.units[ITEMS.WOOD_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.DOOR_WOOD_CLOSE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.STONE_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.STONE_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.DOOR_STONE_CLOSE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.GOLD_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.GOLD_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.DOOR_GOLD_CLOSE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.DIAMOND_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.DIAMOND_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.DOOR_DIAMOND_CLOSE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.AMETHYST_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.AMETHYST_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.DOOR_AMETHYST_CLOSE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.REIDITE_DOOR];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.REIDITE_DOOR];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.REIDITE_DOOR);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.WOOD_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.WOOD_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.WOOD_DOOR_SPIKE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.STONE_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.STONE_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.STONE_DOOR_SPIKE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.GOLD_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.GOLD_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.GOLD_DOOR_SPIKE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.DIAMOND_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.DIAMOND_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.DIAMOND_DOOR_SPIKE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.AMETHYST_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.AMETHYST_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.AMETHYST_DOOR_SPIKE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var door = world.units[ITEMS.REIDITE_DOOR_SPIKE];
-  for (var i = 0; i < door.length; i++) {
+
+  door = world.units[ITEMS.REIDITE_DOOR_SPIKE];
+  for (let i = 0; i < door.length; i++) {
     if (!(door[i].info & 1))
       draw_transition(door[i], SPRITE.REIDITE_DOOR_SPIKE);
 
     door[i].draw_life(door[i].info >> 1);
   }
-  var wall = world.units[ITEMS.WALL];
-  for (var i = 0; i < wall.length; i++) {
+  
+  for (let i = 0; i < wall.length; i++) {
     draw_transition(wall[i], SPRITE.WALL);
     wall[i].draw_life(wall[i].info);
   }
-  var wall = world.units[ITEMS.STONE_WALL];
-  for (var i = 0; i < wall.length; i++) {
+
+  wall = world.units[ITEMS.STONE_WALL];
+  for (let i = 0; i < wall.length; i++) {
     draw_transition(wall[i], SPRITE.STONE_WALL);
     wall[i].draw_life(wall[i].info);
   }
-  var wall = world.units[ITEMS.GOLD_WALL];
-  for (var i = 0; i < wall.length; i++) {
+
+  wall = world.units[ITEMS.GOLD_WALL];
+  for (let i = 0; i < wall.length; i++) {
     draw_transition(wall[i], SPRITE.GOLD_WALL);
     wall[i].draw_life(wall[i].info);
   }
-  var wall = world.units[ITEMS.DIAMOND_WALL];
-  for (var i = 0; i < wall.length; i++) {
+
+  wall = world.units[ITEMS.DIAMOND_WALL];
+  for (let i = 0; i < wall.length; i++) {
     draw_transition(wall[i], SPRITE.DIAMOND_WALL);
     wall[i].draw_life(wall[i].info);
   }
-  var wall = world.units[ITEMS.AMETHYST_WALL];
-  for (var i = 0; i < wall.length; i++) {
+
+  wall = world.units[ITEMS.AMETHYST_WALL];
+  for (let i = 0; i < wall.length; i++) {
     draw_transition(wall[i], SPRITE.AMETHYST_WALL);
     wall[i].draw_life(wall[i].info);
   }
-  var wall = world.units[ITEMS.REIDITE_WALL];
-  for (var i = 0; i < wall.length; i++) {
+
+  wall = world.units[ITEMS.REIDITE_WALL];
+  for (let i = 0; i < wall.length; i++) {
     draw_transition(wall[i], SPRITE.REIDITE_WALL);
     wall[i].draw_life(wall[i].info);
   }
-  var spike = world.units[ITEMS.SPIKE];
-  for (var i = 0; i < spike.length; i++) {
+  
+  for (let i = 0; i < spike.length; i++) {
     draw_transition(spike[i], SPRITE.SPIKE);
     spike[i].draw_life(spike[i].info);
   }
-  var spike = world.units[ITEMS.STONE_SPIKE];
-  for (var i = 0; i < spike.length; i++) {
+
+  spike = world.units[ITEMS.STONE_SPIKE];
+  for (let i = 0; i < spike.length; i++) {
     draw_transition(spike[i], SPRITE.STONE_SPIKE);
     spike[i].draw_life(spike[i].info);
   }
-  var spike = world.units[ITEMS.GOLD_SPIKE];
-  for (var i = 0; i < spike.length; i++) {
+
+  spike = world.units[ITEMS.GOLD_SPIKE];
+  for (let i = 0; i < spike.length; i++) {
     draw_transition(spike[i], SPRITE.GOLD_SPIKE);
     spike[i].draw_life(spike[i].info);
   }
-  var spike = world.units[ITEMS.DIAMOND_SPIKE];
-  for (var i = 0; i < spike.length; i++) {
+
+  spike = world.units[ITEMS.DIAMOND_SPIKE];
+  for (let i = 0; i < spike.length; i++) {
     draw_transition(spike[i], SPRITE.DIAMOND_SPIKE);
     spike[i].draw_life(spike[i].info);
   }
-  var spike = world.units[ITEMS.AMETHYST_SPIKE];
-  for (var i = 0; i < spike.length; i++) {
+
+  spike = world.units[ITEMS.AMETHYST_SPIKE];
+  for (let i = 0; i < spike.length; i++) {
     draw_transition(spike[i], SPRITE.AMETHYST_SPIKE);
     spike[i].draw_life(spike[i].info);
   }
-  var spike = world.units[ITEMS.REIDITE_SPIKE];
-  for (var i = 0; i < spike.length; i++) {
+
+  spike = world.units[ITEMS.REIDITE_SPIKE];
+  for (let i = 0; i < spike.length; i++) {
     draw_transition(spike[i], SPRITE.REIDITE_SPIKE);
     spike[i].draw_life(spike[i].info);
   }
-  var well = world.units[ITEMS.WELL];
-  for (var i = 0; i < well.length; i++) {
+  
+  for (let i = 0; i < well.length; i++) {
     var w = well[i];
     if (w.info > 0)
       draw_transition(w, SPRITE.WELL_FULL);
     else
       draw_transition(w, SPRITE.WELL_EMPTY);
   }
-  var totem = world.units[ITEMS.TOTEM];
-  for (var i = 0; i < totem.length; i++)
-    draw_transition(totem[i], SPRITE.TOTEM);
+  
+  for (let i = 0; i < totem.length; i++) draw_transition(totem[i], SPRITE.TOTEM);
+
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.GOLD, "g", 2);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.GOLD_WINTER, "gw", 2);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.DIAMOND, "d", 2);
@@ -4650,54 +4676,54 @@ export function draw_world() {
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.CAVE_STONES, "cs", 2, 2);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.CAVE_STONES, "cs", 1, 1);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.CAVE_STONES, "cs", 0, 0);
-  var fruits = world.units[ITEMS.FRUIT];
-  for (var i = 0; i < fruits.length; i++) {
+
+  for (let i = 0; i < fruits.length; i++) {
     for (var j = 0; j < fruits[i].info; j++)
       draw_transition(fruits[i].fruits[j], SPRITE.FRUIT);
   }
+
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.STONES, "s", 2);
-  var extractor = world.units[ITEMS.EXTRACTOR_MACHINE_STONE];
-  for (var i = 0; i < extractor.length; i++)
-    draw_transition(extractor[i]);
-  var extractor = world.units[ITEMS.EXTRACTOR_MACHINE_GOLD];
-  for (var i = 0; i < extractor.length; i++)
-    draw_transition(extractor[i]);
-  var extractor = world.units[ITEMS.EXTRACTOR_MACHINE_DIAMOND];
-  for (var i = 0; i < extractor.length; i++)
-    draw_transition(extractor[i]);
-  var extractor = world.units[ITEMS.EXTRACTOR_MACHINE_AMETHYST];
-  for (var i = 0; i < extractor.length; i++)
-    draw_transition(extractor[i]);
-  var extractor = world.units[ITEMS.EXTRACTOR_MACHINE_REIDITE];
-  for (var i = 0; i < extractor.length; i++)
-    draw_transition(extractor[i]);
-  var windmill = world.units[ITEMS.WINDMILL];
-  for (var i = 0; i < windmill.length; i++)
-    draw_bg_transition(windmill[i]);
-  var fire = world.units[ITEMS.FIRE];
-  for (var i = 0; i < fire.length; i++)
-    draw_fg_transition(fire[i]);
-  var fire = world.units[ITEMS.BIG_FIRE];
-  for (var i = 0; i < fire.length; i++)
-    draw_fg_transition(fire[i]);
-  var furnace = world.units[ITEMS.FURNACE];
-  for (var i = 0; i < furnace.length; i++) {
+
+  for (let i = 0; i < extractor.length; i++) draw_transition(extractor[i]);
+
+  extractor = world.units[ITEMS.EXTRACTOR_MACHINE_GOLD];
+  for (let i = 0; i < extractor.length; i++) draw_transition(extractor[i]);
+
+  extractor = world.units[ITEMS.EXTRACTOR_MACHINE_DIAMOND];
+  for (let i = 0; i < extractor.length; i++) draw_transition(extractor[i]);
+
+  extractor = world.units[ITEMS.EXTRACTOR_MACHINE_AMETHYST];
+  for (let i = 0; i < extractor.length; i++) draw_transition(extractor[i]);
+
+  extractor = world.units[ITEMS.EXTRACTOR_MACHINE_REIDITE];
+  for (let i = 0; i < extractor.length; i++) draw_transition(extractor[i]);
+  
+  for (let i = 0; i < windmill.length; i++) draw_bg_transition(windmill[i]);
+
+  fire = world.units[ITEMS.FIRE];
+  for (let i = 0; i < fire.length; i++) draw_fg_transition(fire[i]);
+
+  fire = world.units[ITEMS.BIG_FIRE];
+  for (let i = 0; i < fire.length; i++) draw_fg_transition(fire[i]);
+
+  furnace = world.units[ITEMS.FURNACE];
+  for (let i = 0; i < furnace.length; i++) {
     if (furnace[i].action == 2)
       draw_fg_transition(furnace[i]);
+  }
 
-  }
-  var bread_oven = world.units[ITEMS.BREAD_OVEN];
-  for (var i = 0; i < bread_oven.length; i++) {
-    draw_fg_transition(bread_oven[i]);
-  }
-  var resurrection = world.units[ITEMS.RESURRECTION];
-  for (var i = 0; i < resurrection.length; i++)
-    draw_fg_transition(resurrection[i]);
-  var emerald_machine = world.units[ITEMS.EMERALD_MACHINE];
-  for (var i = 0; i < emerald_machine.length; i++) {
+  bread_oven = world.units[ITEMS.BREAD_OVEN];
+  for (let i = 0; i < bread_oven.length; i++) draw_fg_transition(bread_oven[i]);
+
+  resurrection = world.units[ITEMS.RESURRECTION];
+  for (let i = 0; i < resurrection.length; i++) draw_fg_transition(resurrection[i]);
+
+  emerald_machine = world.units[ITEMS.EMERALD_MACHINE];
+  for (let i = 0; i < emerald_machine.length; i++) {
     draw_fg_transition(emerald_machine[i]);
     emerald_machine[i].draw_life(emerald_machine[i].info);
   }
+
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.CACTUS, "c", 0);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.TREE, "t", 5, 4);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.FIR, "f", 2, 2);
@@ -4710,14 +4736,15 @@ export function draw_world() {
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.TREE, "t", 1, 0);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.FIR, "f", 0, 0);
   draw_map_transition(draw_map_objects, is, ie, js, je, SPRITE.PALM, "plm", 2, 2);
-  var windmill = world.units[ITEMS.WINDMILL];
-  for (var i = 0; i < windmill.length; i++)
-    draw_fg_transition(windmill[i]);
-  var tower = world.units[ITEMS.WOOD_TOWER];
-  for (var i = 0; i < tower.length; i++)
-    draw_transition(tower[i], SPRITE.WOOD_TOWER);
-  var players = world.units[ITEMS.PLAYERS];
-  for (var i = 0; i < players.length; i++) {
+
+  windmill = world.units[ITEMS.WINDMILL];
+  for (let i = 0; i < windmill.length; i++) draw_fg_transition(windmill[i]);
+
+  tower = world.units[ITEMS.WOOD_TOWER];
+  for (let i = 0; i < tower.length; i++) draw_transition(tower[i], SPRITE.WOOD_TOWER);
+
+  players = world.units[ITEMS.PLAYERS];
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     if ((p.tower === 1) && ((p.speed < 180) || (((((p.vehicle !== INV.BABY_DRAGON) && (p.vehicle !== INV.BABY_LAVA)) && (p.vehicle !== INV.NIMBUS)) && (p.vehicle !== INV.HAWK)) && (p.vehicle !== INV.PLANE)))) {
       p.tower_fx = lerp(p.tower_fx, 100, 0.018);
@@ -4741,19 +4768,18 @@ export function draw_world() {
       ctx.restore();
     }
   }
-  var roof = world.units[ITEMS.ROOF];
-  for (var i = 0; i < roof.length; i++) {
+  
+  for (let i = 0; i < roof.length; i++) {
     draw_transition(roof[i], SPRITE.ROOF);
     roof[i].draw_life(roof[i].info);
   }
-  var firefly = world.units[ITEMS.FIREFLY];
-  for (var i = 0; i < firefly.length; i++)
-    draw_transition(firefly[i], SPRITE.FIREFLY, SPRITE.HURT_FIREFLY);
-  var garland = world.units[ITEMS.GARLAND];
-  for (var i = 0; i < garland.length; i++)
-    draw_transition(garland[i], SPRITE.GARLAND);
-  var players = world.units[ITEMS.PLAYERS];
-  for (var i = 0; i < players.length; i++) {
+  
+  for (let i = 0; i < firefly.length; i++) draw_transition(firefly[i], SPRITE.FIREFLY, SPRITE.HURT_FIREFLY);
+  
+  for (let i = 0; i < garland.length; i++) draw_transition(garland[i], SPRITE.GARLAND);
+
+  players = world.units[ITEMS.PLAYERS];
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     if ((((((p.vehicle === INV.BABY_DRAGON) || (p.vehicle === INV.BABY_LAVA)) || (p.vehicle === INV.NIMBUS)) || (p.vehicle === INV.HAWK)) || (p.vehicle === INV.PLANE)) && (p.speed > 180)) {
       p.fly = 1;
@@ -4777,33 +4803,31 @@ export function draw_world() {
       ctx.restore();
     }
   }
-  var spell = world.units[ITEMS.SPELL];
-  for (var i = 0; i < spell.length; i++) {
+  
+  spell = world.units[ITEMS.SPELL];
+  for (let i = 0; i < spell.length; i++) {
     if (spell[i].fly === 1)
       draw_transition(spell[i]);
-
   }
-  var dragon = world.units[ITEMS.DRAGON];
-  for (var i = 0; i < dragon.length; i++) {
+
+  dragon = world.units[ITEMS.DRAGON];
+  for (let i = 0; i < dragon.length; i++) {
     if (dragon[i].scale > 1)
       draw_transition(dragon[i], SPRITE.DRAGON, SPRITE.HURT_DRAGON);
-
   }
-  var dragon = world.units[ITEMS.LAVA_DRAGON];
-  for (var i = 0; i < dragon.length; i++) {
+
+  dragon = world.units[ITEMS.LAVA_DRAGON];
+  for (let i = 0; i < dragon.length; i++) {
     if (dragon[i].scale > 1)
       draw_transition(dragon[i], SPRITE.LAVA_DRAGON, SPRITE.HURT_LAVA_DRAGON);
-
   }
-  var hawk = world.units[ITEMS.HAWK];
-  for (var i = 0; i < hawk.length; i++)
-    draw_transition(hawk[i], SPRITE.HAWK, SPRITE.HURT_HAWK);
-  var vulture = world.units[ITEMS.VULTURE];
-  for (var i = 0; i < vulture.length; i++)
-    draw_transition(vulture[i], SPRITE.VULTURE, SPRITE.HURT_VULTURE);
+  
+  for (let i = 0; i < hawk.length; i++) draw_transition(hawk[i], SPRITE.HAWK, SPRITE.HURT_HAWK);
+  
+  for (let i = 0; i < vulture.length; i++) draw_transition(vulture[i], SPRITE.VULTURE, SPRITE.HURT_VULTURE);
+  
   __effect += delta * 15;
-  if (__effect > 60)
-    __effect -= 60;
+  if (__effect > 60) __effect -= 60;
 
   draw_map_transition(draw_objects_effect, is, ie, js, je, SPRITE.FOG, "fo", 2);
   draw_map_transition(draw_objects_effect, is, ie, js, je, SPRITE.FOD, "fod", 2);
@@ -4863,7 +4887,7 @@ export function draw_image_transition(id, img, x, y) {
 
 export function draw_image_transition_hd_2(id1, id2, img, x, y) {
   var w = img.width;
-  var h = img.height;
+  var w = img.height;
   var w2 = Math.floor(w / 2);
   var h2 = Math.floor(h / 2);
   if (world.transition) {
@@ -4880,7 +4904,7 @@ export function draw_image_transition_hd_2(id1, id2, img, x, y) {
 
 export function draw_image_transition_hd(id, img, x, y) {
   var w = img.width;
-  var h = img.height;
+  var w = img.height;
   var w2 = Math.floor(w / 2);
   var h2 = Math.floor(h / 2);
   if (world.transition) {
@@ -4976,7 +5000,7 @@ export function draw_simple_ground() {
 };;
 
 export function draw_ground() {
-  for (var i = world.biomes.length - 1; i >= 0; i--) {
+  for (let i = world.biomes.length - 1; i >= 0; i--) {
     var biome = world.biomes[i];
     if (biome.t === world.BIOME_SEA) {
       var info = world.BIOME[biome.t];
@@ -5011,7 +5035,7 @@ export function draw_ground() {
       }
     }
   }
-  for (var i = world.biomes.length - 1; i >= 0; i--) {
+  for (let i = world.biomes.length - 1; i >= 0; i--) {
     var biome = world.biomes[i];
     if (biome.t !== world.BIOME_SEA) {
       var x2 = biome.x2;
@@ -5048,7 +5072,7 @@ export function draw_ground() {
       }
     }
   }
-  for (var i = world.biomes.length - 1; i >= 0; i--) {
+  for (let i = world.biomes.length - 1; i >= 0; i--) {
     var biome = world.biomes[i];
     if (biome.t !== world.BIOME_SEA) {
       var x2 = biome.x2;
@@ -5081,7 +5105,7 @@ export function draw_ground() {
       }
     }
   }
-  for (var i = world.biomes.length - 1; i >= 0; i--) {
+  for (let i = world.biomes.length - 1; i >= 0; i--) {
     var biome = world.biomes[i];
     if (biome.t !== world.BIOME_SEA) {
       var info = world.BIOME[biome.t];
@@ -5137,7 +5161,7 @@ export function draw_ground() {
     draw_map_transition(draw_map_decorations, _is, _ie, _js, _je, SPRITE.DECORATION, "de");
 
   var players = world.units[ITEMS.PLAYERS];
-  for (var i = 0; i < players.length; i++) {
+  for (let i = 0; i < players.length; i++) {
     var p = players[i];
     for (var j = 0; j < p.foot.length; j++)
       draw_foot(p.foot[j]);
@@ -5147,7 +5171,7 @@ export function draw_ground() {
     __wave -= 60;
 
   draw_map_transition(draw_river_tile, _is, _ie, _js, _je, SPRITE.RIVER, "r", 0);
-  for (var i = 0; i < world.biomes.length; i++) {
+  for (let i = 0; i < world.biomes.length; i++) {
     var biome = world.biomes[i];
     if (biome.t !== world.BIOME_SEA) {
       var x2 = biome.x2;
@@ -5185,12 +5209,12 @@ export function draw_ground() {
 export function draw_ash() {
   var ash = user.ash;
   var flakes = ash.flakes;
-  for (var i = 0; i < flakes.length; i++) {
+  for (let i = 0; i < flakes.length; i++) {
     var f = flakes[i];
     ash.update(f);
     draw_imgs_transition(SPRITE.ASHES, f.id, user.cam.x + f.x, user.cam.y + f.y, f.alpha);
   }
-  for (var i = 0; i < flakes.length; i++) {
+  for (let i = 0; i < flakes.length; i++) {
     var f = flakes[i];
     if ((((f.life <= 0) || (f.x > (-user.cam.x + canw))) || (f.x < -user.cam.x)) || (f.y > (-user.cam.y + canh)))
       flakes.splice(i, 1);
@@ -5209,12 +5233,12 @@ export function draw_winter() {
   else
     winter.tempest_speed = Math.min(1, winter.tempest_speed + (delta / 10));
   var flakes = winter.flakes;
-  for (var i = 0; i < flakes.length; i++) {
+  for (let i = 0; i < flakes.length; i++) {
     var f = flakes[i];
     winter.update(f);
     draw_imgs_transition(SPRITE.FLAKES, f.id, user.cam.x + f.x, user.cam.y + f.y, f.alpha);
   }
-  for (var i = 0; i < flakes.length; i++) {
+  for (let i = 0; i < flakes.length; i++) {
     var f = flakes[i];
     if ((((f.life <= 0) || (f.x > (-user.cam.x + canw))) || (f.x < -user.cam.x)) || (f.y > (-user.cam.y + canh)))
       flakes.splice(i, 1);
@@ -5233,12 +5257,12 @@ export function draw_desert() {
   else
     desert.tempest_speed = Math.min(1, desert.tempest_speed + (delta / 10));
   var flakes = desert.flakes;
-  for (var i = 0; i < flakes.length; i++) {
+  for (let i = 0; i < flakes.length; i++) {
     var f = flakes[i];
     desert.update(f);
     draw_imgs_transition(SPRITE.DESERT, f.id, user.cam.x + f.x, user.cam.y + f.y, f.alpha);
   }
-  for (var i = 0; i < flakes.length; i++) {
+  for (let i = 0; i < flakes.length; i++) {
     var f = flakes[i];
     if ((((f.life <= 0) || (f.x > (-user.cam.x + canw))) || (f.x < (-user.cam.x - (user.cam.w / 2)))) || (f.y > (-user.cam.y + canh)))
       flakes.splice(i, 1);

@@ -1,11 +1,13 @@
-import { CLIENT, INV, STATE, RECIPES, KIT, WORLD, pi2 } from '../constants';
-import { ui, game, user, world, MAP } from '../game';
+import { CLIENT, INV, STATE, RECIPES, KIT, WORLD, pi2, LANG, TEXT, ZOMBIE_GRUMBLE, ZOMBIE_GRUMBLES } from '../constants';
+import { ui, game, user, world, MAP, OLD_RECIPES } from '../game';
 import { LinearAnimation, dist, simplify_number, restore_number } from '../utils';
 import { Item, Player } from '../world';
-import { old_timestamp } from '../canvas';
-import GCCSocket from './socket';
+import { old_timestamp, delta } from '../canvas';
+import loadSocket from './socket';
 
 export default function NetworkClient() {
+  loadSocket();
+
   /* WATCH OUT, I"M NOT SURE ABOUT THIS TRICK, IT MAY BE A SOURCE OF BUG *
    * That seem work for use this object in a event listener              */
   const _this = this;
@@ -738,12 +740,12 @@ export default function NetworkClient() {
 
     /*
       var str = ""
-      for(var i = 0 ; i < world.units.length ; i++) {
+      for(let i = 0 ; i < world.units.length ; i++) {
         if (world.units[i].state != S.DIE)
         str += world.units[i].uid + ", ";
       }
       str += "|"
-      for(var i = 0 ; i < world.units.length ; i++) {
+      for(let i = 0 ; i < world.units.length ; i++) {
         if (world.units[i].state == S.DIE)
         str += world.units[i].uid + ", ";
       }
@@ -829,7 +831,6 @@ export default function NetworkClient() {
 
   /* Receive the new recipes */
   this.new_recipes = function (recipes) {
-
     if (OLD_RECIPES !== undefined)
       RECIPES = OLD_RECIPES;
 
@@ -1929,7 +1930,7 @@ export default function NetworkClient() {
     const ssl = 0;
     const dns = "127.0.0.1:8888";
 
-    this.socket = new GCCSocket("ws" + ((ssl === 1) ? "s" : "") + "://" + dns);
+    this.socket = new WebSocket("ws" + ((ssl === 1) ? "s" : "") + "://" + dns);
     this.socket._current_id = this._current_id;
 
     /* When server send a message */

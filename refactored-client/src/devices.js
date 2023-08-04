@@ -57,7 +57,7 @@ export function Keyboard() {
   this.set_qwerty();
   this.keys = new Array(255);
 
-  for (var i = 0; i < 255; i++)
+  for (let i = 0; i < 255; i++)
     this.keys[i] = this.UP;
 
   this.up = function (evt) {

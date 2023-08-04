@@ -2626,7 +2626,7 @@ function Game(can, ctx) {
       fun_after_quit();
       return;
     }
-    window.setTimeout(quit_effect, 33);
+    window.setTimeout(quit_effect);
   };
   this.is_run = false;
   this.stop = function () {

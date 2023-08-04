@@ -1,8 +1,10 @@
 import { generate_token, LinearAnimation, Ease2d, ease_out_quad, get_std_angle, Ease, restore_number } from './utils';
-import { CLIENT, WORLD } from './constants';
-import { Beach } from './world';
-import { delta } from './canvas';
-import { game } from './game';
+import { CLIENT, WORLD, SPRITE, RECIPES, ITEMS } from './constants';
+import { Beach, Flakes } from './world';
+import { delta, canw2, canh2, scale, canw, canh } from './canvas';
+import { game, user, world, mouse, keyboard } from './game';
+import { draw_alert_ghost, draw_welcome_message, draw_alert } from './graphics/draw';
+import Cookies from './cookies';
 
 export default function User() {
   this.init = function () { };
@@ -92,7 +94,7 @@ export default function User() {
   };
   this.team = [];
   this.in_team = function (id) {
-    for (var i = 0; i < this.team.length; i++) {
+    for (let i = 0; i < this.team.length; i++) {
       if (this.team[i] == id)
         return true;
 
@@ -106,7 +108,7 @@ export default function User() {
     open: false,
     draw: function () {
       if (this.open) {
-        var now = (new Date).getTime();
+        const now = (new Date).getTime();
         this.time = Math.floor((now - this.delay) / 1000);
         if (this.time < 60) {
           game.shop.button.draw(ctx);
@@ -144,11 +146,11 @@ export default function User() {
       this.forcedDelay -= delta;
       return;
     }
-    var p = world.fast_units[user.uid];
+    const p = world.fast_units[user.uid];
     if (p) {
       this.delay = 0;
-      var x = Math.max(Math.min(canw2 - p.x, -2), (-world.w + 2) + canw);
-      var y = Math.max(Math.min(canh2 - p.y, -2), (-world.h + 2) + canh);
+      const x = Math.max(Math.min(canw2 - p.x, -2), (-world.w + 2) + canw);
+      const y = Math.max(Math.min(canh2 - p.y, -2), (-world.h + 2) + canh);
       this.ease({
         x: x,
         y: y
@@ -184,16 +186,18 @@ export default function User() {
     mouse: 0,
     attack: 0,
     update: function () {
-      var p = world.fast_units[user.uid];
+      let pos;
+
+      const p = world.fast_units[user.uid];
       if (p)
-        var pos = {
+        pos = {
           x: user.cam.x + p.x,
           y: user.cam.y + p.y
         };
       else
-        var pos = canm;
-      var angle = get_std_angle(mouse.pos, pos);
-      var attacked = false;
+        pos = canm;
+      const angle = get_std_angle(mouse.pos, pos);
+      let attacked = false;
       this.mouse += delta;
       if (!mouse.state) {
         if ((p && !(p.action & STATE.ATTACK)) && (this.mouse > CLIENT.ATTACK)) {
@@ -227,20 +231,20 @@ export default function User() {
       if (user.terminal.open)
         return;
 
-      var move = 0;
-      var left = keyboard.is_left();
+      let move = 0;
+      const left = keyboard.is_left();
       if (left)
         move |= 1;
 
-      var right = keyboard.is_right();
+      const right = keyboard.is_right();
       if (right)
         move |= 2;
 
-      var bottom = keyboard.is_bottom();
+      const bottom = keyboard.is_bottom();
       if (bottom)
         move |= 4;
 
-      var top = keyboard.is_top();
+      const top = keyboard.is_top();
       if (top)
         move |= 8;
 
@@ -327,11 +331,11 @@ export default function User() {
         this._y = -1;
       },
       release: function () {
-        var item = -1;
-        var buttons = user.inv.can_select;
-        var ret = 0;
+        let item = -1;
+        let buttons = user.inv.can_select;
+        let ret = 0;
         if (this._start && this._move) {
-          for (var i = 0; i < buttons.length; i++) {
+          for (let i = 0; i < buttons.length; i++) {
             if (buttons[i].info.state === BUTTON_IN) {
               item = i;
               break;
@@ -339,7 +343,7 @@ export default function User() {
           }
           if (((item !== -1) && (item !== this.item)) && buttons[this.item]) {
             ret = 1;
-            var tmp = buttons[item];
+            const tmp = buttons[item];
             buttons[item] = buttons[this.item];
             buttons[this.item] = tmp;
             game.update_inv_buttons();
@@ -364,7 +368,7 @@ export default function User() {
       return false;
     },
     find_item: function (id) {
-      for (var i = 0; i < this.can_select.length; i++) {
+      for (let i = 0; i < this.can_select.length; i++) {
         if (this.can_select[i].id == id)
           return i;
 
@@ -480,32 +484,31 @@ export default function User() {
     },
     set_workbench: function (val) {
       this.workbench = val;
-      var safe = game.safe_delete;
+      const safe = game.safe_delete;
       if (safe.open)
         safe.del(safe.button);
 
       this.update();
     },
     do_recycle: function (id) {
-      var r = RECIPES[id];
+      const r = RECIPES[id];
       this.id = id;
       this.crafting = true;
-      var p = world.fast_units[user.uid];
       this.timeout.max_speed = r.time * 8;
       this.id2 = r.id2;
     },
     do_craft: function (id) {
-      var r = RECIPES[id];
+      const r = RECIPES[id];
       this.id = id;
       this.crafting = true;
-      var p = world.fast_units[user.uid];
+      const p = world.fast_units[user.uid];
       if (p && (p.right == INV.BOOK))
         this.timeout.max_speed = r.time * 3;
       else
         this.timeout.max_speed = r.time;
       this.id2 = r.id2;
-      for (var i = 0; i < r.r.length; i++) {
-        var o = r.r[i];
+      for (let i = 0; i < r.r.length; i++) {
+        const o = r.r[i];
         user.inv.decrease(o[0], o[1], user.inv.find_item(o[0]));
       }
       game.update_inv_buttons();
@@ -515,13 +518,13 @@ export default function User() {
       if (game.info_box.craft === 1)
         game.info_box.display = 0;
 
-      for (var k in RECIPES) {
-        var r = RECIPES[k];
-        var can_craft = true;
+      for (const k in RECIPES) {
+        const r = RECIPES[k];
+        let can_craft = true;
         if (!r.r)
           continue;
 
-        for (var i = 0; i < r.r.length; i++) {
+        for (let i = 0; i < r.r.length; i++) {
           if ((user.inv.max >= WORLD.WITH_BAG) && (r.id === CRAFT.BAG)) {
             can_craft = false;
             break;
@@ -530,7 +533,7 @@ export default function User() {
             can_craft = false;
             break;
           }
-          var o = r.r[i];
+          const o = r.r[i];
           if (!user.inv.n[o[0]] || (user.inv.n[o[0]] < o[1])) {
             can_craft = false;
             break;
@@ -576,9 +579,11 @@ export default function User() {
       y: 0
     },
     sort: function () {
-      var sortable = [];
-      var players = world.players;
-      for (var i = 0; i < players.length; i++) {
+      const sortable = [];
+      const players = world.players;
+      const len = players.length;
+
+      for (let i = 0; i < len; i++) {
         if (players[i].alive)
           sortable.push({
             id: i,
@@ -590,18 +595,20 @@ export default function User() {
         return b.s - a.s;
       });
       this.ids = [];
-      for (var i = 0;
+      for (let i = 0;
         (i < sortable.length) && (i < 10); i++)
         this.ids.push(sortable[i].id);
       this.update = true;
     },
     init: function (u) {
-      var players = world.players;
-      for (var i = 0; i < players.length; i++)
+      const players = world.players;
+      const len = players.length;
+
+      for (let i = 0; i < len; i++)
         players[i].score = 0;
       players[user.id].score = restore_number(u[1]);
       this.ids = [];
-      for (var i = 2; i < u.length; i += 2) {
+      for (let i = 2; i < u.length; i += 2) {
         this.ids.push(u[i]);
         players[u[i]].score = restore_number(u[i + 1]);
       }
@@ -631,8 +638,8 @@ export default function User() {
       this.style.display = "none";
     },
     create_array: function (datas) {
-      var content = '<table class=\"tableList\">';
-      for (var i = 0; i < datas.length; i++) {
+      let content = '<table class=\"tableList\">';
+      for (let i = 0; i < datas.length; i++) {
         if ((i % 3) === 0)
           content += '<tr>';
 
@@ -649,7 +656,8 @@ export default function User() {
       isSucceed = !isSucceed ? "" : isSucceed;
       answer = !answer ? "" : answer;
       content = !content ? "" : content;
-      var data = "<div class=commandWritten>" + cmd;
+      
+      let data = "<div class=commandWritten>" + cmd;
       if (isSucceed)
         data += "<div class=commandValidated>";
       else
@@ -669,10 +677,11 @@ export default function User() {
           return true;
           break;
         case "list":
-          var list = "";
-          var players = world.players;
-          for (var i = 0; i < players.length; i++) {
-            var player = players[i];
+          let list = "";
+          const players = world.players;
+          const len = players.length;
+          for (let i = 0; i < len; i++) {
+            const player = players[i];
             if (player.alive) {
               list += ((player.nickname + ' <span style=\"color:green\">#') + i) + "</span><br />";
             }
@@ -692,48 +701,56 @@ export default function User() {
           this.write_command("Survival Items", 1, "List all survival items in the game", this.create_array(["fire", "workbench", "bandage", "big_fire", "furnace", "paper", "blue_cord", "lock", "lockpick", "totem", "resurrection", "bridge", "bottle_full", "bottle_empty", "watering_can", "watering_can_full", "windmill", "plot", "bread_oven", "chest", "bucket_empty", "bucket_full", "well", "sign", "roof", "bed", "boat", "sled", "boar", "saddle", "emerald_machine", "extractor_stone", "extractor_gold", "extractor_diamond", "extractor_amethyst", "extractor_reidite_button"]));
           return true;
           break;
-        case "resource-list":
+        case "resource-list": {
           this.write_command("Resources", 1, "List all resources in the game", this.create_array(["wood", "stone", "gold", "diamond", "amethyst", "reidite", "fur", "fur_wolf", "fur_winter", "cord", "scales", "penguin_feather", "flame", "sand", "ground", "ice", "dragon_heart", "lava_heart", "kraken_skin", "special_fur", "special_fur_2", "gemme_green", "gemme_orange", "gemme_blue", "dragon_cube", "dragon_orb", "lava_cube", "lava_orb", "fur_boar", "pitchfork_part", "pilot_glasses", "fur_mammoth"]));
           return true;
           break;
-        case "food-list":
+        }
+        case "food-list": {
           this.write_command("Food", 1, "List all food in the game", this.create_array(["plant", "seed", "meat", "cooked_meat", "flour", "wheat_seed", "cookies", "wild_wheat", "cake", "fish", "cooked_fish", "bread", "sandwich", "pumpkin_seed", "pumpkin", "garlic_seed", "garlic", "thornbush_seed", "thornbush", "crab_stick", "claw", "carrot_seed", "carrot", "tomato_seed", "tomato", "watermelon_seed", "watermelon", "aloe_vera_seed", "aloe_vera", "cactus"]));
           return true;
           break;
-        case "hat-list":
+        }
+        case "hat-list": {
           this.write_command("Hats", 1, "List all hats in the game", this.create_array(["earmuffs", "coat", "scarf", "fur_hat", "warm_protection", "warm_protection2", "warm_protection3", "explorer_hat", "pirate_hat", "wood_helmet", "stone_helmet", "gold_helmet", "diamond_helmet", "amethyst_helmet", "reidite_helmet", "dragon_helmet", "lava_helmet", "crab_helmet", "diving_mask", "super_diving_suit", "crown_green", "crown_orange", "crown_blue", "hood", "peasant", "winter_hood", "winter_peasant", "bag", "turban1", "turban2", "pilot_hat"]));
           return true;
           break;
-        case "building-list":
+        }
+        case "building-list": {
           this.write_command("Buildings", 1, "List all buildings in the game", this.create_array(["wall", "stone_wall", "gold_wall", "diamond_wall", "amethyst_wall", "reidite_wall", "spike", "stone_spike", "gold_spike", "diamond_spike", "amethyst_spike", "reidite_spike", "wood_door", "stone_door", "gold_door", "diamond_door", "amethyst_door", "reidite_door", "wood_spike_door", "stone_spike_door", "gold_spike_door", "diamond_spike_door", "amethyst_spike_door", "reidite_spike_door"]));
           return true;
           break;
-        case "biome-list":
+        }
+        case "biome-list": {
           this.write_command("Biomes list", 1, "List all available biomes in the game", this.create_array(["forest", "winter", "lava", "sea", "beach", "island", "dragon"]));
           return true;
           break;
-        case "help-config":
+        }
+        case "help-config": {
           this.write_command("Help Configuration", 1, "Learn how to build your customized map", '<div class=\"specialCommandBox\">To get the current map configuration, and modify it, copy the result of <span class=\"commandSynthax\">get-config</span> in a text file and change every parameter you want.</div>To modify the settings, change a number to another with <span class=\"commandSynthax\">set-config</span></br>To modify the map, modify \"important\" section (at the end)<div class=\"infoCommand\">The minimum size of the map is 50x50.</div>\"custom_map\" is used to change the biomes and is written like this :<div class=\"commandSynthax\" style=\"font-size:17px;\">\"custom_map\":[[\"biome\",width,height],...,[\"biome\",width,height]]</div>Biomes are <span class=\"commandSynthax\">\"forest\"</span>, <span class=\"commandSynthax\">\"lava\"</span>, <span class=\"commandSynthax\">\"winter\"</span>, and <span class=\"commandSynthax\">\"dragon\"</span>.');
           return true;
           break;
-        case "pos":
-          var players = world.units[ITEMS.PLAYERS];
-          for (var i = 0; i < players.length; i++) {
-            var p = players[i];
+        }
+        case "pos": {
+          const players = world.units[ITEMS.PLAYERS];
+          const len = players.length;
+          for (let i = 0; i < len; i++) {
+            const p = players[i];
             if (p.pid === user.id) {
               this.write_command("pos", 1, (("Your position is " + Math.floor(p.x / 100)) + ":") + Math.floor(p.y / 100));
               return true;
             }
           }
           break;
-        case "help-admin":
+        }
+        case "help-admin": {
           this.write_command("help-admin", 1, "List all available commands for admin only", this.create_array(["restart", "m | message", "mt | message-to", "w | welcome", "name", "password", "k | kick", "b | ban", "tp | teleport", "tpa | teleport-all", "tpt | teleport-to", "pos", "heal", "cancel-craft", "da | disable-attack", "pvp | disable-pvp", "dgs | disable-gather-score", "drs | disable-resource", "dms | disable-mob-safety", "ds | disable-shop", "dn | disable-nickname", "dch | disable-chat", "dq | disable-quest", "dd | disable-drop", "ddc | disable-drop-crate", "db | disable-crate", "dwg | disable-warm-gauge", "dk | disable-kit", "dc | disable-craft", "dr | disable-recycling", "disable-clock", "disable-recipes-book", "disable-market", "sb | spawn-building", "fsb | force-spawn-building", "sch | spawn-chest", "spawn-area", "spawn-area-team", "cl | clean-position", "cba | clean-building-all", "ci | clean-inventory", "cia | clean-inventory-all", "harvest", "gs | give-score", "gsa | give-score-all", "rs | reset-score", "rk | reset-kill", "gm | godmode", "instant-craft", "ka | kill-animals", "g | give", "ga | give-to-all", "ri | remove-item", "ria | remove-item-all", "spawn-location", "tm | team-mode", "default-nickname", "mm | murder-mode", "br | battle-royale", "help-config", "gc | get-config", "sc | set-config", "reset-config", "save-config", "reset-event-time"]));
           return true;
-          break;
-        case "help":
+        }
+        case "help": {
           this.write_command("help", 1, "List all available commands", this.create_array(["clean", "list", "pos", "help-admin", "help", "weapon-list", "tool-list", "survival-list", "resource-list", "food-list", "hat-list", "building-list", "biome-list"]));
           return true;
-          break;
+        }
       }
       return false;
     },
@@ -748,7 +765,7 @@ export default function User() {
       }
     },
     _send: function () {
-      var msg = this.input.value;
+      const msg = this.input.value;
       if (msg && (msg.length > 0)) {
         if (!this.commands(msg))
           client.send_command(this.input.value);
@@ -774,7 +791,7 @@ export default function User() {
     cmd: {
       "hud": function (param) {
         if (param === "off") {
-          var msg = 'Enter \"!hud\" without the quotes to restore the HUD';
+          const msg = 'Enter \"!hud\" without the quotes to restore the HUD';
           if (!user.alert.text)
             user.alert.text = msg;
           else
@@ -786,15 +803,15 @@ export default function User() {
     },
     commands: function (msg) {
       if (msg.charAt(0) == this.prefix) {
-        var cmd = "";
-        var param = "";
-        for (var i = 1;
+        let cmd = "";
+        let param = "";
+        for (let i = 1;
           (i < msg.length) && (msg.charAt(i) != " "); i++)
           cmd += msg.charAt(i);
         i++;
         for (; i < msg.length; i++)
           param += msg.charAt(i);
-        var fun = this.cmd[cmd];
+        const fun = this.cmd[cmd];
         if (fun)
           fun(param);
 
@@ -812,7 +829,7 @@ export default function User() {
       } else {
         this.open = false;
         this.style.display = "none";
-        var msg = this.input.value;
+        const msg = this.input.value;
         if (msg) {
           if (!this.commands(msg))
             client.send_chat(this.input.value);
@@ -834,12 +851,12 @@ export default function User() {
         f.alpha = Math.max(f.alpha - (delta * 1), 0);
     },
     add: function (pos) {
-      var length = Math.floor(Math.min(SPRITE.ASHES_NUMBER * (canw / 1366), SPRITE.ASHES_NUMBER + 10) * Math.max(Math.min(world.dist_lava + 1000, 3000) / 3000, 0));
+      const length = Math.floor(Math.min(SPRITE.ASHES_NUMBER * (canw / 1366), SPRITE.ASHES_NUMBER + 10) * Math.max(Math.min(world.dist_lava + 1000, 3000) / 3000, 0));
       if (this.flakes.length < length) {
-        var id = Math.floor(Math.random() * SPRITE.ASHES_SIZES);
-        var x = -user.cam.x + Math.floor(Math.random() * user.cam.w);
-        var y = -user.cam.y + Math.floor(Math.random() * user.cam.h);
-        var angle = Math.random(Math.PI);
+        const id = Math.floor(Math.random() * SPRITE.ASHES_SIZES);
+        const x = -user.cam.x + Math.floor(Math.random() * user.cam.w);
+        const y = -user.cam.y + Math.floor(Math.random() * user.cam.h);
+        const angle = Math.random(Math.PI);
         this.flakes.push(new Flakes(id, x, y, angle));
       }
     }
@@ -860,12 +877,12 @@ export default function User() {
         f.alpha = Math.max(f.alpha - (delta * 1), 0);
     },
     add: function (pos) {
-      var length = Math.floor(Math.min(((this.tempest_speed + 0.1) * SPRITE.SAND_NUMBER) * (canw / 1366), ((this.tempest_speed + 0.1) * SPRITE.SAND_NUMBER) + 10) * Math.max(Math.min(world.dist_desert + 1000, 3000) / 3000, 0));
+      const length = Math.floor(Math.min(((this.tempest_speed + 0.1) * SPRITE.SAND_NUMBER) * (canw / 1366), ((this.tempest_speed + 0.1) * SPRITE.SAND_NUMBER) + 10) * Math.max(Math.min(world.dist_desert + 1000, 3000) / 3000, 0));
       if (this.flakes.length < length) {
-        var id = Math.floor(Math.random() * SPRITE.ASHES_SIZES);
-        var x = -user.cam.x + Math.floor(Math.random() * user.cam.w);
-        var y = -user.cam.y + Math.floor(Math.random() * user.cam.h);
-        var angle = Math.random(Math.PI);
+        const id = Math.floor(Math.random() * SPRITE.ASHES_SIZES);
+        let x = -user.cam.x + Math.floor(Math.random() * user.cam.w);
+        const y = -user.cam.y + Math.floor(Math.random() * user.cam.h);
+        const angle = Math.random(Math.PI);
         if (user.desert.tempest !== 0)
           x -= user.cam.w / 2;
 
@@ -895,17 +912,17 @@ export default function User() {
         f.alpha = Math.max(f.alpha - (delta * 5), 0);
     },
     add: function (pos) {
-      var length = Math.floor(Math.min((((this.tempest_speed * 1.5) + 0.5) * SPRITE.FLAKES_NUMBER) * (canw / 1366), (((this.tempest_speed * 1.5) + 0.5) * SPRITE.FLAKES_NUMBER) + 10) * Math.max(Math.min(world.dist_winter + 1000, 3000) / 3000, 0));
+      const length = Math.floor(Math.min((((this.tempest_speed * 1.5) + 0.5) * SPRITE.FLAKES_NUMBER) * (canw / 1366), (((this.tempest_speed * 1.5) + 0.5) * SPRITE.FLAKES_NUMBER) + 10) * Math.max(Math.min(world.dist_winter + 1000, 3000) / 3000, 0));
       if (this.flakes.length < length) {
-        var id = Math.floor(Math.random() * SPRITE.FLAKES_SIZES);
-        var x = -user.cam.x + Math.floor(Math.random() * user.cam.w);
-        var y = -user.cam.y + Math.floor(((Math.random() * 400) * scale) - (200 * scale));
+        const id = Math.floor(Math.random() * SPRITE.FLAKES_SIZES);
+        const x = -user.cam.x + Math.floor(Math.random() * user.cam.w);
+        const y = -user.cam.y + Math.floor(((Math.random() * 400) * scale) - (200 * scale));
         this.flakes.push(new Flakes(id, x, y, 0));
       }
     }
   };
 
   this.beach = [];
-  for (var i = 0; i < 4; i++)
+  for (let i = 0; i < 4; i++)
     this.beach.push(new Beach);
 }

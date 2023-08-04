@@ -57,7 +57,7 @@ export function Vector(x, y) {
 
 // Opens a URL in a new tab
 export function open_in_new_tab(url) {
-  var win = window.open(url, '_blank');
+  const win = window.open(url, '_blank');
   if (win) win.focus();
 }
 
@@ -68,7 +68,7 @@ export function open_in_new_box(url) {
 
 // Compares two objects and returns true if they have the same properties and values
 export function compare_object(a, b) {
-  for (var i in a) {
+  for (const i in a) {
     if (a[i] != b[i])
       return false;
   }
@@ -80,7 +80,7 @@ export function compare_array(a, b) {
   if (a.length != b.length)
     return false;
 
-  for (var i = 0; i < a.length; i++) {
+  for (let i = 0; i < a.length; i++) {
     if (typeof a == 'object') {
       if (!compare_object(a[i], b[i]))
         return false;
@@ -136,8 +136,8 @@ export function cross_product(v1, v2) {
 
 // Calculates the angle between two points (ax, ay) and (bx, by) with respect to the x-axis
 export function get_angle_2(ax, ay, bx, by) {
-  var dy = by - ay;
-  var dx = bx - ax;
+  const dy = by - ay;
+  const dx = bx - ax;
   return Math.atan2(dy, dx);
 }
 
@@ -150,17 +150,19 @@ export function get_angle(v1, v2) {
 
 // Extracts the value of a query parameter from the URL
 export function getURLData(_name) {
-  _url = location.href;
   _name = _name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-  var regexS = "[\\?&]" + _name + "=([^&#]*)";
-  var _regex = new RegExp(regexS);
-  var results = _regex.exec(_url);
+
+  const _url = location.href;
+  const regexS = "[\\?&]" + _name + "=([^&#]*)";
+  const _regex = new RegExp(regexS);
+  const results = _regex.exec(_url);
+  
   return results === null ? null : results[1];
 }
 
 // Reduces an angle to its standard form (between -π to π)
 export function reduceAngle(a1, a2) {
-  var PI2 = Math.PI * 2;
+  const PI2 = Math.PI * 2;
   a2 = ((a2 % PI2) + PI2) % PI2;
   if (Math.abs(a1 - a2) > Math.PI) {
     if (a1 > a2) return a2 + PI2;
@@ -239,9 +241,9 @@ export function rand_sign() {
 
 // Generates a random position within a circle defined by the center (x, y) and diameter (d)
 export function get_rand_pos_in_circle(x, y, d) {
-  var sx = rand_sign();
-  var sy = rand_sign();
-  var a = (Math.random() * Math.PI) / 2;
+  const sx = rand_sign();
+  const sy = rand_sign();
+  const a = (Math.random() * Math.PI) / 2;
   return {
     x: Math.floor(x + Math.cos(a) * sx * d),
     y: Math.floor(y + Math.sin(a) * sy * d),
@@ -258,14 +260,17 @@ export function Box(x, y, w, h) {
 
 // Randomizes the order of elements in an array
 export function randomize_list(l) {
-  a = [];
+  const a = [];
   a.push.apply(a, l);
-  var ra = [];
+
+  const ra = [];
+
   while (a.length > 0) {
-    var r = Math.floor(Math.random() * a.length);
+    const r = Math.floor(Math.random() * a.length);
     ra.push(a[r]);
     a.splice(r, 1);
   }
+
   return ra;
 }
 
@@ -281,9 +286,9 @@ export function restore_number(n) {
 export function simplify_number(n) {
   if (typeof n !== "number") return "0";
   else if (n >= 10000) {
-    var log = Math.floor(Math.log10(n)) - 2;
-    var decimal = Math.max(0, 3 - log);
-    var s = Math.floor(n / 1000).toString();
+    const log = Math.floor(Math.log10(n)) - 2;
+    const decimal = Math.max(0, 3 - log);
+    const s = Math.floor(n / 1000).toString();
     if (decimal) {
       s +=
         "." +
@@ -291,7 +296,7 @@ export function simplify_number(n) {
           .toString()
           .substring(2)
           .substring(0, decimal);
-      for (var i = s.length - 1, zero_counter = 0; i > 0; i--) {
+      for (let i = s.length - 1, zero_counter = 0; i > 0; i--) {
         if (s[i] != "0") break;
         else zero_counter++;
       }
@@ -337,14 +342,14 @@ export function LinearAnimation(o, v, max, min, max_speed, min_speed) {
   this.last = 0;
   this.update = function () {
     if (this.o) {
-      var v = this.v + delta * this.max_speed;
+      const v = this.v + delta * this.max_speed;
       if (v > this.max) {
         this.v = this.max;
         this.o = false;
         return true;
       } else this.v = v;
     } else {
-      var v = this.v - delta * this.min_speed;
+      const v = this.v - delta * this.min_speed;
       if (v < this.min) {
         this.v = this.min;
         this.o = true;
@@ -376,7 +381,7 @@ export function Ease(fun, ed, em, sx, x, ex) {
       this.ed += delta;
       if (this.ed > this.em) this.x = this.ex;
       else {
-        var e = this.fun(this.ed / this.em);
+        const e = this.fun(this.ed / this.em);
         this.x = this.sx + (this.ex - this.sx) * e;
       }
     }
@@ -408,7 +413,7 @@ export function Ease2d(fun, ed, em, sx, sy, x, y, ex, ey) {
         this.x = this.ex;
         this.y = this.ey;
       } else {
-        var e = this.fun(this.ed / this.em);
+        const e = this.fun(this.ed / this.em);
         this.x = this.sx + (this.ex - this.sx) * e;
         this.y = this.sy + (this.ey - this.sy) * e;
       }
@@ -418,8 +423,8 @@ export function Ease2d(fun, ed, em, sx, sy, x, y, ex, ey) {
 
 // Generates a random alphanumeric token of the given length
 export function generate_token(len) {
-  var token = "";
-  for (var i = 0; i < len; i++) {
+  let token = "";
+  for (let i = 0; i < len; i++) {
     token += String.fromCharCode(48 + Math.floor(Math.random() * 74));
   }
   return token;
@@ -429,9 +434,9 @@ export function generate_token(len) {
 export function gup(name, url) {
   if (!url) url = location.href;
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-  var regexS = ("[\\?&]" + name) + "=([^&#]*)";
-  var regex = new RegExp(regexS);
-  var results = regex.exec(url);
+  const regexS = ("[\\?&]" + name) + "=([^&#]*)";
+  const regex = new RegExp(regexS);
+  const results = regex.exec(url);
   return results == null ? null : results[1];
 }
 

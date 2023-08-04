@@ -1,4 +1,4 @@
-export default function GCCSocket() {
+export default function loadSocket() {
   // Magic secret key
   const secrets = [
     '9d0d52222fb0db0ea661c756f1c56e39',
@@ -43,7 +43,7 @@ export default function GCCSocket() {
     }
   };
 
-  return new Proxy(window.WebSocket, {
+  const proxy = new Proxy(window.WebSocket, {
     construct(target, args) {
       const send = target.prototype.send;
       target.prototype.send = function(data) {
@@ -76,4 +76,6 @@ export default function GCCSocket() {
       return instance;
     }
   });
+
+  window.WebSocket = proxy;
 }
